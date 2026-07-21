@@ -117,3 +117,7 @@ border:1px solid var(--linje);border-radius:2px;padding:2px 6px;color:var(--dis)
 .förvänt{background:#141C26;border:1px solid var(--linje);border-left:3px solid var(--strålkastare);
 padding:10px;border-radius:2px;margin-bottom:10px;font-size:13px;color:var(--dis)}
 .förvänt b{color:var(--rail)}
+/* iOS ritar appen under statusfältet i helskärmsläge — håll undan för det */
+header {
+  padding-top: calc(12px + env(safe-area-inset-top));
+}
