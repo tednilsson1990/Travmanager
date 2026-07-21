@@ -11,10 +11,10 @@ const SPÅRBREDD = 7.5;
 
 /* Närbilden: fältet från sidan, som på en tv-bild. */
 const NB = {
-  bredd: 360, höjd: 104,
-  vänster: 14, höger: 348,
-  fönster: 42,          // meter bakom ledaren som ryms i bilden
-  rad: { 0: 74, 1: 52, 2: 32 }, // y-läge per spårled
+  bredd: 360, höjd: 128,
+  vänster: 42, höger: 344,   // plats för radetiketterna till vänster
+  fönster: 40,               // meter bakom ledaren som ryms i bilden
+  rad: { 0: 92, 1: 64, 2: 36 },
 };
 
 function banaPunkter(radie = RADIE, halvRak = HALV_RAK, bågsteg = 60) {
@@ -125,36 +125,36 @@ export default function BanVy({ lopp, fält, bild }) {
 
       <svg viewBox=${`0 0 ${NB.bredd} ${NB.höjd}`} class="narbild">
         <!-- banunderlag och innerstaket -->
-        <rect x="0" y="20" width=${NB.bredd} height="70" fill="#2A1D12" />
-        <line x1="0" y1="88" x2=${NB.bredd} y2="88" stroke="rgba(233,230,223,.35)" stroke-width="2" />
+        <rect x="0" y="20" width=${NB.bredd} height="90" fill="#2A1D12" />
+        <line x1="0" y1="107" x2=${NB.bredd} y2="107" stroke="rgba(233,230,223,.4)" stroke-width="2.5" />
         <!-- avståndsmarkeringar var tionde meter -->
         ${[10, 20, 30, 40].map((m) => {
           const x = NB.höger - m * ((NB.höger - NB.vänster) / NB.fönster);
           return html`
             <g key=${"m" + m}>
-              <line x1=${x} y1="22" x2=${x} y2="88" stroke="rgba(233,230,223,.10)" stroke-width="1" />
-              <text x=${x + 2} y="99" fill="#6C7B8A" font-size="8"
+              <line x1=${x} y1="22" x2=${x} y2="107" stroke="rgba(233,230,223,.10)" stroke-width="1" />
+              <text x=${x} y="122" fill="#6C7B8A" font-size="9" text-anchor="middle"
                 font-family="'Roboto Mono',monospace">${m} m</text>
             </g>`;
         })}
-        <text x=${NB.höger - 10} y="99" fill="#F2B134" font-size="8"
-          font-family="'Roboto Mono',monospace" text-anchor="end">ledaren</text>
+        <text x=${NB.höger} y="122" fill="#F2B134" font-size="9"
+          font-family="'Roboto Mono',monospace" text-anchor="middle">mål ▶</text>
         <!-- spårledernas etiketter -->
-        <text x="3" y=${NB.rad[0] + 3} fill="#6C7B8A" font-size="7"
+        <text x="4" y=${NB.rad[0] + 4} fill="#8FA0B0" font-size="9"
           font-family="'Roboto Mono',monospace">INNE</text>
-        <text x="3" y=${NB.rad[1] + 3} fill="#6C7B8A" font-size="7"
+        <text x="4" y=${NB.rad[1] + 4} fill="#8FA0B0" font-size="9"
           font-family="'Roboto Mono',monospace">UTV</text>
-        <text x="3" y=${NB.rad[2] + 3} fill="#6C7B8A" font-size="7"
+        <text x="4" y=${NB.rad[2] + 4} fill="#8FA0B0" font-size="9"
           font-family="'Roboto Mono',monospace">3:E</text>
         <g>
           ${fält.map((h) => {
             const t = täcke(h.spår);
             return html`
               <g key=${"n" + h.spår} ref=${(n) => { nära.current[h.spår] = n; }}>
-                <circle r="9.5" fill=${t.bg}
+                <circle r="10.5" fill=${t.bg}
                   stroke=${h.egen ? "#F2B134" : "rgba(0,0,0,.55)"}
                   stroke-width=${h.egen ? 3 : 1} />
-                <text text-anchor="middle" y="3.6" fill=${t.fg} font-size="11"
+                <text text-anchor="middle" y="4" fill=${t.fg} font-size="12"
                   font-weight="700" font-family="'Roboto Mono',monospace">${h.spår}</text>
               </g>`;
           })}
