@@ -1,20 +1,39 @@
 import { rnd, klamp, LÄNGD, kmtid } from "./engine-util.js";
 import { spårfördel } from "./data-lopp.js";
 
-const DT = 0.25;          // sekunder per tick
-const MAXTID = 400;       // säkerhetsspärr
-const BILDINTERVALL = 0.5; // hur ofta en bildruta sparas
+const DT = 0.25;            // sekunder per tick
+const MAXTID = 400;
+const BILDINTERVALL = 0.5;
+const MÅLGAP = 2.6;         // meter mellan hjul och nos i kön
+const SÖKFÖNSTER = 13;      // så långt fram man letar efter rygg att lägga sig i
+/* Extraväg utvändigt. Geometriskt: en halvcirkel med en meter större radie
+   är π meter längre, alltså ~6,3 m per varv på en tusenmetersbana — cirka
+   0,63 %. Tidigare låg värdet på dubbla det. */
+const EXTRA_VÄG = 0.0063;
+
+/* Kraftuttag per läge. Dödens är dyrast eftersom man varken har rygg
+   eller kort väg. Andra utvändigt har rygg av dödenshästen. */
+const KOSTNAD = {
+  ledare: 0.97,
+  rygg: 0.82,     // andra invändigt
+  kö: 0.80,       // tredje invändigt och bakåt
+  friInner: 0.93, // inne men utan rygg
+  dödens: 1.36,   // första utvändigt
+  utvRygg: 1.04,  // andra och tredje utvändigt, med rygg
+  tredje: 1.18,   // tredje spåret med rygg — alltid dyrare
+  tredjeFri: 1.34, // tredje spåret utan rygg
+};
 
 /**
  * Tick-baserad loppsimulering.
  *
- * Allt som visas — placering, avstånd i längder, km/h, sektionstider —
- * läses ur samma två storheter som en riktig tracking-graf: meter och m/s.
- * Ingen separat "placeringsformel" finns.
+ * Positionerna bildar ett rutnät precis som i verkligheten: ledare, rygg
+ * ledaren, tredje invändigt och bakåt i den inre kön, samt dödens, andra
+ * och tredje utvändigt i den yttre. Fältet hålls packat — alla ligger på
+ * varandras hjul tills någon aktivt gör något.
  *
- * @param {Array} fält   hästar med .kusk, .taktik, .spår och .streck satta
- * @param {Object} lopp  loppdefinition
- * @returns {{bild: Array, resultat: Array}}
+ * Placering, avstånd och km/h läses ur meter och m/s. Ingen separat
+ * placeringsformel finns.
  */
 export function simulera(fält, lopp) {
   const dist = lopp.dist;
@@ -22,74 +41,120 @@ export function simulera(fält, lopp) {
   const kommentar = [];
   const säg = (t, k = "") => kommentar.push({ t, k });
 
-  const H = fält.map((h) => ({
-    h,
-    kusk: h.kusk,
-    taktik: h.taktik,
-    spår: h.spår,
-    d: 0,
-    v: 0,
-    // Formen påverkar både toppfart och hur mycket hästen orkar. Utan detta
-    // vore publikens formbaserade streckprocent frånkopplad från utfallet.
-    vmax: (12.15 + h.fart * 0.031) * (1 + (h.form - 50) * 0.0016),
-    kraft: 100 + (h.form - 50) * 0.28 + (h.energi - 85) * 0.12,
-    sf: 0.68 + (h.styrka / 100) * 0.62, // uthållighetsfaktor
-    lane: 0,                            // 0 inner, 1 utvändigt, 2 tredje
-    galopp: 0,
-    ur: false,
-    instängd: false,
-    skyddTid: 0,
-    utanSkyddTid: 0,
-    respekt: klamp(h.streck / 45, 0, 1), // välspelad = utmanas mer sällan
-    mål: null,
-    sista800: null,
-    sista400: null,
-  }));
+  const snittKapacitet =
+    fält.reduce((a, h) => a + (h.start + h.fart + h.styrka) / 3, 0) / fält.length;
+
+  /* Marschfarten sätts av fältet, inte av ledarens toppfart. Alla hästar i
+     ett lopp KAN hålla tempot — skillnaden mellan dem visar sig i vad de har
+     kvar på upploppet, inte i om de hänger med på baksidan. */
+  const vmaxAv = (h) => (11.55 + h.fart * 0.042) * (1 + (h.form - 50) * 0.0016);
+  const sorteradeVmax = fält.map(vmaxAv).sort((a, b) => a - b);
+  const fältTempo = sorteradeVmax[Math.floor(sorteradeVmax.length / 2)] * 1.005;
+
+  const H = fält.map((h) => {
+    const kapacitet = (h.start + h.fart + h.styrka) / 3;
+    return {
+      h, kusk: h.kusk, taktik: h.taktik, spår: h.spår,
+      d: 0, v: 0,
+      vmax: vmaxAv(h),
+      kraft: 100 + (h.form - 50) * 0.28 + (h.energi - 85) * 0.12,
+      sf: 0.68 + (h.styrka / 100) * 0.62,
+      kol: 0,                       // 0 innerspår, 1 utvändigt, 2 tredje spår
+      galopp: 0, ur: false,
+      låst: false, instängd: false,
+      skyddTid: 0, utanSkyddTid: 0, dödensTid: 0,
+      respekt: klamp(h.streck / 45, 0, 1),
+      /* Kuskens tro på hästen. Den som tror sig ha loppets bästa häst
+         accepterar dödens; den som inte gör det lägger sig i innerspåret
+         och chansar på en lucka. */
+      ambition: klamp(
+        0.5 + (kapacitet - snittKapacitet) / 40 + (h.kusk.taktik - 60) / 220
+        + (h.taktik === "utv" ? 0.35 : h.taktik === "ledning" ? 0.25 : h.taktik === "skydd" ? -0.3 : 0),
+        0, 1
+      ),
+      friTill: 0,
+      /* Kusken påverkar NÄR rycket sätts in, inte hur fort hästen springer.
+         En sämre kusk missar tajmingen — rycker för tidigt eller för sent. */
+      spurtFel: rnd(-1, 1),
+      mål: null, sista800: null, sista400: null,
+    };
+  });
 
   /* ---------- Startmomentet ---------- */
   H.forEach((s) => {
     const utlösning =
-      s.h.start * 0.72 +
-      s.kusk.start * 0.34 +
-      spårfördel(s.spår, lopp.start) +
-      rnd(-7, 7) +
+      s.h.start * 0.72 + s.kusk.start * 0.34 + spårfördel(s.spår, lopp.start) + rnd(-7, 7) +
       (s.taktik === "ledning" ? 9 : s.taktik === "rygg" ? 4
         : s.taktik === "spurt" ? -9 : s.taktik === "skydd" ? -3 : 0);
-    s.d = Math.max(0, (utlösning - 40) * 0.55);
+    s.d = Math.max(0, (utlösning - 40) * 0.28);
     s.v = 12.6 + utlösning * 0.012;
 
     let p = 0.055 * (1 + (70 - s.h.lynne) / 85) * (1 - (s.kusk.kyla - 50) / 190);
     if (lopp.start === "volt" && s.spår >= 5) p *= 1.6;
     if (s.taktik === "ledning") p *= 1.35;
     if (Math.random() < p) {
-      s.galopp = 1;
-      s.kraft -= 16;
-      s.d -= rnd(18, 34);
-      s.v = 9;
+      s.galopp = 1; s.kraft -= 16; s.d -= rnd(18, 34); s.v = 9;
       if (Math.random() < 0.26) s.ur = true;
       säg(`<b>${s.h.namn}</b> galopperar i starten${s.ur ? " och blir bortkörd" : ""}.`, "illa");
     }
   });
 
-  const iOrdning = () => H.filter((s) => !s.ur).sort((a, b) => b.d - a.d);
-  /** Hästen jag har rygg av: samma spårled, 0,5–9 m framför. */
-  const framför = (s) => {
+  /* Alla beslut i en tick fattas utifrån samma ögonblicksbild. Utan den
+     kan två hästar sikta på varandra — den ena har hunnit flytta sig, den
+     andra inte — och då bromsar de ner varandra till gånggrepp. */
+  const frys = () => H.forEach((s) => { s.d0 = s.d; s.v0 = s.v; s.kol0 = s.kol; });
+  const iOrdning = () => H.filter((s) => !s.ur).sort((a, b) => b.d0 - a.d0);
+  /** Närmaste häst framför i samma kolumn, oavsett avstånd — sätter tempot. */
+  const närmastFram = (s) => {
     let bäst = null;
     H.forEach((o) => {
-      if (o === s || o.ur || o.lane !== s.lane) return;
-      const gap = o.d - s.d;
-      if (gap > 0.5 && gap < 9 && (!bäst || gap < bäst.d - s.d)) bäst = o;
+      if (o === s || o.ur || o.kol0 !== s.kol0) return;
+      const gap = o.d0 - s.d0;
+      if (gap > 0.4 && (!bäst || gap < bäst.d0 - s.d0)) bäst = o;
     });
     return bäst;
   };
-  const upptaget = (lane, d) => H.some((o) => !o.ur && o.lane === lane && Math.abs(o.d - d) < 5);
+  /** Rygg får man bara på nära håll. */
+  const framför = (s) => {
+    const n = närmastFram(s);
+    return n && n.d0 - s.d0 < SÖKFÖNSTER ? n : null;
+  };
+  const upptaget = (kol, d, marginal = 4.5) =>
+    H.some((o) => !o.ur && o.kol0 === kol && Math.abs(o.d0 - d) < marginal);
+  /** Plats i sin egen kolumn, 1 = främst. */
+  const platsIKolumn = (s) =>
+    H.filter((o) => !o.ur && o.kol0 === s.kol0 && o.d0 > s.d0).length + 1;
 
+  const ordningstal = (n) => (n <= 2 ? `${n}:a` : `${n}:e`);
+  const lägeAv = (s, ledare) => {
+    if (s.ur) return "ur";
+    if (s === ledare) return "leder";
+    const n = platsIKolumn(s);
+    if (s.kol === 0) {
+      if (s.instängd) return "instängd";
+      if (n === 2) return "rygg ledaren";
+      return `${ordningstal(n)} invändigt`;
+    }
+    if (s.kol === 1) return n === 1 ? "dödens" : `${ordningstal(n)} utvändigt`;
+    return `${ordningstal(platsIKolumn(s))} i tredje spåret`;
+  };
+  const kostnadFör = (s, ledare, harSkydd) => {
+    if (s === ledare) return KOSTNAD.ledare;
+    if (s.kol === 0) {
+      if (!harSkydd) return KOSTNAD.friInner;
+      return platsIKolumn(s) === 2 ? KOSTNAD.rygg : KOSTNAD.kö;
+    }
+    if (s.kol0 >= 2) return harSkydd ? KOSTNAD.tredje : KOSTNAD.tredjeFri;
+    return harSkydd ? KOSTNAD.utvRygg : KOSTNAD.dödens;
+  };
+
+  frys();
   let t = 0, klara = 0, förraLedare = null;
   const levande = H.filter((s) => !s.ur).length;
 
-  /* ---------- Loppets gång ---------- */
   while (t < MAXTID && klara < levande) {
     t += DT;
+    frys();
     const ord = iOrdning();
     const led = ord[0];
     const kvar = dist - (led ? led.d : 0);
@@ -105,67 +170,125 @@ export function simulera(fält, lopp) {
     H.forEach((s) => {
       if (s.ur || s.mål !== null) return;
       const drag = framför(s);
-      const skydd = !!drag;
-      skydd ? (s.skyddTid += DT) : (s.utanSkyddTid += DT);
+      const harSkydd = !!drag;
+      harSkydd ? (s.skyddTid += DT) : (s.utanSkyddTid += DT);
+      if (s.kol >= 1 && !harSkydd && platsIKolumn(s) === 1) s.dödensTid += DT;
 
-      /* --- Taktiskt beslut var tredje sekund --- */
+      /* ---------- Positionsbeslut var tredje sekund ---------- */
       if (Math.abs(t % 3) < DT && t > 2 && !upplopp) {
-        const plats = ord.indexOf(s);
-        const villUt =
-          (s.taktik === "ledning" && plats > 0) ||
-          (s.taktik === "utv" && s.lane === 0) ||
-          (s.taktik === "spurt" && kvar < 800) ||
-          (s.taktik === "rygg" && plats > 3);
-        // Respekt: en välspelad häst framför utmanas mer sällan
-        const respekt = drag ? drag.respekt : 0;
-        const chans = (villUt ? 0.45 : 0.1) * (1 - respekt * 0.55) * (0.6 + s.kusk.taktik / 160);
+        const blockerad = harSkydd && drag.d0 - s.d0 < MÅLGAP + 1.6;
+        /* Alla vill ha bästa möjliga position, inte bara den som är låst.
+           Det är så den yttre kolonnen bildas — och det är den som stänger
+           in innerspåret. Utan den blir rygg ledaren orimligt stark. */
+        const villFram =
+          (s.taktik === "ledning" && s !== led) ||
+          (s.taktik === "utv" && kvar > dist * 0.5) ||
+          (s.taktik === "spurt" && kvar < 700) ||
+          (s.taktik === "rygg" && ord.indexOf(s) > 2) ||
+          (s.ambition > 0.45 && kvar < dist * 0.75) ||
+          blockerad;
 
-        if (s.kraft > 32 && Math.random() < chans && s.lane < 2 && !upptaget(s.lane + 1, s.d)) {
-          s.lane++;
-          s.kraft -= 1.5;
-          if (s.lane === 1 && plats <= 3) säg(`<b>${s.h.namn}</b> går ut och upp utvändigt.`, "hot");
+        /* Dödens är i verkligheten något man oftast TVINGAS till, inte något
+           man väljer. Kuskar söker hellre rygg på den som redan gått ut.
+           Utan den asymmetrin hamnar alla toppekipage frivilligt i dödens. */
+        const uteUtanRygg = s.kol === 0 && !upptaget(1, s.d0);
+        const kostarDödens = uteUtanRygg
+          ? (s.ambition < 0.68 ? 0.08 : Math.pow(s.ambition, 3))
+          : 1.25; // att lägga sig i rygg på dödenshästen är attraktivt
+        const respekt = drag ? drag.respekt : 0;
+        const chans = villFram
+          ? (blockerad ? 0.6 : 0.3) * kostarDödens * (1 - respekt * 0.5)
+            * (0.65 + s.kusk.taktik / 180)
+          : 0;
+
+        const fårTaTredje = s.kol === 0 || (blockerad && s.ambition > 0.6 && s.kraft > 48);
+        if (s.kraft > 28 && Math.random() < chans && s.kol < 2 && fårTaTredje &&
+            !upptaget(s.kol + 1, s.d0)) {
+          s.kol++;
+          s.kraft -= 1.2;
+          const nyPlats = platsIKolumn(s);
+          if (s.kol === 1 && nyPlats === 1) säg(`<b>${s.h.namn}</b> går ut i dödens.`, "hot");
+          else if (s.kol === 1) säg(`<b>${s.h.namn}</b> går ut och upp utvändigt.`, "");
           const g = 0.03 * (1 + (70 - s.h.lynne) / 95) * (1 - (s.kusk.kyla - 50) / 200);
           if (Math.random() < g) {
             s.galopp++; s.kraft -= 14; s.v *= 0.6;
             säg(`<b>${s.h.namn}</b> galopperar i rycket.`, "illa");
           }
-        } else if (s.lane > 0 && s.kraft < 38 && !upptaget(s.lane - 1, s.d) && Math.random() < 0.4) {
-          s.lane--; // söker skydd igen när krafterna tryter
+        } else if (s.kol > 0 && !upptaget(s.kol - 1, s.d0) &&
+                   (s.kol >= 2 || !villFram || s.kraft < 38) &&
+                   Math.random() < (s.kol >= 2 ? 0.7 : 0.3)) {
+          s.kol--; // in i ledet igen så fort en lucka finns
         }
       }
 
-      /* --- Önskad fart --- */
+      /* ---------- Önskad fart ---------- */
       let mål;
-      if (upplopp) mål = s.vmax * 1.02;
-      else if (s === led) {
-        const press = H.some((o) => !o.ur && o.lane > 0 && Math.abs(o.d - s.d) < 6);
-        mål = s.vmax * (press ? 0.985 : 0.945);
-      } else if (skydd) mål = Math.min(drag.v + 0.05, s.vmax);
-      else mål = s.vmax * (s.lane >= 1 ? 0.985 : 0.95);
+      /* Rycket sätts in när kusken bedömer att krafterna räcker hem.
+         Mycket kvar i tanken ger tidigare ryck; dålig tajming straffar sig. */
+      const idealSpurt = 300 + klamp(s.kraft, 0, 60) * 2.2;
+      const tajmingsfel = s.spurtFel * (1 - s.kusk.avslutning / 100) * 260;
+      const spurtNu = kvar < idealSpurt + tajmingsfel;
 
-      /* --- Instängd: någon precis framför och utvändigt blockerat --- */
-      s.instängd = false;
-      if (s.lane === 0 && drag && drag.d - s.d < 4 && upptaget(1, s.d)) {
-        if (Math.random() > 0.008 + (s.kusk.taktik - 50) / 9000) {
-          s.instängd = true;
-          mål = Math.min(mål, drag.v);
+      if (spurtNu) {
+        mål = s.vmax * 1.05;
+      } else if (s === led) {
+        /* Ledningens verkliga värde ligger i att kusken sätter farten.
+           Får ekipaget vara ifred sänks tempot och krafterna sparas till
+           upploppet. Kommer någon utvändigt måste ledaren försvara sig. */
+        const press = H.some((o) => !o.ur && o.kol0 > 0 && Math.abs(o.d0 - s.d0) < 8);
+        mål = Math.min(s.vmax * 1.02, fältTempo * (press ? 1.045 : 0.925));
+      } else {
+        /* Fältet är packat. Alla siktar på hjulet framför — även den som
+           ligger långt bak försöker upp i kön, inte gå på egen marschfart.
+           Den som inte har farten nog faller tillbaka av sig själv. */
+        const fram = närmastFram(s);
+        /* Justeringen måste vara begränsad nedåt. Ligger man tätare än
+           målgapet vill man sakta in — men om alla gör det utan tak bromsar
+           klungan ner sig själv till gånggrepp. Man får ge sig en aning,
+           aldrig mer. */
+        if (fram) {
+          mål = Math.min(fram.v0 + klamp((fram.d0 - s.d0 - MÅLGAP) * 0.55, -0.3, 2.5), s.vmax);
+        } else {
+          // Först i sin kolumn men inte i ledningen: håll tempo med ledaren
+          mål = Math.min(led.v0 + klamp((led.d0 - s.d0 - MÅLGAP) * 0.35, -0.2, 2.5), s.vmax);
         }
       }
 
-      /* --- Kraftuttag: farten i kubik, rabatt för rygg --- */
-      const lägeMult = skydd ? 0.7 : s === led ? 0.92 : s.lane >= 1 ? 1.1 : 0.98;
-      s.kraft = Math.max(0, s.kraft - DT * 0.62 * Math.pow(s.v / 13.6, 3) * lägeMult / s.sf);
-      mål = Math.min(mål, s.vmax * (0.74 + 0.26 * klamp(s.kraft / 38, 0, 1)));
+      /* Låst innerspår som TILLSTÅND, inte som tärningskast per tick.
+         Man hamnar fast direkt när geometrin stänger till, och kommer loss
+         när en lucka faktiskt öppnar sig — bedöms två gånger per sekund,
+         inte femton. Kuskens taktikvärde avgör hur snabbt luckan hittas. */
+      const geoLåst = s.kol === 0 && drag &&
+        drag.d0 - s.d0 < MÅLGAP + 1.4 && upptaget(1, s.d0);
+      if (!geoLåst || t < s.friTill) {
+        s.låst = false;
+      } else if (!s.låst) {
+        s.låst = true;
+      } else if (Math.abs(t % 1.5) < DT) {
+        const luckchans = klamp(0.07 + (s.kusk.taktik - 55) / 500, 0.015, 0.3);
+        if (Math.random() < luckchans) { s.låst = false; s.friTill = t + 4; }
+      }
+      if (s.låst) mål = Math.min(mål, drag.v0);
+      s.instängd = s.låst && kvar < 500;
 
+      /* ---------- Kraft och förflyttning ---------- */
+      s.kraft = Math.max(0, s.kraft - DT * 0.62 * Math.pow(s.v / 13.6, 3)
+        * kostnadFör(s, led, harSkydd) / s.sf);
+      /* Taket faller med krafterna. Med full kraft kan även en långsammare
+         häst hänga med i tempot — men det kostar mer, eftersom uttaget går
+         i kubik mot farten. Det är så svagare hästar spricker sent. */
+      const tak = Math.max(s.vmax, fältTempo) * (0.70 + 0.32 * klamp(s.kraft / 55, 0, 1));
+      mål = Math.min(mål, tak);
       s.v = Math.max(8, s.v + (mål - s.v) * (mål > s.v ? 0.55 : 0.9) * DT * 2.2);
-      s.d += s.v * DT;
+
+      // Utvändigt är längre väg runt banan — samma fart ger mindre avancemang
+      s.d += (s.v * DT) / (1 + s.kol * EXTRA_VÄG);
 
       if (s.sista800 === null && s.d >= dist - 800) s.sista800 = t;
       if (s.sista400 === null && s.d >= dist - 400) s.sista400 = t;
       if (s.d >= dist && s.mål === null) { s.mål = t - (s.d - dist) / s.v; klara++; }
     });
 
-    /* --- Bildruta för banvyn och tracking-listan --- */
     if (Math.abs(t % BILDINTERVALL) < DT) {
       const l = iOrdning()[0];
       bild.push({
@@ -173,16 +296,15 @@ export function simulera(fält, lopp) {
         meter: Math.round(l ? Math.min(l.d, dist) : 0),
         pos: H.map((s) => ({
           namn: s.h.namn, spår: s.spår, egen: s.h.egen, ur: s.ur,
-          d: Math.min(s.d, dist), lane: s.lane, iMål: s.mål !== null,
+          d: Math.min(s.d, dist), lane: s.kol, iMål: s.mål !== null,
         })),
         rader: iOrdning().map((s, i) => ({
           namn: s.h.namn, spår: s.spår, egen: s.h.egen,
           avst: i === 0 ? 0 : (l.d - s.d) / LÄNGD,
           fart: s.v * 3.6,
           kraft: s.kraft,
-          läge: s.mål !== null ? "i mål" : i === 0 ? "leder"
-            : s.instängd ? "instängd" : s.lane >= 2 ? "tredje utv"
-            : s.lane === 1 ? "utvändigt" : framför(s) ? "i rygg" : "fri inner",
+          läge: s.mål !== null ? "i mål" : lägeAv(s, l),
+          kol: s.kol0, rang: platsIKolumn(s),
         })),
         ur: H.filter((s) => s.ur).map((s) => ({ namn: s.h.namn, spår: s.spår })),
         text: kommentar.splice(0),
@@ -200,8 +322,10 @@ export function simulera(fält, lopp) {
       kusk: s.kusk, spår: s.spår, streck: s.h.streck,
       sista800: s.sista800 !== null ? s.mål - s.sista800 : null,
       sista400: s.sista400 !== null ? s.mål - s.sista400 : null,
-      läge: s.lane === 0 ? (s.skyddTid > s.utanSkyddTid ? "rygg/inner" : "fri inner") : "utvändigt",
+      läge: s.dödensTid > 25 ? "dödens" : s.kol > 0 ? "utvändigt"
+        : s.skyddTid > s.utanSkyddTid ? "rygg/inner" : "fri inner",
       utanSkydd: s.utanSkyddTid,
+      dödensTid: s.dödensTid,
       ur: false,
     }));
 
