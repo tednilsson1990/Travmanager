@@ -48,7 +48,12 @@ export function raderaSparfil() {
  */
 export function useSpel() {
   const ref = useRef(null);
-  if (ref.current === null) ref.current = ladda() ?? nyttSpel();
+  if (ref.current === null) {
+    const laddat = ladda();
+    ref.current = laddat ?? nyttSpel();
+    // Spara direkt, annars lottas ett nytt stall vid varje omladdning
+    if (!laddat) spara(ref.current);
+  }
   const [, sättVersion] = useState(0);
 
   const uppdatera = useCallback((fn) => {
