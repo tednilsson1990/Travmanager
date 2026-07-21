@@ -138,6 +138,7 @@ export function simulera(fält, lopp) {
     const n = platsIKolumn(s);
     if (s.kol === 0) {
       if (s.instängd) return "instängd";
+      if (n === 1) return "leder";
       if (n === 2) return "rygg ledaren";
       return `${ordningstal(n)} invändigt`;
     }
@@ -163,8 +164,11 @@ export function simulera(fält, lopp) {
     t += DT;
     frys();
     const ord = iOrdning();
-    const led = ord[0];
-    const kvar = dist - (led ? led.d : 0);
+    const främst = ord[0];                       // längst fram oavsett spår
+    /* Ledaren i travmening är den som går först vid staketet. En häst som
+       ligger snäppet före utanför är i dödens, inte i ledningen. */
+    const led = ord.find((x) => x.kol0 === 0) || främst;
+    const kvar = dist - (främst ? främst.d : 0);
     const upplopp = kvar < 420;
 
     if (led && led !== förraLedare && t > 3) {
@@ -354,6 +358,7 @@ export function simulera(fält, lopp) {
 
     if (Math.abs(t % BILDINTERVALL) < DT) {
       const l = iOrdning()[0];
+      const stakettvå = iOrdning().find((x) => x.kol0 === 0) || l;
       bild.push({
         tid: t,
         meter: Math.round(l ? Math.min(l.d, dist) : 0),
@@ -363,10 +368,10 @@ export function simulera(fält, lopp) {
         })),
         rader: iOrdning().map((s, i) => ({
           namn: s.h.namn, spår: s.spår, egen: s.h.egen,
-          avst: i === 0 ? 0 : (l.d - s.d) / LÄNGD,
+          avst: i === 0 ? 0 : (l.d0 - s.d0) / LÄNGD,
           fart: s.v * 3.6,
           kraft: s.kraft,
-          läge: s.mål !== null ? "i mål" : lägeAv(s, l),
+          läge: s.mål !== null ? "i mål" : lägeAv(s, stakettvå),
           kol: s.kol0, rang: platsIKolumn(s),
         })),
         ur: H.filter((s) => s.ur).map((s) => ({ namn: s.h.namn, spår: s.spår })),
