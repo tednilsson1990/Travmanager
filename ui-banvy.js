@@ -107,7 +107,7 @@ export default function BanVy({ lopp, fält, bild }) {
           ${fält.map((h) => {
             const t = täcke(h.spår);
             return html`
-              <g key=${"o" + h.spår} ref=${(n) => { pucks.current[h.spår] = n; }}>
+              <g key=${"o" + h.spår} class="puck" ref=${(n) => { pucks.current[h.spår] = n; }}>
                 <circle r="8" fill=${t.bg}
                   stroke=${h.egen ? "#F2B134" : "rgba(0,0,0,.5)"}
                   stroke-width=${h.egen ? 2.5 : 1} />
@@ -150,7 +150,7 @@ export default function BanVy({ lopp, fält, bild }) {
           ${fält.map((h) => {
             const t = täcke(h.spår);
             return html`
-              <g key=${"n" + h.spår} ref=${(n) => { nära.current[h.spår] = n; }}>
+              <g key=${"n" + h.spår} class="puck nb-puck" ref=${(n) => { nära.current[h.spår] = n; }}>
                 <circle r="10.5" fill=${t.bg}
                   stroke=${h.egen ? "#F2B134" : "rgba(0,0,0,.55)"}
                   stroke-width=${h.egen ? 3 : 1} />
