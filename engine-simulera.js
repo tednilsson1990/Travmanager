@@ -18,8 +18,8 @@ const KOSTNAD = {
   rygg: 0.82,     // andra invändigt
   kö: 0.80,       // tredje invändigt och bakåt
   friInner: 0.93, // inne men utan rygg
-  dödens: 1.36,   // första utvändigt
-  utvRygg: 1.04,  // andra och tredje utvändigt, med rygg
+  dödens: 1.52,   // första utvändigt
+  utvRygg: 0.93,  // andra och tredje utvändigt, med rygg
   tredje: 1.18,   // tredje spåret med rygg — alltid dyrare
   tredjeFri: 1.34, // tredje spåret utan rygg
 };
@@ -47,9 +47,9 @@ export function simulera(fält, lopp) {
   /* Marschfarten sätts av fältet, inte av ledarens toppfart. Alla hästar i
      ett lopp KAN hålla tempot — skillnaden mellan dem visar sig i vad de har
      kvar på upploppet, inte i om de hänger med på baksidan. */
-  const vmaxAv = (h) => (11.55 + h.fart * 0.042) * (1 + (h.form - 50) * 0.0016);
+  const vmaxAv = (h) => (11.78 + h.fart * 0.042) * (1 + (h.form - 50) * 0.0016);
   const sorteradeVmax = fält.map(vmaxAv).sort((a, b) => a - b);
-  const fältTempo = sorteradeVmax[Math.floor(sorteradeVmax.length / 2)] * 1.005;
+  const fältTempo = sorteradeVmax[Math.floor(sorteradeVmax.length / 2)] * 1.025;
 
   const H = fält.map((h) => {
     const kapacitet = (h.start + h.fart + h.styrka) / 3;
@@ -119,8 +119,14 @@ export function simulera(fält, lopp) {
     const n = närmastFram(s);
     return n && n.d0 - s.d0 < SÖKFÖNSTER ? n : null;
   };
-  const upptaget = (kol, d, marginal = 4.5) =>
-    H.some((o) => !o.ur && o.kol0 === kol && Math.abs(o.d0 - d) < marginal);
+  /* Ekipagen ligger inte sida vid sida. Den utvändiga raden är förskjuten
+     en halv häst framåt — dödenshästen går vid ledarens hjul och täcker
+     därmed tvåan snett bakom sig. Fönstret nedan är ungefär ett ekipages
+     längd, förskjutet framåt: från strax bakom till drygt en längd före. */
+  const TÄCKER_BAK = 0.8;   // meter bakom en själv
+  const TÄCKER_FRAM = 4.2;  // meter framför en själv
+  const upptaget = (kol, d, bak = TÄCKER_BAK, fram = TÄCKER_FRAM) =>
+    H.some((o) => !o.ur && o.kol0 === kol && o.d0 - d > -bak && o.d0 - d < fram);
   /** Plats i sin egen kolumn, 1 = främst. */
   const platsIKolumn = (s) =>
     H.filter((o) => !o.ur && o.kol0 === s.kol0 && o.d0 > s.d0).length + 1;
@@ -150,6 +156,7 @@ export function simulera(fält, lopp) {
 
   frys();
   let t = 0, klara = 0, förraLedare = null;
+  let senasteUtflyttning = -99;   // när någon senast gick ut — driver kedjan
   const levande = H.filter((s) => !s.ur).length;
 
   while (t < MAXTID && klara < levande) {
@@ -169,43 +176,89 @@ export function simulera(fält, lopp) {
 
     H.forEach((s) => {
       if (s.ur || s.mål !== null) return;
+
+      /* Den som gått förbi hela innerraden går ner till spåret och blir
+         ledare på riktigt. Utan detta blir en häst "ledare" medan den
+         fortfarande ligger utvändigt, och ytterradens platser räknas fel. */
+      if (s.kol > 0 && !upplopp) {
+        const innerFramför = H.some((o) => !o.ur && o.kol0 === 0 && o.d0 > s.d0 - 7.0);
+        if (!innerFramför) { s.kol = 0; s.d += 0.8; }
+      }
+
       const drag = framför(s);
       const harSkydd = !!drag;
       harSkydd ? (s.skyddTid += DT) : (s.utanSkyddTid += DT);
       if (s.kol >= 1 && !harSkydd && platsIKolumn(s) === 1) s.dödensTid += DT;
 
       /* ---------- Positionsbeslut var tredje sekund ---------- */
-      if (Math.abs(t % 3) < DT && t > 2 && !upplopp) {
+      /* Besluten fattas var tredje sekund under resan — men varje sekund
+         på upploppet, för det är där fältet fäller ut för att få fri väg. */
+      const beslutsintervall = kvar < lopp.bana * 0.5 ? 1.5 : 3;
+      if (Math.abs(t % beslutsintervall) < DT && t > 2) {
         const blockerad = harSkydd && drag.d0 - s.d0 < MÅLGAP + 1.6;
         /* Alla vill ha bästa möjliga position, inte bara den som är låst.
            Det är så den yttre kolonnen bildas — och det är den som stänger
            in innerspåret. Utan den blir rygg ledaren orimligt stark. */
-        const villFram =
-          (s.taktik === "ledning" && s !== led) ||
-          (s.taktik === "utv" && kvar > dist * 0.5) ||
-          (s.taktik === "spurt" && kvar < 700) ||
-          (s.taktik === "rygg" && ord.indexOf(s) > 2) ||
-          (s.ambition > 0.45 && kvar < dist * 0.75) ||
-          blockerad;
+        /* Rygg ledaren lämnar man inte frivilligt — det är loppets bästa
+           läge. Man sitter kvar och väntar, och kommer ut först när luckan
+           uppstår: dödenshästen tappar, eller ledaren drar ifrån. */
+        const iRygg = s.kol0 === 0 && platsIKolumn(s) === 2;
+        const ledarenTappar = led.v0 < fältTempo * 0.95;
+        /* Ett halvvarv från mål börjar de starka gå. Det är inte upploppet
+           som avgör när ryckningen sätts in — bra hästar med krafter kvar
+           går ut redan i sista kurvans ingång, ofta tre spår. */
+        /* Första riktiga attacken kommer 900–700 m kvar, när andra och
+           tredje utvändigt lämnar sina ryggar och går först i tredjespår. */
+        const attackfönster = kvar < 900;
+        const långspurt = attackfönster && s.kraft > 55 && s.ambition > 0.5;
+        const villFram = (upplopp || långspurt) ? true : iRygg
+          ? (ledarenTappar && kvar < 900)
+          : (s.taktik === "ledning" && s !== led) ||
+            (s.taktik === "utv" && kvar > dist * 0.5) ||
+            (s.taktik === "spurt" && kvar < 700) ||
+            (s.taktik === "rygg" && ord.indexOf(s) > 2) ||
+            (s.ambition > 0.45 && kvar < dist * 0.75) ||
+            blockerad;
 
         /* Dödens är i verkligheten något man oftast TVINGAS till, inte något
            man väljer. Kuskar söker hellre rygg på den som redan gått ut.
            Utan den asymmetrin hamnar alla toppekipage frivilligt i dödens. */
         const uteUtanRygg = s.kol === 0 && !upptaget(1, s.d0);
         const kostarDödens = uteUtanRygg
-          ? (s.ambition < 0.68 ? 0.08 : Math.pow(s.ambition, 3))
+          ? (s.ambition < 0.5 ? 0.15 : Math.pow(s.ambition, 2))
           : 1.25; // att lägga sig i rygg på dödenshästen är attraktivt
+        /* Kedjeeffekten: när en häst går ut följer ofta den bakom, och
+           sedan nästa. Utan den töms ytterraden i stället för att fyllas
+           på, och då får rygg ledaren fri väg ut — vilket den sällan får. */
+        const iKedjan = t - senasteUtflyttning < 6 ? 2.4 : 1;
         const respekt = drag ? drag.respekt : 0;
         const chans = villFram
-          ? (blockerad ? 0.6 : 0.3) * kostarDödens * (1 - respekt * 0.5)
+          ? (upplopp ? 0.55 : långspurt ? 0.4 : blockerad ? 0.45 : 0.12)
+            * iKedjan * kostarDödens * (1 - respekt * 0.5)
             * (0.65 + s.kusk.taktik / 180)
           : 0;
 
-        const fårTaTredje = s.kol === 0 || (blockerad && s.ambition > 0.6 && s.kraft > 48);
+        const fårTaTredje = s.kol === 0 || långspurt ||
+          (blockerad && s.ambition > 0.6 && s.kraft > 48);
+        /* Är platsen rakt utanför upptagen kan man ändå gå ut — men då får
+           man vänta in luckan och hamnar bakom den som redan ligger där.
+           Det är så den yttre kolonnen byggs, och det är kolonnen som
+           stänger in innerspåret. */
+        const rakt = !upptaget(s.kol + 1, s.d0);
+        const bakom = blockerad && !upptaget(s.kol + 1, s.d0 - 5.5, 0.8, 4.2);
         if (s.kraft > 28 && Math.random() < chans && s.kol < 2 && fårTaTredje &&
-            !upptaget(s.kol + 1, s.d0)) {
+            (rakt || bakom)) {
           s.kol++;
           s.kraft -= 1.2;
+          /* Raderna ligger sammanflätade: den som svänger ut hamnar mellan
+             hästen den låg bakom och den framför, alltså en halv häst bak.
+             Det är så ytterraden täcker in hela innerkön. */
+          s.d -= 1.3;
+          senasteUtflyttning = t;
+          if (!rakt) s.d -= 3.2; // fick vänta in luckan och tappade mark
+          /* Att fälla ut sent kostar fart och meter: man styr ut, tappar
+             rygg och får längre väg medan den framför redan är i rullning. */
+          if (upplopp) { s.d -= 1.8; s.kraft -= 3; s.v *= 0.985; }
           const nyPlats = platsIKolumn(s);
           if (s.kol === 1 && nyPlats === 1) säg(`<b>${s.h.namn}</b> går ut i dödens.`, "hot");
           else if (s.kol === 1) säg(`<b>${s.h.namn}</b> går ut och upp utvändigt.`, "");
@@ -236,7 +289,7 @@ export function simulera(fält, lopp) {
            Får ekipaget vara ifred sänks tempot och krafterna sparas till
            upploppet. Kommer någon utvändigt måste ledaren försvara sig. */
         const press = H.some((o) => !o.ur && o.kol0 > 0 && Math.abs(o.d0 - s.d0) < 8);
-        mål = Math.min(s.vmax * 1.02, fältTempo * (press ? 1.045 : 0.925));
+        mål = Math.min(s.vmax * 1.02, fältTempo * (press ? 1.05 : 0.95));
       } else {
         /* Fältet är packat. Alla siktar på hjulet framför — även den som
            ligger långt bak försöker upp i kön, inte gå på egen marschfart.
@@ -258,17 +311,27 @@ export function simulera(fält, lopp) {
          Man hamnar fast direkt när geometrin stänger till, och kommer loss
          när en lucka faktiskt öppnar sig — bedöms två gånger per sekund,
          inte femton. Kuskens taktikvärde avgör hur snabbt luckan hittas. */
-      const geoLåst = s.kol === 0 && drag &&
-        drag.d0 - s.d0 < MÅLGAP + 1.4 && upptaget(1, s.d0);
-      if (!geoLåst || t < s.friTill) {
+      /* Fysisk blockering: man kan inte springa genom hästen framför.
+         Ligger man på dess hjul är farten låst till dess fart — vill man
+         fortare måste man ut i ett annat spår. Det gäller alla i kön,
+         även rygg ledaren, och är själva skälet till att kön inne är en
+         dålig plats att vinna ifrån. */
+      const bakomHjulet = drag && drag.d0 - s.d0 < MÅLGAP + 1.5;
+      if (bakomHjulet) mål = Math.min(mål, drag.v0);
+      // Instängd = låst bakom hjulet OCH utan väg ut
+      const geoLåst = bakomHjulet && s.kol === 0 && upptaget(1, s.d0);
+      /* Man kommer inte loss genom att ha tur — man kommer loss när
+         geometrin öppnar sig: hästen framför tappar, eller platsen utanför
+         blir ledig. Kusken påverkar hur snabbt luckan utnyttjas, inte om
+         den finns. Det är därför kön innerspår är en dålig vinnarplats. */
+      if (!geoLåst) {
         s.låst = false;
       } else if (!s.låst) {
         s.låst = true;
       } else if (Math.abs(t % 1.5) < DT) {
-        const luckchans = klamp(0.07 + (s.kusk.taktik - 55) / 500, 0.015, 0.3);
-        if (Math.random() < luckchans) { s.låst = false; s.friTill = t + 4; }
+        const seg = klamp(0.02 + (s.kusk.taktik - 60) / 900, 0.005, 0.09);
+        if (Math.random() < seg) { s.låst = false; s.friTill = t + 3; }
       }
-      if (s.låst) mål = Math.min(mål, drag.v0);
       s.instängd = s.låst && kvar < 500;
 
       /* ---------- Kraft och förflyttning ---------- */
