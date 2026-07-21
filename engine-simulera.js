@@ -73,6 +73,7 @@ export function simulera(fält, lopp) {
         0, 1
       ),
       friTill: 0,
+      tapp: 0,   // meter som ska förloras gradvis, inte i ett hopp
       /* Kusken påverkar NÄR rycket sätts in, inte hur fort hästen springer.
          En sämre kusk missar tajmingen — rycker för tidigt eller för sent. */
       spurtFel: rnd(-1, 1),
@@ -186,7 +187,7 @@ export function simulera(fält, lopp) {
          fortfarande ligger utvändigt, och ytterradens platser räknas fel. */
       if (s.kol > 0 && !upplopp) {
         const innerFramför = H.some((o) => !o.ur && o.kol0 === 0 && o.d0 > s.d0 - 7.0);
-        if (!innerFramför) { s.kol = 0; s.d += 0.8; }
+        if (!innerFramför) { s.kol = 0; }
       }
 
       const drag = framför(s);
@@ -257,12 +258,12 @@ export function simulera(fält, lopp) {
           /* Raderna ligger sammanflätade: den som svänger ut hamnar mellan
              hästen den låg bakom och den framför, alltså en halv häst bak.
              Det är så ytterraden täcker in hela innerkön. */
-          s.d -= 1.3;
+          s.tapp += 1.3;              // svänger ut och tappar en halv häst
           senasteUtflyttning = t;
-          if (!rakt) s.d -= 3.2; // fick vänta in luckan och tappade mark
+          if (!rakt) s.tapp += 3.2; // fick vänta in luckan och tappade mark
           /* Att fälla ut sent kostar fart och meter: man styr ut, tappar
              rygg och får längre väg medan den framför redan är i rullning. */
-          if (upplopp) { s.d -= 1.8; s.kraft -= 3; s.v *= 0.985; }
+          if (upplopp) { s.tapp += 1.8; s.kraft -= 3; }
           const nyPlats = platsIKolumn(s);
           if (s.kol === 1 && nyPlats === 1) säg(`<b>${s.h.namn}</b> går ut i dödens.`, "hot");
           else if (s.kol === 1) säg(`<b>${s.h.namn}</b> går ut och upp utvändigt.`, "");
@@ -304,7 +305,12 @@ export function simulera(fält, lopp) {
            klungan ner sig själv till gånggrepp. Man får ge sig en aning,
            aldrig mer. */
         if (fram) {
-          mål = Math.min(fram.v0 + klamp((fram.d0 - s.d0 - MÅLGAP) * 0.55, -0.3, 2.5), s.vmax);
+          /* Dämpad följning. Ren avståndsreglering ger kövågor: man gasar,
+             kommer för nära, bromsar. Genom att också väga in fartskillnaden
+             lägger sig ekipaget stilla på hjulet framför. */
+          const avstånd = fram.d0 - s.d0 - MÅLGAP;
+          const fartskillnad = s.v - fram.v0;
+          mål = Math.min(fram.v0 + klamp(avstånd * 0.32 - fartskillnad * 0.25, -0.3, 2.5), s.vmax);
         } else {
           // Först i sin kolumn men inte i ledningen: håll tempo med ledaren
           mål = Math.min(led.v0 + klamp((led.d0 - s.d0 - MÅLGAP) * 0.35, -0.2, 2.5), s.vmax);
@@ -350,6 +356,11 @@ export function simulera(fält, lopp) {
 
       // Utvändigt är längre väg runt banan — samma fart ger mindre avancemang
       s.d += (s.v * DT) / (1 + s.kol * EXTRA_VÄG);
+      if (s.tapp > 0) {                    // ta ut tappet mjukt, inte i ett hopp
+        const av = Math.min(s.tapp, 1.6 * DT);
+        s.d -= av;
+        s.tapp -= av;
+      }
 
       if (s.sista800 === null && s.d >= dist - 800) s.sista800 = t;
       if (s.sista400 === null && s.d >= dist - 400) s.sista400 = t;
