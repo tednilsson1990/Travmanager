@@ -81,6 +81,7 @@ function Anmälan({ spel, onStart }) {
     <div class="loppfakta">
       <div><span>Proposition</span> ${kravText(lopp)}</div>
       <div><span>Bana</span> ${lopp.banaNamn}${lopp.openStretch ? " · open stretch" : ""} · ${lopp.startande} startande</div>
+      <div><span>Prispengar</span> ${kr(lopp.förstapris)} kr till segraren · ${lopp.antalPris} pris · ${kr(lopp.garanterad)} kr garanterat</div>
       <div><span>Start</span> ${lopp.start === "volt" ? "voltstart" : "autostart"}</div>
       <div class=${passning.c}><span>Distans</span> ${passning.t}</div>
       ${lopp.v85 && html`<div class="v85"><span>V85</span> hela landet spelar på omgången</div>`}
