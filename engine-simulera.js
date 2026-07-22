@@ -351,8 +351,8 @@ export function simulera(fält, lopp) {
            går ut redan i sista kurvans ingång, ofta tre spår. */
         /* Första riktiga attacken kommer 900–700 m kvar, när andra och
            tredje utvändigt lämnar sina ryggar och går först i tredjespår. */
-        const attackfönster = kvar < 900;
-        const långspurt = attackfönster && s.kraft > 55 && s.ambition > 0.5;
+        const attackfönster = kvar < 750;
+        const långspurt = kvar < 620 && s.kraft > 58 && s.ambition > 0.58;
         const villFram = (upplopp || långspurt) ? true : iRygg
           ? (ledarenTappar && kvar < 900)
           : (s.taktik === "ledning" && s !== led) ||
@@ -379,7 +379,7 @@ export function simulera(fält, lopp) {
         const respekt = drag ? drag.respekt : 0;
         const chans = villFram
           ? (upplopp ? 0.55 : (långspurt || (s.kol0 >= 1 && attackfönster)) ? 0.3
-             : blockerad ? 0.16 : 0.03)
+             : blockerad ? 0.11 : 0.02)
             * iKedjan * yttreMotstånd * kostarDödens * (1 - respekt * 0.5)
             * (0.65 + s.kusk.taktik / 180)
           : 0;
@@ -392,7 +392,10 @@ export function simulera(fält, lopp) {
         /* "Gå först i tredjespår": andra och tredje utvändigt lämnar sina
            ryggar i attackfönstret och går ut ytterligare ett spår. Det är
            den vanligaste attacken i ett travlopp. */
-        const lämnaRyggen = s.kol0 >= 1 && attackfönster && s.kraft > 42;
+        /* Att lämna sin rygg och gå först i tredjespår är ett stort beslut. Det
+           kräver att man verkligen har krafter kvar och att det börjar bli
+           dags — annars ligger halva fältet tre spår ut i onödan. */
+        const lämnaRyggen = s.kol0 >= 1 && kvar < 700 && s.kraft > 56 && s.ambition > 0.55;
         /* På upploppet fälls fältet ut över hela banbredden. Den som ligger
            tredje utvändigt kan följa med ut och få fri väg i fjärde spåret —
            med rygg hela vägen dit och därmed krafter kvar. Under resans gång
