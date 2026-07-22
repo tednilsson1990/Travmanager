@@ -169,6 +169,28 @@ streck. Stallformen är offentlig och påverkar oddsen på alla dina hästar.
 Marknadsbilden mäter om dina hästar brukar överträffa spelarnas rangordning
 — gör de det blir de hårdare spelade och kanten äts upp.
 
+### Säsongen och karriären
+
+Efter sista veckan avslutas säsongen: slutplacering i tränarligan, insprunget,
+segrar och stallets bästa häst skrivs in i en historik som visas under Sfären.
+Därefter startar nästa säsong.
+
+**Alla hästar åldras och utvecklas** — dina och världens. En treåring växer
+kraftigt, en sjuåring står stilla, en elvaåring tappar. En häst med 55 i
+kapacitet toppar kring 63 vid sju års ålder och är nere på 52 vid tretton.
+Hästar över tretton pensioneras.
+
+**Världens stall får en ny årgång varje år**, och de äldsta lämnar plats. Utan
+det stiger världens snittålder ett år per säsong och unghästloppen står till
+slut tomma. Med det ligger populationen stabil kring 183 hästar och en dryg
+sjättedel är treåringar.
+
+**Känd lucka:** spelaren har ingen motsvarande förnyelse. Dina hästar åldras
+och tappar medan världen fylls på med unga, och den enda vägen in är avel
+eller att en ägare placerar en häst hos dig. I ett testspel över tre säsonger
+faller stallet från femtonde till sista plats av den anledningen. En
+hästmarknad — köpa och sälja — är nästa nödvändiga bygge.
+
 ### Världen
 
 Tjugo AI-stall med namngivna tränare och egna filosofier, och drygt 180
@@ -205,18 +227,18 @@ där mot 800 i ledningen.
 
 **Trimma aldrig mot ett mått som inte är källans.**
 
-### Läget i version 38
+### Läget i version 39
 
 Tolv seeds, 120 lopp per seed, hela kalendern.
 
 | Läge 1 000 m från mål | Vår | Mål | |
 |---|---|---|---|
-| Ledningen | 34,9 % | 42 | −7 |
-| Dödens | 13,8 % | 13 | ✓ |
-| Rygg ledaren | 13,6 % | 7 | +7 |
-| Andra utvändigt | 7,5 % | 9,6 | ✓ |
-| Tredje utvändigt | 3,5 % | 7 | −4 |
-| Tredje invändigt | 5,0 % | 3 | ✓ |
+| Ledningen | 35,8 % | 42 | −6 |
+| Dödens | 12,6 % | 13 | ✓ |
+| Rygg ledaren | 15,4 % | 7 | +8 |
+| Andra utvändigt | 4,9 % | 9,6 | −5 |
+| Tredje utvändigt | 5,6 % | 7 | ✓ |
+| Tredje invändigt | 4,2 % | 3 | ✓ |
 
 Spelmarknaden: favoriten streckas 36 %, två främsta 54 %, tre främsta 65 %,
 mot verklighetens 35, 55–60 och 70–75. Fältets bästa häst vinner 37 %, inom
@@ -263,8 +285,14 @@ Prövat och avfärdat, i tur och ordning:
    för en tredjedel av alla utflyttningar, vilket är ett realistiskt
    beteende i sig. Men vinstfördelningen rörde sig knappt.
 
-Seedspannet är 2–7 procent, så måltalet ligger i kanten av det vi faktiskt
-observerar. Avvikelsen är mindre robust än den ser ut.
+3. **Stationshållning** — utvändiga hästar med rygg håller position jämsides
+   en bestämd innerhäst, en halv hästlängd bakom, i stället för att följa
+   den utvändiga hästen framför på fast avstånd. Det löste tredje utvändigt
+   (3,5 → 5,6 %, inom mål) men försämrade andra utvändigt lika mycket.
+
+Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållningen,
+22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
+ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
 ## Nästa steg
 

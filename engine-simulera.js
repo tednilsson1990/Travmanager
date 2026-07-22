@@ -301,6 +301,22 @@ export function simulera(fält, lopp) {
 
   const ordningstal = (n) => (n <= 2 ? `${n}:a` : `${n}:e`);
 
+  /* Ytterradens plats bestäms av INNERKÖN, inte av hästens egen sträcka.
+     Varje utvändig häst hör hemma en halv hästlängd bakom en bestämd
+     innerhäst — det är den geometrin som gör att dödens ligger vid ledarens
+     hjul och att andra utvändigt täcker rygg ledaren. Utan den blir
+     ytterraden en andra kö som glider bakåt genom loppet. */
+  const STATIONSTAPP = 1.3;
+  const innerBredvid = (s) => {
+    let bäst = null, bästAvst = 99;
+    H.forEach((o) => {
+      if (o.ur || o === s || o.kol0 !== 0) return;
+      const avst = Math.abs(o.d0 - STATIONSTAPP - s.d0);
+      if (avst < bästAvst) { bästAvst = avst; bäst = o; }
+    });
+    return bästAvst <= 6 ? bäst : null;
+  };
+
   /* Ett utvändigt läge definieras av VEM man ligger jämsides med, inte av
      hur många som råkar ligga framför i samma kolumn. Dödens är hästen vid
      ledarens hjul. En häst som just svängt ut från tionde plats ligger
@@ -671,7 +687,15 @@ export function simulera(fält, lopp) {
            målgapet vill man sakta in — men om alla gör det utan tak bromsar
            klungan ner sig själv till gånggrepp. Man får ge sig en aning,
            aldrig mer. */
-        if (fram) {
+        /* Utvändigt MED rygg håller station jämsides innerkön — det måste
+           prövas FÖRE den generella följningen, annars fångas hästen av
+           hjulet framför i sin egen kolumn och ytterraden glider bakåt. */
+        const stationsbredvid = s.kol0 >= 1 && harSkydd ? innerBredvid(s) : null;
+        if (stationsbredvid) {
+          const station = stationsbredvid.d0 - STATIONSTAPP;
+          mål = Math.min(kontakttak,
+            stationsbredvid.v0 + klamp((station - s.d0) * 0.5, -0.35, 2.2));
+        } else if (fram) {
           /* Dämpad följning. Ren avståndsreglering ger kövågor: man gasar,
              kommer för nära, bromsar. Genom att också väga in fartskillnaden
              lägger sig ekipaget stilla på hjulet framför. */

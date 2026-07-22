@@ -202,3 +202,35 @@ table.liga td{vertical-align:top}
 table.liga td:nth-child(3){text-align:right}
 table.liga td:nth-child(4){text-align:right}
 .ligamini{font-size:9px;color:rgba(233,230,223,.4)}
+
+/* Säsongsavslut */
+.sasong{
+  background:linear-gradient(180deg,#1A1208,#241708);border:1px solid #3A2716;
+  border-radius:3px;padding:22px 16px;text-align:center;margin:14px 0;
+}
+.sasong-rubrik{
+  font-family:'Roboto Mono',monospace;font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--dis);
+}
+.sasong-plats{
+  font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:64px;
+  line-height:1;color:var(--strålkastare);margin:8px 0 12px;
+}
+.sasong-plats span{font-size:16px;color:var(--dis);display:block;font-weight:700;margin-top:6px}
+.karriar td:nth-child(n+3){text-align:right}
+
+/* Felruta i stället för svart skärm */
+.felruta{
+  max-width:520px;margin:40px auto;padding:18px;
+  background:var(--panel);border:1px solid var(--oxblod);border-radius:3px;
+  font-family:'Inter',system-ui,sans-serif;color:var(--rail);
+}
+.fel-rubrik{
+  font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:26px;
+  text-transform:uppercase;color:var(--oxblod);margin-bottom:10px;
+}
+.fel-text{
+  font-family:'Roboto Mono',monospace;font-size:12px;color:var(--rail);
+  background:#0F1720;border-radius:2px;padding:10px;margin-bottom:12px;word-break:break-word;
+}
+.fel-hjalp{font-size:13px;color:var(--dis);line-height:1.5}

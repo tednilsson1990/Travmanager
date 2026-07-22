@@ -16,7 +16,26 @@ export default function SfarVy({ spel }) {
   const liga = tränarliga(spel);
   const minPlats = liga.findIndex((r) => r.du) + 1;
 
+  const historik = spel.historik || [];
+
   return html`
+    ${historik.length > 0 && html`
+      <h2>Karriären</h2>
+      <div class="kort">
+        <table class="karriar">
+          <thead><tr><th>Säsong</th><th>Placering</th><th>Insprunget</th><th>Seg</th></tr></thead>
+          <tbody>
+            ${historik.map((r) => html`
+              <tr key=${r.säsong}>
+                <td>${r.säsong}</td>
+                <td>${r.plats}:a av ${r.avStall}</td>
+                <td>${kr(r.intjänat)}</td>
+                <td>${r.segrar}</td>
+              </tr>`)}
+          </tbody>
+        </table>
+      </div>`}
+
     <h2>Tränarligan</h2>
     <div class="kort">
       <div class="meta" style="margin-bottom:8px">

@@ -3,6 +3,7 @@ import { nyHäst, TRÄNING } from "./engine-hast.js";
 import { KUSKAR } from "./data-kuskar.js";
 import { ÄGARNAMN, ÄGARKRAV, ARVODE_PER_VECKA } from "./data-agare.js";
 import { körVärldensVecka, skötVärlden } from "./engine-varld.js";
+import { avslutaSäsong, säsongstext } from "./engine-sasong.js";
 
 const DRIFT_PER_HÄST = 4200;
 
@@ -101,6 +102,16 @@ export function körVecka(spel) {
   });
 
   spel.vecka++;
+
+  /* Sista veckan avslutar säsongen: resultatet skrivs in i historiken och
+     spelaren erbjuds att starta nästa år. */
+  if (spel.vecka > spel.veckor && !spel.säsongAvslutad) {
+    const rad = avslutaSäsong(spel);
+    spel.säsongAvslutad = rad;
+    skrivPress(spel, `Säsongen är slut — Björkhaga ${rad.plats}:a`, säsongstext(rad),
+      rad.plats <= 3 ? "bra" : rad.plats > rad.avStall * 0.7 ? "dålig" : "neutral");
+    spel.logg.push(`<b>Säsong ${rad.säsong} avslutad.</b> ${säsongstext(rad)}`);
+  }
   return spel;
 }
 

@@ -3,11 +3,17 @@ import { nyHäst, sättIdRäknare, idRäknare } from "./engine-hast.js";
 import { byggVärld } from "./engine-varld.js";
 
 const NYCKEL = "travmanager.sparfil.v1";
+/* Höj VERSION när sparfilens FORM ändras. Migreringen i ladda() ska då
+   känna igen den gamla formen och fylla på det som saknas — aldrig kasta
+   bort en karriär utan att säga till. */
+const VERSION = 2;
 
 export function nyttSpel() {
   sättIdRäknare(1);
   return {
-    version: 1,
+    version: VERSION,
+    säsong: 1,
+    historik: [],
     stallnamn: "Björkhaga",
     vecka: 1, veckor: 20,
     kassa: 180000, intjänat: 0,
@@ -36,7 +42,12 @@ export function ladda() {
     const rå = localStorage.getItem(NYCKEL);
     if (!rå) return null;
     const spel = JSON.parse(rå);
-    if (spel.version !== 1) return null;
+    if (!spel.version || spel.version > VERSION) return null;
+    /* Migrering: fyll på det som tillkommit sedan sparfilen skrevs. */
+    spel.säsong ??= 1;
+    spel.historik ??= [];
+    spel.stall.forEach((h) => { h.ålder ??= 5; });
+    spel.version = VERSION;
     sättIdRäknare(spel.nästaId || 1000);
     // Fält som tillkommit efter att sparfilen skapades
     spel.stallform ??= 50;

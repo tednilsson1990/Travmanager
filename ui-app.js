@@ -21,7 +21,8 @@ export default function App() {
   return html`
     <header>
       <div class="brand">Stallet<span>·</span>${spel.stallnamn}</div>
-      <div class="status">
+      <div class="status">          <div>Säsong<b>${spel.säsong ?? 1}</b></div>
+
         <div>Vecka<b>${Math.min(spel.vecka, spel.veckor)}/${spel.veckor}</b></div>
         <div>Kassa<b>${kr(spel.kassa)}</b></div>
         <div>Renommé<b>${Math.round(spel.renommé)}</b></div>

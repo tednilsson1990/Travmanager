@@ -1,6 +1,7 @@
 import { html } from "htm/preact";
 import { TRÄNING } from "./engine-hast.js";
 import { körVecka } from "./engine-vecka.js";
+import { nySäsong, säsongstext } from "./engine-sasong.js";
 import { kr, klamp } from "./engine-util.js";
 import { ARVODE_PER_VECKA } from "./data-agare.js";
 import { Stapel, Rad } from "./ui-delar.js";
@@ -70,8 +71,32 @@ function Hästkort({ häst, uppdatera }) {
     </div>`;
 }
 
+function Säsongsavslut({ spel, uppdatera }) {
+  const rad = spel.säsongAvslutad;
+  if (!rad) return null;
+  return html`
+    <div class="sasong">
+      <div class="sasong-rubrik">Säsong ${rad.säsong} avslutad</div>
+      <div class="sasong-plats">${rad.plats}:a<span> av ${rad.avStall} stall</span></div>
+      <div class="logg">${kr(rad.intjänat)} kr insprunget · ${rad.segrar} segrar på ${rad.starter} starter</div>
+      ${rad.bästaHäst && html`<div class="logg">Stallets bästa: <b>${rad.bästaHäst}</b>,
+        ${kr(rad.bästaHästIntjänat)} kr</div>`}
+      <button class="btn" onClick=${() => {
+        let resultat;
+        uppdatera((s) => { resultat = nySäsong(s); s.säsongAvslutad = null; });
+        if (resultat && resultat.pensionerade.length) {
+          alert("Pensionerade: " + resultat.pensionerade.map((h) => h.namn).join(", "));
+        }
+        window.scrollTo({ top: 0 });
+      }}>Starta säsong ${rad.säsong + 1}</button>
+    </div>`;
+}
+
 export default function StallVy({ spel, uppdatera, nystart }) {
   const slut = spel.vecka > spel.veckor;
+  if (slut && spel.säsongAvslutad) {
+    return html`<${Säsongsavslut} spel=${spel} uppdatera=${uppdatera} />`;
+  }
   return html`
     <${Erbjudande} spel=${spel} uppdatera=${uppdatera} />
     <h2>Veckans jobb</h2>
