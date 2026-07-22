@@ -130,6 +130,7 @@ function Facit({ körning, facit, onKlart }) {
         spelförtroende ${facit.troΔ >= 0 ? "+" : ""}${facit.troΔ} ·
         relation ${kusk.namn} ${facit.relΔ >= 0 ? "+" : ""}${facit.relΔ}
       </div>
+      ${facit.dagstext && html`<div class=${facit.dålig​Dag ? "skada" : "logg"}>${facit.dagstext}</div>`}
       ${facit.ägartext && html`<div class=${facit.ägartext.ton === "dålig" ? "skada" : "logg"}>${facit.ägartext.text}</div>`}
       ${häst.skada > 0 && html`<div class="skada">Kom ur loppet ömmande — ${häst.skada} vecka(or) vila.</div>`}
     </div>
@@ -145,10 +146,11 @@ export default function LoppVy({ spel, uppdatera }) {
   const timer = useRef(null);
 
   const starta = ({ häst, lopp, kusk, taktik }) => {
-    const fält = [häst, ...motståndare(lopp.nivå, 7)];
-    const spårnr = blanda([1, 2, 3, 4, 5, 6, 7, 8]);
+    const antal = lopp.startande || 8;
+    const fält = [häst, ...motståndare(lopp.nivå, antal - 1)];
+    const spårnr = blanda(Array.from({ length: antal }, (_, i) => i + 1));
     // Kuskarna lottas utan återläggning — ingen kör två hästar i samma lopp
-    const övriga = blanda(KUSKAR.filter((k) => k.namn !== kusk.namn)).slice(0, 7);
+    const övriga = blanda(KUSKAR.filter((k) => k.namn !== kusk.namn)).slice(0, antal - 1);
     let n = 0;
     fält.forEach((h, i) => {
       h.spår = spårnr[i];
