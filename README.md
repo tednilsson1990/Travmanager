@@ -205,18 +205,18 @@ där mot 800 i ledningen.
 
 **Trimma aldrig mot ett mått som inte är källans.**
 
-### Läget i version 36
+### Läget i version 38
 
 Tolv seeds, 120 lopp per seed, hela kalendern.
 
 | Läge 1 000 m från mål | Vår | Mål | |
 |---|---|---|---|
-| Ledningen | 37,6 % | 42 | −4 |
-| Dödens | 13,3 % | 13 | ✓ |
-| Rygg ledaren | 14,9 % | 7 | +8 |
-| Andra utvändigt | 6,7 % | 9,6 | ✓ |
-| Tredje utvändigt | 3,2 % | 7 | −4 |
-| Tredje invändigt | 4,2 % | 3 | ✓ |
+| Ledningen | 34,9 % | 42 | −7 |
+| Dödens | 13,8 % | 13 | ✓ |
+| Rygg ledaren | 13,6 % | 7 | +7 |
+| Andra utvändigt | 7,5 % | 9,6 | ✓ |
+| Tredje utvändigt | 3,5 % | 7 | −4 |
+| Tredje invändigt | 5,0 % | 3 | ✓ |
 
 Spelmarknaden: favoriten streckas 36 %, två främsta 54 %, tre främsta 65 %,
 mot verklighetens 35, 55–60 och 70–75. Fältets bästa häst vinner 37 %, inom
@@ -229,13 +229,42 @@ skillnaden mellan närvaro och tryck.
 
 ### Kvarvarande avvikelser
 
-**Rygg ledaren vinner dubbelt så ofta som den ska.** Positionen har fri väg
-vid 400 meter i 98 procent av loppen, vilket sannolikt är för generöst.
+**Rygg ledaren vinner för ofta** — 13,4 % mot måltalet 7.
 
-**Tredje utvändigt vinner för sällan.** Vinnaren har varit där någon gång i
-64 procent av loppen men bara 68 meter i snitt. Trolig orsak: en häst kan
-inte haka på någon annans attack och få draghjälp, utan måste göra hela
-avancemanget själv.
+Modellen är rättad så att hästen kommer loss av GEOMETRIN, inte av tur: en
+tidigare slumpmässig frigörelsechans per 1,5 sekund är borttagen. Nu öppnar
+sig läget när ledaren drar ifrån, dödenshästen tappar eller avancerar, och
+ingen fyller luckan. Fältet fäller dessutom ut först i de sista 300 metrarna
+i stället för 420, eftersom luckan i verkligheten oftast kommer då — när
+kuskarna gör sina drag inför upploppet. Det tog siffran från 15,9 till 13,4.
+
+Diagnostik: av vinnarna som låg i rygg ledaren vid 1 000 meter låg bara 3 %
+kvar där vid 300 meter. 36 % hade tagit ledningen, 28 % låg utvändigt bakom
+fältet, 18 % i dödens. Positionen lämnas alltså och betalas för, precis som
+den ska — det är magnituden som är fel, inte mekaniken. Sannolikt är det för
+lätt att avancera hela vägen till ledningen.
+
+Prövat och avfärdat: dyrare sen utfällning som skalar med antalet hästar
+utanför (13,4 → 14,4 %, alltså ingen effekt).
+
+Rygghästen är instängd 27–46 % av loppet, men borde vara det så länge det
+finns en yttre rad alls — någon ligger utvändigt intill ledaren 70 % av
+tiden. Ytterraden ligger inte tillräckligt konsekvent jämsides med innerköns
+FRÄMRE del.
+
+**Tredje utvändigt vinner för sällan** — 3,5 % mot måltalet 7.
+
+Prövat och avfärdat, i tur och ordning:
+
+1. Sänkt kraftuttag utvändigt med rygg (0,88 → 0,84 → 0,80). Flyttade
+   siffran mellan 2,9 och 3,8 procent — energin är inte begränsningen.
+2. **Attack med rygg** — hästen bakom en som just gått ut får haka på, lägga
+   sig i dess rygg och slippa väntekostnaden. Mekaniken fungerar och står nu
+   för en tredjedel av alla utflyttningar, vilket är ett realistiskt
+   beteende i sig. Men vinstfördelningen rörde sig knappt.
+
+Seedspannet är 2–7 procent, så måltalet ligger i kanten av det vi faktiskt
+observerar. Avvikelsen är mindre robust än den ser ut.
 
 ## Nästa steg
 

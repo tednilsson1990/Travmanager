@@ -186,6 +186,7 @@ export function simulera(fält, lopp) {
         0, 1
       ),
       friTill: 0, galoppTills: -1,
+      senastUt: -99, utFrånKol: -1,
       tapp: 0,   // meter som ska förloras gradvis, inte i ett hopp
       /* Kusken påverkar NÄR rycket sätts in, inte hur fort hästen springer.
          En sämre kusk missar tajmingen — rycker för tidigt eller för sent. */
@@ -390,7 +391,7 @@ export function simulera(fält, lopp) {
        ligger snäppet före utanför är i dödens, inte i ledningen. */
     const led = ord.find((x) => x.kol0 === 0) || främst;
     const kvar = dist - (främst ? främst.d : 0);
-    const upplopp = kvar < 420;
+    const upplopp = kvar < 320;
 
     if (led && !led.tempoplan) led.tempoplan = väljTempoplan(led);
     if (led && led !== förraLedare && t > 3) {
@@ -530,7 +531,20 @@ export function simulera(fält, lopp) {
           && (s.stark || s.ambition > 0.64) && s.kraft > 52;
         const förTidigt = mellanfas && !villAvancera
           && s.taktik !== "ledning" && s.taktik !== "utv";
-        const chans = villFram
+        /* ATTACK MED RYGG.
+           Låg jag bakom någon som just gick ut får jag haka på och lägga mig
+           i dess rygg. Det är billigare än att gå först i tredjespår, och det
+           är så andra och tredje utvändigt normalt tar sig fram — inte genom
+           att göra hela avancemanget själva. */
+        const attackFramför = H.find((o) =>
+          !o.ur && o !== s && o.utFrånKol === s.kol0 &&
+          t - o.senastUt < 4.5 &&
+          o.d0 > s.d0 - 1 && o.d0 - s.d0 < 14);
+        const hakarPå = !!attackFramför && s.kraft > 25;
+
+        const chans = hakarPå
+          ? 0.55 * (0.7 + (s.kusk.offensivitet ?? 50) / 160)
+          : villFram
           ? (upplopp ? 0.6
              : villAvancera ? 0.05
              : positionsstrid ? (blockerad ? 0.30 : 0.10)
@@ -566,7 +580,7 @@ export function simulera(fält, lopp) {
            med rygg hela vägen dit och därmed krafter kvar. Under resans gång
            är tredje spåret däremot ett dyrt övergångsläge. */
         const maxKol = upplopp ? 6 : 2;
-        const fårTaTredje = upplopp || s.kol === 0 || långspurt || lämnaRyggen ||
+        const fårTaTredje = upplopp || s.kol === 0 || långspurt || lämnaRyggen || hakarPå ||
           (blockerad && s.ambition > 0.6 && s.kraft > 48);
         /* Är platsen rakt utanför upptagen kan man ändå gå ut — men då får
            man vänta in luckan och hamnar bakom den som redan ligger där.
@@ -594,8 +608,10 @@ export function simulera(fält, lopp) {
              hästen den låg bakom och den framför, alltså en halv häst bak.
              Det är så ytterraden täcker in hela innerkön. */
           s.tapp += 1.3;              // svänger ut och tappar en halv häst
+          s.senastUt = t;
+          s.utFrånKol = s.kol - 1;    // kolumnen hästen lämnade
           senasteUtflyttning = t;
-          if (!rakt) s.tapp += 3.2; // fick vänta in luckan och tappade mark
+          if (!rakt) s.tapp += hakarPå ? 1.1 : 3.2; // följer man en attack är vägen redan öppnad
           /* Att fälla ut sent kostar fart och meter: man styr ut, tappar
              rygg och får längre väg medan den framför redan är i rullning. */
           if (upplopp) { s.tapp += 1.8; s.kraft -= 3; }
@@ -704,10 +720,11 @@ export function simulera(fält, lopp) {
         s.låst = false;
       } else if (!s.låst) {
         s.låst = true;
-      } else if (Math.abs(t % 1.5) < DT) {
-        const seg = klamp(0.02 + (s.kusk.taktik - 60) / 900, 0.005, 0.09);
-        if (slump() < seg) { s.låst = false; s.friTill = t + 3; }
       }
+      /* Ingen tur-baserad frigörelse. Rygghästen kommer loss när geometrin
+         öppnar sig — ledaren drar ifrån, dödenshästen tappar eller avancerar,
+         och ingen fyller luckan. Det inträffar oftast först i de sista
+         trehundra metrarna, när kuskarna gör sina drag. */
       s.instängd = s.låst && kvar < 500;
 
       /* Galopp under loppets gång. Varje galopp får en orsak: hästen är
