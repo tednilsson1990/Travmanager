@@ -93,11 +93,16 @@ export function simulera(fält, lopp) {
          I verkligheten avgörs resan av spår, startsnabbhet och tur — en bra
          häst hamnar ofta illa utan att ha valt det, och en billig häst kan
          få loppets bästa resa. */
+      /* Ambitionen är kuskens plan för dagen. Kuskens STIL väger tyngst —
+         en offensiv kusk kör mot spets och går först i tredjespår, en
+         avvaktande söker ryggar och väntar. Kapaciteten väger lätt med
+         flit, annars sorterar fältet sig efter styrka redan i första
+         kurvan. Slumptermen är dagsformen i beslutet, inte personligheten. */
       ambition: klamp(
-        0.5 + (kapacitet - snittKapacitet) / 130
-        + (h.kusk.taktik - 60) / 240
-        + (h.taktik === "utv" ? 0.3 : h.taktik === "ledning" ? 0.22 : h.taktik === "skydd" ? -0.26 : 0)
-        + rnd(-0.22, 0.22),        // dagens plan, inte hästens rankning
+        0.22 + ((h.kusk.offensivitet ?? 50) / 100) * 0.56
+        + (kapacitet - snittKapacitet) / 160
+        + (h.taktik === "utv" ? 0.24 : h.taktik === "ledning" ? 0.18 : h.taktik === "skydd" ? -0.22 : 0)
+        + rnd(-0.11, 0.11),
         0, 1
       ),
       friTill: 0, galoppTills: -1,
@@ -339,7 +344,10 @@ export function simulera(fält, lopp) {
            ledaren ett vettigt läge här? Då släpper man hellre än duellerar. */
         if (s === led && kvar > 500) {
           const pressare = H.find((o) => !o.ur && o.kol0 === 1 && platsIKolumn(o) === 1);
-          const vinsthål = lopp.openStretch ? 0.05 : 0.04;
+          /* En avvaktande kusk släpper hellre initiativet än sliter ut
+             hästen i en spetsstrid. En offensiv försvarar in i det sista. */
+          const stilfaktor = 1.6 - (s.kusk.offensivitet ?? 50) / 62;
+          const vinsthål = (lopp.openStretch ? 0.05 : 0.04) * Math.max(0.2, stilfaktor);
           s.släpperTill = (pressare && pressare.ambition > s.ambition + 0.08 &&
             Math.random() < vinsthål) ? pressare : null;
         } else if (s !== led) {
@@ -381,6 +389,7 @@ export function simulera(fält, lopp) {
           ? (upplopp ? 0.55 : (långspurt || (s.kol0 >= 1 && attackfönster)) ? 0.3
              : blockerad ? 0.11 : 0.02)
             * iKedjan * yttreMotstånd * kostarDödens * (1 - respekt * 0.5)
+            * (0.68 + (s.kusk.offensivitet ?? 50) / 130)
             * (0.65 + s.kusk.taktik / 180)
           : 0;
 
