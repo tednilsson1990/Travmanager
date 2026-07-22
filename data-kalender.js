@@ -1,3 +1,4 @@
+import { slump } from "./engine-util.js";
 /**
  * Tävlingskalender.
  *

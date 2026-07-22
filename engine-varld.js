@@ -1,4 +1,4 @@
-import { rnd, int, plock, klamp, blanda } from "./engine-util.js";
+import { rnd, int, plock, klamp, blanda, slump } from "./engine-util.js";
 import { nyHäst, TRÄNING } from "./engine-hast.js";
 import { nyttNamn } from "./data-namn.js";
 import { KUSKAR } from "./data-kuskar.js";
@@ -81,8 +81,14 @@ export function byggVärld(antalStall = 20) {
       /* Meriterna byggs upp bakåt så att propositionerna fungerar redan
          första veckan — annars vore alla lopp öppna för alla. */
       häst.starter = int(3, 45);
-      häst.segrar = Math.round(häst.starter * klamp((bas - 30) / 120, 0.02, 0.35) * rnd(0.5, 1.4));
-      häst.intjänat = Math.round(häst.starter * rnd(4000, 24000) * (0.4 + styrka));
+      /* Meriterna måste spegla HÄSTENS egen kapacitet, inte stallets. Annars
+         säger prispengar per start ingenting om just den hästen — och då kan
+         spelarnas streckprocent aldrig bli träffsäker, hur skarp marknaden
+         än är. */
+      const kapacitet = (häst.start + häst.fart + häst.styrka) / 3;
+      const klass = klamp((kapacitet - 28) / 55, 0.05, 1);
+      häst.segrar = Math.round(häst.starter * klass * 0.34 * rnd(0.6, 1.35));
+      häst.intjänat = Math.round(häst.starter * (2500 + klass * 26000) * rnd(0.75, 1.3));
       häst.träning = plock(Object.keys(TRÄNING));
       häst.senasteStartVecka = 0;
       hästar.push(häst);
@@ -103,7 +109,7 @@ export function tillgängliga(värld, lopp, vecka, upptagna) {
     const fil = st ? st.filosofi : FILOSOFIER[0];
     if (h.energi < fil.vilaTröskel) return false;
     const veckorSedan = vecka - (h.senasteStartVecka || 0);
-    if (veckorSedan < 2 && Math.random() > fil.startvilja * 0.35) return false;
+    if (veckorSedan < 2 && slump() > fil.startvilja * 0.35) return false;
     return true;
   });
 }
@@ -120,7 +126,11 @@ export function byggFält(värld, lopp, vecka, upptagna, egenHäst = null) {
 
   const fönster = Math.max(0, kandidater.length - platser);
   const start = Math.round(fönster * klamp(1 - lopp.nivå / 78, 0, 1));
-  const valda = kandidater.slice(start, start + platser);
+  /* Fältet tas ur ett klassfönster, men något bredare än antalet platser —
+     annars blir alla lopp exakt jämna och en klar favorit uppstår aldrig. */
+  const bredd = Math.min(kandidater.length - start, Math.round(platser * 1.5));
+  const urval = kandidater.slice(start, start + bredd);
+  const valda = blanda(urval).slice(0, platser);
 
   /* Räcker inte behöriga hästar fylls resten på med tillfälliga. Hellre det
      än ett inställt lopp — men de bokförs inte i världen. */
@@ -137,13 +147,17 @@ export function byggFält(värld, lopp, vecka, upptagna, egenHäst = null) {
 }
 
 /** AI-kuskens körorder, utifrån hästens egenskaper och spåret. */
-function välTaktik(häst, lopp) {
+function välTaktik(häst, lopp, kusk) {
+  /* Kuskens stil ska delta i valet av körorder, inte bara i utförandet.
+     En smygkusk ska sällan få ordern "till ledningen" och en spetskusk
+     sällan "sitta i skydd". Hästen väger fortfarande tyngst. */
+  const off = (kusk?.offensivitet ?? 50) / 100;
   const bakspår = lopp.start === "bil" ? häst.spår >= 9 : häst.spår >= 8;
-  if (bakspår) return Math.random() < 0.65 ? "skydd" : "spurt";
-  if (häst.start >= 66 && Math.random() < 0.55) return "ledning";
-  if (häst.fart >= 64 && häst.start < 55) return "spurt";
-  if (häst.styrka >= 64 && Math.random() < 0.3) return "utv";
-  return Math.random() < 0.5 ? "rygg" : "skydd";
+  if (bakspår) return slump() < 0.7 - off * 0.3 ? "skydd" : "spurt";
+  if (häst.start >= 60 && slump() < 0.15 + off * 0.7) return "ledning";
+  if (häst.fart >= 64 && häst.start < 55 && slump() < 0.8 - off * 0.4) return "spurt";
+  if (häst.styrka >= 62 && slump() < off * 0.55) return "utv";
+  return slump() < 0.5 + off * 0.2 ? "rygg" : "skydd";
 }
 
 /** Lottar spår, kuskar och körorder på ett fält. */
@@ -155,7 +169,7 @@ export function rustaFält(fält, lopp, egenKusk = null, egenTaktik = null) {
   fält.forEach((h, i) => {
     h.spår = spårnr[i];
     h.kusk = h.egen && egenKusk ? egenKusk : (kuskar[n++] || KUSKAR[i % KUSKAR.length]);
-    h.taktik = h.egen && egenTaktik ? egenTaktik : välTaktik(h, lopp);
+    h.taktik = h.egen && egenTaktik ? egenTaktik : välTaktik(h, lopp, h.kusk);
   });
   return fält;
 }
@@ -180,10 +194,10 @@ function snabbresultat(fält, lopp) {
     const spår = lopp.start === "bil"
       ? (h.spår <= 8 ? (8 - h.spår) * 0.35 : -4 - (h.spår - 9) * 0.3)
       : (h.spår <= 5 ? (6 - h.spår) * 0.5 : h.spår <= 7 ? 1.4 : -2.5);
-    const galopp = Math.random() < 0.055 + (70 - h.lynne) / 1400 ? true : false;
+    const galopp = slump() < 0.055 + (70 - h.lynne) / 1400 ? true : false;
     return {
       häst: h,
-      ur: galopp && Math.random() < 0.3,
+      ur: galopp && slump() < 0.3,
       poäng: (h.fart * 0.9 + h.styrka * 0.55 + h.start * 0.35) * dagsform
         + h.form * 0.45 + passning * 6 + spår + (h.kusk?.avslutning ?? 55) * 0.12
         + rnd(-9, 9) - (galopp ? 26 : 0),
@@ -224,7 +238,7 @@ export function bokför(värld, lopp, resultat, vecka) {
       st.starter += 1;
       if (!r.ur && r.plats === 1) st.segrar += 1;
     }
-    if (Math.random() < (h.energi < 25 ? 0.14 : 0.04)) h.skada = int(1, 2);
+    if (slump() < (h.energi < 25 ? 0.14 : 0.04)) h.skada = int(1, 2);
   });
 }
 
@@ -248,7 +262,7 @@ export function körVärldensVecka(spel) {
     if (fält.length < 6) return;
     fält.forEach((h) => { if (h.id) upptagna.add(h.id); });
     rustaFält(fält, l);
-    beräknaStreck(fält, { spelförtroende: 40, stallform: 50, marknadsbild: 0 });
+    beräknaStreck(fält, { spelförtroende: 40, stallform: 50, marknadsbild: 0 }, l);
     const resultat = snabbresultat(fält, l);
     bokför(värld, l, resultat, vecka);
 
@@ -279,7 +293,7 @@ export function skötVärlden(värld) {
     h.energi = klamp(h.energi + t.energi);
     h.form = klamp(h.form + t.form);
     h.start = klamp(h.start + t.start);
-    if (Math.random() < t.risk * (h.energi < 30 ? 2 : 1)) h.skada = int(1, 3);
+    if (slump() < t.risk * (h.energi < 30 ? 2 : 1)) h.skada = int(1, 3);
   });
 }
 

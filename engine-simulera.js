@@ -1,4 +1,4 @@
-import { rnd, klamp, LÄNGD, kmtid } from "./engine-util.js";
+import { rnd, klamp, LÄNGD, kmtid, slump } from "./engine-util.js";
 import { spårfördel, framförSpår, ärSpringspår } from "./data-lopp.js";
 import { distanspassning } from "./engine-hast.js";
 
@@ -67,15 +67,15 @@ export function simulera(fält, lopp) {
    */
   const galoppera = (s, orsak) => {
     const kyla = s.kusk.kyla ?? 60;
-    const r = Math.random() * 100 + (kyla - 60) * 0.55;
+    const r = slump() * 100 + (kyla - 60) * 0.55;
     const nivå = r > 64 ? NIVÅER[0] : r > 26 ? NIVÅER[1] : NIVÅER[2];
     s.galopp = (s.galopp || 0) + 1;
     s.kraft = Math.max(0, s.kraft - nivå.kraft);
     s.d -= rnd(nivå.tapp[0], nivå.tapp[1]);
     s.v = Math.max(7.5, s.v * 0.62);
     s.galoppTills = t + rnd(nivå.tid[0], nivå.tid[1]);
-    if (s.kol < 2 && Math.random() < 0.5) s.kol++;   // styrs ut ur spåret
-    if (Math.random() < nivå.dq * (1.25 - kyla / 200)) {
+    if (s.kol < 2 && slump() < 0.5) s.kol++;   // styrs ut ur spåret
+    if (slump() < nivå.dq * (1.25 - kyla / 200)) {
       s.ur = true;
       s.orsak = "galopp";
       säg(`<b>${s.h.namn}</b> galopperar ${orsak} och blir bortkörd.`, "illa");
@@ -111,7 +111,7 @@ export function simulera(fält, lopp) {
      kände sig tung i morse. En stark häst som inte var bra den dagen
      presterar under sin kapacitet — och det gynnar alla andra. */
   const dagsformAv = () => {
-    const r = Math.random();
+    const r = slump();
     if (r < 0.05) return { värde: rnd(0.885, 0.94), text: "kändes aldrig bra" };
     if (r < 0.14) return { värde: rnd(0.95, 0.985), text: "gick under sin förmåga" };
     if (r > 0.94) return { värde: rnd(1.02, 1.05), text: "var på toppdag" };
@@ -218,7 +218,7 @@ export function simulera(fält, lopp) {
     if (ärSpringspår(s.spår, lopp.start)) startfaktorer.push(0.10);
     if (s.taktik === "ledning") startfaktorer.push(0.15);   // hård körning
     if (s.h.lynne < 45) startfaktorer.push(0.20);           // stress
-    if (Math.random() < galoppRisk(s, startfaktorer) * 0.52) {
+    if (slump() < galoppRisk(s, startfaktorer) * 0.52) {
       galoppera(s, "i starten");
     }
   });
@@ -242,7 +242,7 @@ export function simulera(fält, lopp) {
          väja och tappar mark, och kan själv rivas med. */
       if (framme.galopp) {
         s.d -= rnd(6, 16);
-        if (Math.random() < 0.12) {
+        if (slump() < 0.12) {
           s.galopp = 1; s.kraft -= 10; s.v *= 0.75;
           säg(`<b>${s.h.namn}</b> störs av galoppen framför.`, "illa");
         }
@@ -348,7 +348,7 @@ export function simulera(fält, lopp) {
   /* Hård öppning ska vara en av tre loppsorter, inte normalbilden. Med femton
      hästar och fem taktiker har i snitt tre ekipage "till ledningen", så
      tröskeln måste ligga högre än så. */
-  const hårdÖppning = spetskämpar >= 5 || (spetskämpar === 4 && Math.random() < 0.5);
+  const hårdÖppning = spetskämpar >= 5 || (spetskämpar === 4 && slump() < 0.5);
   const TEMPOPLANER = {
     smyg:           { fart: 0.905 },
     normalt:        { fart: 0.965 },
@@ -361,7 +361,7 @@ export function simulera(fält, lopp) {
      tar ledningen och gäller loppet ut. */
   const väljTempoplan = (x) => {
     const off = x.kusk.offensivitet ?? 50;
-    const r = Math.random() * 100;
+    const r = slump() * 100;
     if (off < 40) return r < 62 ? "smyg" : "normalt";
     if (off < 68) return r < 30 ? "smyg" : r < 82 ? "normalt" : "utslagsgivande";
     return r < 14 ? "normalt" : r < 78 ? "utslagsgivande" : "maxfart";
@@ -451,7 +451,7 @@ export function simulera(fält, lopp) {
           const tröskel = lopp.openStretch ? -0.06 : 0.08;
           const villHellreHaRygg = lopp.openStretch && s.målsättning !== "vinna";
           s.släpperTill = (pressare && (villHellreHaRygg || pressare.ambition > s.ambition + tröskel) &&
-            Math.random() < vinsthål) ? pressare : null;
+            slump() < vinsthål) ? pressare : null;
         } else if (s !== led) {
           s.släpperTill = null;
         }
@@ -571,7 +571,7 @@ export function simulera(fält, lopp) {
            Det är hela poängen med konstruktionen — rygg ledaren får en
            väg förbi som annars inte finns. */
         if (lopp.openStretch && kvar < 210 && s.kol === 0 && harSkydd &&
-            !upptaget(-1, s.d0) && Math.random() < 0.34) {
+            !upptaget(-1, s.d0) && slump() < 0.34) {
           s.kol = -1;
           säg(`<b>${s.h.namn}</b> går in i det öppna innerspåret.`, "hot");
         }
@@ -580,7 +580,7 @@ export function simulera(fält, lopp) {
         /* På upploppet fäller man ut för att få fri väg, inte för att man
            har krafter kvar. Kraftspärren gäller därför bara under resan. */
         const orkar = upplopp ? s.kraft > 4 : s.kraft > 28;
-        if (fårGåUtAlls && orkar && Math.random() < chans && s.kol < maxKol &&
+        if (fårGåUtAlls && orkar && slump() < chans && s.kol < maxKol &&
             fårTaTredje && (rakt || bakom)) {
           s.kol++;
           s.kraft -= 1.2;
@@ -600,12 +600,12 @@ export function simulera(fält, lopp) {
           const bytfaktorer = [0.15];                       // positionsbyte
           if (trångt >= 4) bytfaktorer.push(0.25);          // trängsel
           if (s.v > s.vmax) bytfaktorer.push(0.15);         // över kapacitet
-          if (Math.random() < galoppRisk(s, bytfaktorer) * 0.26) {
+          if (slump() < galoppRisk(s, bytfaktorer) * 0.26) {
             galoppera(s, "i rycket");
           }
         } else if (!upplopp && s.kol > 0 && !upptaget(s.kol - 1, s.d0) &&
                    ((s.kol >= 2 && !attackfönster) || !villFram || s.kraft < 38) &&
-                   Math.random() < (s.kol >= 2 ? 0.7 : 0.5)) {
+                   slump() < (s.kol >= 2 ? 0.7 : 0.5)) {
           s.kol--; // in i ledet igen så fort en lucka finns
         }
       }
@@ -700,7 +700,7 @@ export function simulera(fält, lopp) {
         s.låst = true;
       } else if (Math.abs(t % 1.5) < DT) {
         const seg = klamp(0.02 + (s.kusk.taktik - 60) / 900, 0.005, 0.09);
-        if (Math.random() < seg) { s.låst = false; s.friTill = t + 3; }
+        if (slump() < seg) { s.låst = false; s.friTill = t + 3; }
       }
       s.instängd = s.låst && kvar < 500;
 
@@ -713,7 +713,7 @@ export function simulera(fält, lopp) {
         const nära = H.filter((o) => !o.ur && o !== s && Math.abs(o.d0 - s.d0) < 5).length;
         if (nära >= 4) faktorer.push(0.25);                        // trängsel
         if (kvar < 300) faktorer.push(0.10);                       // slutstriden
-        if (faktorer.length && Math.random() < galoppRisk(s, faktorer) * 0.0016) {
+        if (faktorer.length && slump() < galoppRisk(s, faktorer) * 0.0016) {
           galoppera(s, s.kraft < 22 ? "av trötthet"
             : nära >= 4 ? "i trängseln" : "under hårt tempo");
         }

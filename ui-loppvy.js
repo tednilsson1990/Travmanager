@@ -8,7 +8,7 @@ import { byggFält, rustaFält, bokför } from "./engine-varld.js";
 import { beräknaStreck } from "./engine-streck.js";
 import { simulera } from "./engine-simulera.js";
 import { efterLopp } from "./engine-vecka.js";
-import { blanda, klamp, kr, kmtid, tidText, plock } from "./engine-util.js";
+import { blanda, klamp, kr, kmtid, tidText, plock, slump } from "./engine-util.js";
 import { Täcke, Tom, Rad } from "./ui-delar.js";
 import BanVy from "./ui-banvy.js";
 
@@ -192,7 +192,7 @@ function kuskensRåd(häst, lopp, kusk) {
   const unika = [];
   råd.forEach((r) => { if (!unika.some((u) => u.taktik === r.taktik)) unika.push(r); });
   const lista = unika.slice(0, 4);
-  const rekommenderad = Math.random() < 0.4 + kusk.taktik / 260
+  const rekommenderad = slump() < 0.4 + kusk.taktik / 260
     ? lista[0].taktik
     : plock(lista).taktik;
   return { råd: lista, rekommenderad };
@@ -311,7 +311,7 @@ export default function LoppVy({ spel, uppdatera }) {
        varandra de veckor du inte möter dem. */
     const fält = byggFält(spel.värld, lopp, spel.vecka, new Set(), häst);
     rustaFält(fält, lopp, kusk, "rygg");
-    beräknaStreck(fält, spel);
+    beräknaStreck(fält, spel, lopp);
     uppdatera((s) => {
       s.kassa -= kusk.arvode;
       s.startadeLopp = [...(s.startadeLopp || []), lopp.id];
@@ -322,12 +322,10 @@ export default function LoppVy({ spel, uppdatera }) {
 
   /* Steg 3: pressen — uppmärksamheten ändras och därmed streckprocenten */
   const pressval = (val) => {
-    körning.häst.hype = klamp(körning.häst.hype + val.hype);
-    uppdatera((s) => {
-      const h = s.stall.find((x) => x.id === körning.häst.id);
-      if (h) h.hype = klamp(h.hype + val.hype);
-    });
-    beräknaStreck(körning.fält, spel);
+    /* Hästen i körningen ÄR samma objekt som i stallet, så ändringen får
+       bara göras en gång — annars blev "tala upp" +28 i stället för +14. */
+    uppdatera(() => { körning.häst.hype = klamp(körning.häst.hype + val.hype); });
+    beräknaStreck(körning.fält, spel, körning.lopp);
     sättKörning({ ...körning, pressval: val });
     sättSteg("kusk");
   };

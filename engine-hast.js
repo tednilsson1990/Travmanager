@@ -1,4 +1,4 @@
-import { rnd, int, klamp } from "./engine-util.js";
+import { rnd, int, klamp, slump } from "./engine-util.js";
 import { nyttNamn } from "./data-namn.js";
 
 let nästaId = 1;
@@ -20,7 +20,7 @@ export const DISTANSTYPER = [
 ];
 
 function slumpaDistansprofil() {
-  const r = Math.random();
+  const r = slump();
   let ack = 0;
   for (const t of DISTANSTYPER) {
     ack += t.vikt;
@@ -54,7 +54,7 @@ export function nyHäst(o = {}) {
     id: nästaId++,
     namn: o.namn ?? nyttNamn(),
     ålder: o.ålder ?? int(3, 8),
-    kön: o.kön ?? (Math.random() < 0.5 ? "sto" : "hingst"),
+    kön: o.kön ?? (slump() < 0.5 ? "sto" : "hingst"),
     start: o.start ?? Math.round(rnd(35, 75)),
     fart: o.fart ?? Math.round(rnd(38, 74)),
     styrka: o.styrka ?? Math.round(rnd(38, 74)),

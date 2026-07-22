@@ -143,6 +143,23 @@ positionsbyte +15 %, trängsel +25 %, trötthet +15 %, fart över kapacitet
 Utfall: cirka 1,5 galopper per lopp i ett femtonhästarsfält, varav ungefär
 en sjättedel leder till diskvalifikation.
 
+### Spelmarknaden
+
+Streckprocenten standardiseras inom loppet och koncentreras med en enda
+parameter (`SKÄRPA` i `engine-streck.js`, för närvarande 0,92). Ett typiskt
+lopp får då en favorit kring 25 %, två till tre hästar över 10 % och en
+svans under 3 % — i stället för den utsmetade fördelning som tidigare gav
+alla mellan 2 och 17 %.
+
+Publiken bedömer efter form, segerprocent, **prispengar per start**,
+uppmärksamhet, kuskens rykte och startspåret, med rätt startmetod. Inget av
+hästens sanna värden ingår.
+
+**Känt fel:** fältets objektivt bästa häst vinner bara 22 % av loppen, mot
+30–40 % i verkligheten. Simuleringen är alltså för slumpmässig i förhållande
+till kapacitet, och därför kan ingen marknad vara mer träffsäker än så.
+Skärpan är satt för att matcha den träffsäkerheten, inte verklighetens.
+
 ### Sfären
 
 Media driver uppmärksamhet, uppmärksamhet driver streckprocent, hög
@@ -162,24 +179,41 @@ då fyra millisekunder i stället för drygt en sekund.
 
 ## Kalibrering
 
-Motorn mäts mot Svensk Travsports spårstatistik och Statistikbibelns
-positionssiffror. Kör `node kalibrering.mjs` för att se avvikelserna.
+All slump går genom `slump()` i `engine-util.js`. I spelet är det
+Math.random; i kalibrering och tester sätts en seedad generator med
+`sättRng(seedad(frö))`. Samma seed ger exakt samma lopp, vilket gör att ett
+misstänkt utfall går att köra om och felsöka.
 
-Läget i version 34, vanlig bana 1640 m — segrarens resa mellan 20 och 80
-procent av loppet:
+```
+node kalibrering.mjs           tolv seeds à 120 lopp
+node kalibrering.mjs 18472     bara den seeden
+```
 
-| Läge | Vår | Verklig |
+Skriptet mäter segrarens resa, spelmarknadens fördelning och träffsäkerhet,
+kilometertider, galoppfrekvens och hur mycket ledaren pressas — och visar
+spridningen mellan seeds, så att en avvikelse går att skilja från brus.
+
+**Läget i version 35** (tolv seeds, mål från Statistikbibeln):
+
+| Läge | Vår | Mål |
 |---|---|---|
-| Rygg ledaren | 5,9 % | 7 % |
-| Andra utvändigt | 10,3 % | 9,6 % |
-| Tredje utvändigt | 4,7 % | 7 % |
-| Tredje invändigt | 2,4 % | 3 % |
-| Dödens | 18,3 % | 13 % |
-| Ledningen | 29,4 % | 42 % |
+| Ledningen | 49 % | 42 % |
+| Rygg ledaren | 14 % | 7 % |
+| Dödens | 8 % | 13 % |
+| Andra utvändigt | 2 % | 9,6 % |
+| Tredje utvändigt | 1 % | 7 % |
+| Tredje invändigt | 4 % | 3 % |
 
-Ledningen är den kvarvarande avvikelsen. Mätningar visar att ledaren är
-pressad ungefär 60 % av loppet och sällan får ett ostört lopp, vilket inte
-motsvarar verkligheten.
+De utvändiga lägena vinner alltså alldeles för sällan. Tidigare mätningar
+visade motsatsen, men de kördes mot slumpgenererade motståndare i ett enda
+lopp — den här mätningen använder världens hästar över hela kalendern och
+är den som gäller.
+
+Spelmarknaden: favoriten streckas 34 %, två främsta 52 %, tre främsta 63 %,
+mot verklighetens 35, 55–60 och 70–75. Fältets bästa häst vinner 33 %, vilket
+ligger inom det verkliga spannet 30–40. Favoriten vinner 19 % — marknaden är
+alltså mer självsäker än den är träffsäker, delvis med flit genom
+marknadsbruset på ±8,5 %.
 
 ## Nästa steg
 

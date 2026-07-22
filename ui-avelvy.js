@@ -3,7 +3,7 @@ import { html } from "htm/preact";
 import { HINGSTAR } from "./data-hingstar.js";
 import { nyttNamn } from "./data-namn.js";
 import { skrivPress } from "./engine-vecka.js";
-import { kr, klamp, rnd } from "./engine-util.js";
+import { kr, klamp, rnd, slump } from "./engine-util.js";
 import { Tom } from "./ui-delar.js";
 
 const ärv = (a, b) => klamp(Math.round((a + b) / 2 + rnd(-13, 17)));
@@ -20,7 +20,7 @@ export default function AvelVy({ spel, uppdatera }) {
     s.kassa -= hingst.avgift;
     s.föl.push({
       namn: nyttNamn(),
-      kön: Math.random() < 0.5 ? "sto" : "hingst",
+      kön: slump() < 0.5 ? "sto" : "hingst",
       start: ärv(sto.start, hingst.start),
       fart: ärv(sto.fart, hingst.fart),
       styrka: ärv(sto.styrka, hingst.styrka),

@@ -1,4 +1,4 @@
-import { klamp, kr, int, plock, rnd } from "./engine-util.js";
+import { klamp, kr, int, plock, rnd, slump } from "./engine-util.js";
 import { nyHäst, TRÄNING } from "./engine-hast.js";
 import { KUSKAR } from "./data-kuskar.js";
 import { ÄGARNAMN, ÄGARKRAV, ARVODE_PER_VECKA } from "./data-agare.js";
@@ -16,7 +16,7 @@ export function skrivPress(spel, rubrik, byline, ton, hästMål, hypeΔ) {
 function media(spel) {
   const h = [...spel.stall].filter((x) => x.skada === 0).sort((a, b) => b.form - a.form)[0];
   if (!h) return;
-  if (Math.random() >= 0.28 + spel.renommé / 300) return;
+  if (slump() >= 0.28 + spel.renommé / 300) return;
   if (h.form > 66) {
     skrivPress(spel, `Formkurvan pekar rakt upp för ${h.namn}`,
       "Travmedia noterar jobben. Väntas bli hårt spelad.", "bra", h, 12);
@@ -44,7 +44,7 @@ export function körVecka(spel) {
     h.form = klamp(h.form + t.form + (h.energi < 25 ? -6 : 0));
     h.start = klamp(h.start + t.start);
     const risk = t.risk * (h.energi < 30 ? 2.2 : 1) * (h.ålder > 8 ? 1.4 : 1);
-    if (Math.random() < risk) {
+    if (slump() < risk) {
       h.skada = int(1, 3);
       h.form = klamp(h.form - 12);
       spel.logg.push(`<b>${h.namn}</b> kom ur jobbet ömmande. Borta ${h.skada} v.`);
@@ -75,7 +75,7 @@ export function körVecka(spel) {
 
   media(spel);
 
-  if (!spel.erbjudande && spel.stall.length < 8 && Math.random() < 0.1 + spel.renommé / 220) {
+  if (!spel.erbjudande && spel.stall.length < 8 && slump() < 0.1 + spel.renommé / 220) {
     const nivå = 30 + spel.renommé * 0.55;
     const h = nyHäst({
       start: klamp(Math.round(rnd(nivå - 12, nivå + 14))),
@@ -127,15 +127,18 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   const pall = !min.ur && min.plats <= 3;
 
   häst.starter++;
-  häst.intjänat += netto;
+  /* Startsumman är hästens OFFICIELLA insprungna och avgör vilka lopp den
+     får starta i — den räknas brutto, precis som för världens hästar.
+     Kuskens andel dras från kassan, inte från hästens merit. */
+  häst.intjänat += brutto;
   if (vann) häst.segrar++;
   if (pall) häst.pallplatser++;
   häst.energi = klamp(häst.energi - int(14, 24));
   häst.form = klamp(häst.form + (pall ? 4 : -2));
   spel.kassa += netto;
   spel.intjänat += netto;
-  if (Math.random() < (häst.energi < 25 ? 0.18 : 0.05)) häst.skada = int(1, 2);
-  if (dåligDag && Math.random() < 0.35) häst.skada = Math.max(häst.skada, int(1, 2));
+  if (slump() < (häst.energi < 25 ? 0.18 : 0.05)) häst.skada = int(1, 2);
+  if (dåligDag && slump() < 0.35) häst.skada = Math.max(häst.skada, int(1, 2));
 
   let renΔ = 0, relΔ = 0, hypeΔ = 0, troΔ = 0;
   const kortnamn = lopp.kortnamn || lopp.namn.split(",")[0];

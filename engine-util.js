@@ -1,6 +1,26 @@
-export const rnd = (a, b) => a + Math.random() * (b - a);
+/* ---------- Slumplager ----------
+   All slump går genom slump(). I spelet är det Math.random; i kalibrering
+   och tester sätts en seedad generator, så att ett misstänkt lopp går att
+   köra om exakt. Utan det går enskilda fel inte att felsöka och
+   kalibreringssiffror hoppar tio procentenheter mellan körningar. */
+let rng = Math.random;
+export const slump = () => rng();
+export function sättRng(fn) { rng = fn || Math.random; }
+
+/** Mulberry32 — liten, snabb och tillräckligt bra för spelbruk. */
+export function seedad(frö) {
+  let a = frö >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export const rnd = (a, b) => a + slump() * (b - a);
 export const int = (a, b) => Math.floor(rnd(a, b + 1));
-export const plock = (a) => a[Math.floor(Math.random() * a.length)];
+export const plock = (a) => a[Math.floor(slump() * a.length)];
 export const klamp = (v, a = 0, b = 100) => Math.max(a, Math.min(b, v));
 export const kr = (n) => Math.round(n).toLocaleString("sv-SE");
 export const blanda = (a) => {
