@@ -53,22 +53,133 @@ utan att röra simuleringen. Bygg aldrig in ett namn någon annanstans.
 
 ## Modellen i korthet
 
-**Hästen** har fyra sanna egenskaper — startsnabbhet, toppfart, ork, lynne —
-plus form, energi och uppmärksamhet. Publiken ser bara de tre sista.
+Siffrorna nedan är hämtade ur koden och gäller version 34. **Ändras de i
+`engine-simulera.js` ska den här listan uppdateras — annars beskriver
+dokumentationen ett spel som inte finns.** Det har hänt en gång och kostade
+mer förvirring än det var värt.
 
-**Loppet** simuleras i tick om 0,25 sekunder. Placering, avstånd i längder och
-km/h läses ur meter och m/s; ingen separat placeringsformel finns. Rygg ger
-30 % lägre kraftuttag, utvändigt kostar 10 % extra, kraftuttaget växer i kubik
-mot farten. Instängd uppstår geometriskt när innerhästen har någon inom fyra
-meter framför och utvändigt är blockerat.
+### Hästen
 
-**Sfären** sluter cirkeln: media driver uppmärksamhet → uppmärksamhet driver
-streckprocent → hög streckprocent ger respekt ute på banan men också krav från
-spelarna. En fallen favorit kostar renommé och spelförtroende, vilket sänker
-framtida streck.
+Fyra sanna grundegenskaper — startsnabbhet, toppfart, ork och lynne — plus
+form, energi och uppmärksamhet. Publiken ser bara de tre sista. Därtill en
+distansprofil (optimal distans och tolerans), travsäkerhet härledd ur lynne,
+ålder och rutin, samt en dold dagsform: ungefär 5 % dåliga dagar och lika
+många toppdagar.
 
-Kalibrerat mot 300 simulerade lopp: segrartid median 1.12,3 och favoriten
-vinner 35 % vid 29 % streck.
+### Loppet
+
+Simuleras i tick om 0,25 sekunder. Placering, avstånd i längder och km/h
+läses ur meter och m/s — ingen separat placeringsformel finns. Alla beslut i
+en tick fattas utifrån en fryst ögonblicksbild, annars kan två hästar sikta
+på varandra och bromsa ner varandra.
+
+Längdled är kontinuerligt, sidled diskret: en kolumn 0 till 6. Etiketterna
+härleds däremot geometriskt — "dödens" betyder att man ligger jämsides med
+ledaren, inte att man står först i en lista.
+
+**Kraftuttag per läge** (multiplikator på grunduttaget):
+
+| Läge | Faktor |
+|---|---|
+| Tredje invändigt och bakåt | 0,80 |
+| Rygg ledaren | 0,82 |
+| Andra och tredje utvändigt, med rygg | 0,88 |
+| Ledningen | 0,90 |
+| Inne utan rygg | 0,93 |
+| Open stretch | 0,95 |
+| Fjärde spåret med rygg | 1,06 |
+| Tredje spåret med rygg | 1,18 |
+| Första utvändigt (dödens) | 1,34 |
+
+Ryggfördelen är alltså ungefär **18 %** mot att gå utan, inte 30.
+
+**Energin har två delar.** En grundkostnad på 0,115 per sekund som hästen
+bär nästan hur länge som helst, och en brant del som slår in när farten
+överstiger 93 % av toppfarten: `0,115 + 11,5 × över^1,55`. Utan
+uppdelningen blir tanken en fast budget som töms av tiden, och då är hela
+fältet slut långt före mål på 2640 meter.
+
+Att springa över sin egen toppfart är dessutom fyra gånger dyrare per
+procent. Det är så en långsammare häst kan hänga med i fältet och ändå vara
+tom när det gäller — och det är därför ledningen är värd något: ledaren
+behöver aldrig sträcka sig.
+
+Utvändigt kostar 0,63 % extra väg per spårled, vilket motsvarar π meter per
+halvcirkel på en tusenmetersbana.
+
+### Tempot
+
+Marschfarten sätts av fältets 30:e percentil, inte av medianen — annars
+tvingas halva fältet sträcka sig hela loppet. Ledaren väljer sedan en
+tempoplan när hen tar ledningen: smyg 0,905, normalt 0,965, utslagsgivande
+1,025 eller maxfart 1,07. Valet styrs av kuskens offensivitet. Övriga
+reagerar: går det långsamt måste någon göra något, går det hårt sitter fler
+kvar.
+
+### Loppets tre skeden
+
+Positionsstrid det första kvartsvarvet där fältet sorterar sig och
+ytterraden fylls. Sedan en mellanfas där man ligger stilla — men en stark
+häst kliver ut och avancerar om ledaren inte pressas eller tempot är lågt.
+Sist attackfönstret, vars läge sätts av kuskens tålamod: `480 + (100 −
+tålamod) × 8,5` meter från mål.
+
+### Kuskarna
+
+Nittio kuskar i fem körstilar: spetskusk, smygkusk, stayerkusk, chanskusk
+och taktiker. Stilen ger spann för offensivitet och tålamod, så två
+spetskuskar liknar varandra utan att vara identiska. Kusken påverkar
+tajming, beslutskvalitet och galopprisk — aldrig hästens fart direkt.
+
+### Galopp
+
+Fyra nivåer: kort felsteg (1,5–4 m förlorade), galopp (7–16 m), lång galopp
+(22–42 m) och diskvalifikation. Vilken det blir avgörs av kuskens kyla.
+Risken byggs av travsäkerheten gånger det som faktiskt händer — start +40 %,
+voltstart +30 %, springspår +10 %, hård körning +15 %, stress +20 %,
+positionsbyte +15 %, trängsel +25 %, trötthet +15 %, fart över kapacitet
++15 %.
+
+Utfall: cirka 1,5 galopper per lopp i ett femtonhästarsfält, varav ungefär
+en sjättedel leder till diskvalifikation.
+
+### Sfären
+
+Media driver uppmärksamhet, uppmärksamhet driver streckprocent, hög
+streckprocent ger respekt ute på banan men också krav från spelarna. En
+fallen favorit kostar renommé och spelförtroende, vilket sänker framtida
+streck. Stallformen är offentlig och påverkar oddsen på alla dina hästar.
+Marknadsbilden mäter om dina hästar brukar överträffa spelarnas rangordning
+— gör de det blir de hårdare spelade och kanten äts upp.
+
+### Världen
+
+Tjugo AI-stall med namngivna tränare och egna filosofier, och drygt 180
+beständiga hästar. De tävlar mot varandra även de veckor du inte möter dem,
+och deras startsummor flyttar dem mellan klasserna. AI-loppen avgörs med en
+snabbmodell i stället för tick-simulering — ingen ser dem, och en vecka tar
+då fyra millisekunder i stället för drygt en sekund.
+
+## Kalibrering
+
+Motorn mäts mot Svensk Travsports spårstatistik och Statistikbibelns
+positionssiffror. Kör `node kalibrering.mjs` för att se avvikelserna.
+
+Läget i version 34, vanlig bana 1640 m — segrarens resa mellan 20 och 80
+procent av loppet:
+
+| Läge | Vår | Verklig |
+|---|---|---|
+| Rygg ledaren | 5,9 % | 7 % |
+| Andra utvändigt | 10,3 % | 9,6 % |
+| Tredje utvändigt | 4,7 % | 7 % |
+| Tredje invändigt | 2,4 % | 3 % |
+| Dödens | 18,3 % | 13 % |
+| Ledningen | 29,4 % | 42 % |
+
+Ledningen är den kvarvarande avvikelsen. Mätningar visar att ledaren är
+pressad ungefär 60 % av loppet och sällan får ett ostört lopp, vilket inte
+motsvarar verkligheten.
 
 ## Nästa steg
 
