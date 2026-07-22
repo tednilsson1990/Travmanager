@@ -43,7 +43,57 @@ export function simulera(fält, lopp) {
   const dist = lopp.dist;
   const bild = [];
   const kommentar = [];
-  const säg = (t, k = "") => kommentar.push({ t, k });
+  let t = 0;                       // loppets klocka, behövs redan i starten
+  const säg = (txt, k = "") => kommentar.push({ t: txt, k });
+
+  /* ---------- Galopp ----------
+     En galopp betyder inte automatiskt att hästen är borta. Kusken tar upp
+     den, hästen tappar fart och meter, och kommer sedan tillbaka. Hur illa
+     det går beror på hur snabbt felet rättas — och det avgör kuskens kyla.
+     Diskvalifikation sker när galoppen blir för lång eller ger otillåten
+     fördel; domarna gör en helhetsbedömning, så gränsen är inte exakt. */
+  const NIVÅER = [
+    { namn: "kort felsteg", tapp: [1.5, 4], kraft: 4, tid: [0.8, 1.6], dq: 0.0,
+      text: (n) => `<b>${n}</b> gör ett kort felsteg men rättar sig direkt.` },
+    { namn: "galopp", tapp: [7, 16], kraft: 11, tid: [1.8, 3.4], dq: 0.14,
+      text: (n) => `<b>${n}</b> galopperar och tappar mark.` },
+    { namn: "lång galopp", tapp: [22, 42], kraft: 18, tid: [4, 7], dq: 0.62,
+      text: (n) => `<b>${n}</b> galopperar länge och tappar hela fältet.` },
+  ];
+
+  /**
+   * Utlöser en galopp. Kuskens kyla avgör hur snabbt felet rättas och
+   * därmed hur allvarligt det blir.
+   */
+  const galoppera = (s, orsak) => {
+    const kyla = s.kusk.kyla ?? 60;
+    const r = Math.random() * 100 + (kyla - 60) * 0.55;
+    const nivå = r > 64 ? NIVÅER[0] : r > 26 ? NIVÅER[1] : NIVÅER[2];
+    s.galopp = (s.galopp || 0) + 1;
+    s.kraft = Math.max(0, s.kraft - nivå.kraft);
+    s.d -= rnd(nivå.tapp[0], nivå.tapp[1]);
+    s.v = Math.max(7.5, s.v * 0.62);
+    s.galoppTills = t + rnd(nivå.tid[0], nivå.tid[1]);
+    if (s.kol < 2 && Math.random() < 0.5) s.kol++;   // styrs ut ur spåret
+    if (Math.random() < nivå.dq * (1.25 - kyla / 200)) {
+      s.ur = true;
+      s.orsak = "galopp";
+      säg(`<b>${s.h.namn}</b> galopperar ${orsak} och blir bortkörd.`, "illa");
+    } else {
+      säg(nivå.text(s.h.namn) + (orsak ? ` (${orsak})` : ""), "illa");
+    }
+  };
+
+  /**
+   * Galopprisken byggs av hästens travsäkerhet och det som faktiskt händer
+   * i loppet — inte av ett enda slumptal. Varje galopp får därmed en orsak.
+   */
+  const galoppRisk = (s, faktorer) => {
+    let risk = (1 - s.travsäkerhet);
+    faktorer.forEach((f) => { risk *= 1 + f; });
+    risk *= 1 - ((s.kusk.kyla ?? 60) - 60) / 420;   // kylan dämpar
+    return Math.max(0, risk);
+  };
 
   const snittKapacitet =
     fält.reduce((a, h) => a + (h.start + h.fart + h.styrka) / 3, 0) / fält.length;
@@ -86,6 +136,14 @@ export function simulera(fält, lopp) {
       låst: false, instängd: false,
       skyddTid: 0, utanSkyddTid: 0, dödensTid: 0,
       respekt: klamp(h.streck / 45, 0, 1),
+      /* Travsäkerheten är hästens grundläggande förmåga att hålla gångarten.
+         Unghästar och orutinerade galopperar mest, travsäkra nästan aldrig. */
+      travsäkerhet: klamp(
+        0.902 + (h.lynne / 100) * 0.088
+        - (h.ålder <= 4 ? 0.028 : h.ålder === 5 ? 0.012 : 0)
+        - (h.starter < 8 ? 0.015 : 0),
+        0.85, 0.995
+      ),
       /* Kuskens plan för dagen.
          Kapaciteten väger LÄTT här med flit. Låter man den styra sorterar
          fältet sig efter styrka redan i första kurvan, och då blir varje
@@ -136,15 +194,16 @@ export function simulera(fält, lopp) {
     /* Voltstart handlar om att LYCKAS med starten, autostart om att
        accelerera. Därför betydligt högre galopprisk i volt, och högst
        av allt från springspåren där tajmingen är svårast. */
-    let p = 0.05 * (1 + (70 - s.h.lynne) / 85) * (1 - (s.kusk.kyla - 50) / 190);
-    if (lopp.start === "volt") p *= 1.7;
-    if (bakomVolt) p *= 1.25;
-    if (ärSpringspår(s.spår, lopp.start)) p *= 1.5;
-    if (s.taktik === "ledning") p *= 1.35;
-    if (Math.random() < p) {
-      s.galopp = 1; s.kraft -= 16; s.d -= rnd(18, 34); s.v = 9;
-      if (Math.random() < 0.26) s.ur = true;
-      säg(`<b>${s.h.namn}</b> galopperar i starten${s.ur ? " och blir bortkörd" : ""}.`, "illa");
+    /* Starten är den vanligaste galopporsaken, och voltstart är värst
+       eftersom hästen ska vända, räta upp sig och accelerera samtidigt. */
+    const startfaktorer = [0.40];
+    if (lopp.start === "volt") startfaktorer.push(0.30);
+    if (bakomVolt) startfaktorer.push(0.15);
+    if (ärSpringspår(s.spår, lopp.start)) startfaktorer.push(0.10);
+    if (s.taktik === "ledning") startfaktorer.push(0.15);   // hård körning
+    if (s.h.lynne < 45) startfaktorer.push(0.20);           // stress
+    if (Math.random() < galoppRisk(s, startfaktorer) * 0.52) {
+      galoppera(s, "i starten");
     }
   });
 
@@ -274,13 +333,29 @@ export function simulera(fält, lopp) {
      hästar och fem taktiker har i snitt tre ekipage "till ledningen", så
      tröskeln måste ligga högre än så. */
   const hårdÖppning = spetskämpar >= 5 || (spetskämpar === 4 && Math.random() < 0.5);
-  const ledarLugn = hårdÖppning ? rnd(0.98, 1.04) : rnd(0.885, 0.96);
+  const TEMPOPLANER = {
+    smyg:           { fart: 0.905 },
+    normalt:        { fart: 0.965 },
+    utslagsgivande: { fart: 1.025 },
+    maxfart:        { fart: 1.07 },
+  };
+  /* Ledaren BESTÄMMER tempot — övriga reagerar. En smygkusk i ledningen
+     sänker farten och gör loppet svårt att vinna bakifrån; en stayerkusk
+     kör utslagsgivande och öppnar för spurtarna. Planen sätts när ekipaget
+     tar ledningen och gäller loppet ut. */
+  const väljTempoplan = (x) => {
+    const off = x.kusk.offensivitet ?? 50;
+    const r = Math.random() * 100;
+    if (off < 40) return r < 62 ? "smyg" : "normalt";
+    if (off < 68) return r < 30 ? "smyg" : r < 82 ? "normalt" : "utslagsgivande";
+    return r < 14 ? "normalt" : r < 78 ? "utslagsgivande" : "maxfart";
+  };
   if (hårdÖppning) {
     H.filter((s) => s.taktik === "ledning").forEach((s) => { s.kraft -= rnd(4, 9); });
   }
 
   frys();
-  let t = 0, klara = 0, förraLedare = null;
+  let klara = 0, förraLedare = null;
   let senasteUtflyttning = -99;   // när någon senast gick ut — driver kedjan
   const levande = H.filter((s) => !s.ur).length;
 
@@ -295,6 +370,7 @@ export function simulera(fält, lopp) {
     const kvar = dist - (främst ? främst.d : 0);
     const upplopp = kvar < 420;
 
+    if (led && !led.tempoplan) led.tempoplan = väljTempoplan(led);
     if (led && led !== förraLedare && t > 3) {
       säg(förraLedare
         ? `<b>${led.h.namn}</b> tar över ledningen från <b>${förraLedare.h.namn}</b>.`
@@ -359,8 +435,12 @@ export function simulera(fält, lopp) {
            går ut redan i sista kurvans ingång, ofta tre spår. */
         /* Första riktiga attacken kommer 900–700 m kvar, när andra och
            tredje utvändigt lämnar sina ryggar och går först i tredjespår. */
-        const attackfönster = kvar < 750;
-        const långspurt = kvar < 620 && s.kraft > 58 && s.ambition > 0.58;
+        /* Tålamodet avgör NÄR kusken går. Låg siffra betyder att man drar
+           redan 1200 meter från mål; hög att man väntar in i sista kurvan. */
+        const tålamod = s.kusk.tålamod ?? 50;
+        const gårVid = 480 + (100 - tålamod) * 8.5;
+        const attackfönster = kvar < gårVid;
+        const långspurt = kvar < gårVid * 0.8 && s.kraft > 58 && s.ambition > 0.58;
         const villFram = (upplopp || långspurt) ? true : iRygg
           ? (ledarenTappar && kvar < 900)
           : (s.taktik === "ledning" && s !== led) ||
@@ -384,12 +464,21 @@ export function simulera(fält, lopp) {
         /* Varje ytterligare spår utåt är osannolikare än det förra. Sju i
            bredd på upploppet förekommer, men är inte normalbilden. */
         const yttreMotstånd = 1 / (1 + s.kol0 * 0.72);
+        /* Övriga reagerar på ledarens tempo. Går det långsamt måste någon
+           göra något; går det hårt är det dyrt att gå ut och fler sitter kvar. */
+        const tempoläge = led.v0 / (fältTempo || led.v0);
+        const tempolockelse = klamp(1.9 - tempoläge * 0.95, 0.45, 1.7);
         const respekt = drag ? drag.respekt : 0;
+        /* Före attackfönstret ligger man kvar. Att flytta ut på baksidan
+           första varvet gör man bara om körordern säger det — annars är
+           ytterraden full redan efter 300 meter och ledaren får aldrig
+           ett lugnt lopp. */
+        const förTidigt = kvar > gårVid && s.taktik !== "ledning" && s.taktik !== "utv";
         const chans = villFram
           ? (upplopp ? 0.55 : (långspurt || (s.kol0 >= 1 && attackfönster)) ? 0.3
-             : blockerad ? 0.11 : 0.02)
+             : blockerad ? (förTidigt ? 0.025 : 0.11) : (förTidigt ? 0.004 : 0.02))
             * iKedjan * yttreMotstånd * kostarDödens * (1 - respekt * 0.5)
-            * (0.68 + (s.kusk.offensivitet ?? 50) / 130)
+            * (0.68 + (s.kusk.offensivitet ?? 50) / 130) * tempolockelse
             * (0.65 + s.kusk.taktik / 180)
           : 0;
 
@@ -443,12 +532,12 @@ export function simulera(fält, lopp) {
           const nyPlats = platsIKolumn(s);
           if (s.kol === 1 && nyPlats === 1) säg(`<b>${s.h.namn}</b> går ut i dödens.`, "hot");
           else if (s.kol === 1) säg(`<b>${s.h.namn}</b> går ut och upp utvändigt.`, "");
-          const g = 0.03 * (1 + (70 - s.h.lynne) / 95) * (1 - (s.kusk.kyla - 50) / 200);
-          if (Math.random() < g) {
-            s.galopp++; s.kraft -= 14; s.v *= 0.6;
-            s.galoppTills = t + rnd(2.5, 5);       // styrs ut ur spåret
-            if (s.kol < 2) s.kol++;
-            säg(`<b>${s.h.namn}</b> galopperar i rycket.`, "illa");
+          const trångt = H.filter((o) => !o.ur && Math.abs(o.d0 - s.d0) < 6).length;
+          const bytfaktorer = [0.15];                       // positionsbyte
+          if (trångt >= 4) bytfaktorer.push(0.25);          // trängsel
+          if (s.v > s.vmax) bytfaktorer.push(0.15);         // över kapacitet
+          if (Math.random() < galoppRisk(s, bytfaktorer) * 0.26) {
+            galoppera(s, "i rycket");
           }
         } else if (s.kol > 0 && !upptaget(s.kol - 1, s.d0) &&
                    ((s.kol >= 2 && !attackfönster) || !villFram || s.kraft < 38) &&
@@ -477,8 +566,12 @@ export function simulera(fält, lopp) {
            Får ekipaget vara ifred sänks tempot och krafterna sparas till
            upploppet. Kommer någon utvändigt måste ledaren försvara sig. */
         const press = H.some((o) => !o.ur && o.kol0 > 0 && Math.abs(o.d0 - s.d0) < 8);
-        const öppning = kvar > dist * 0.72 && hårdÖppning ? 1.04 : 1;
-        mål = Math.min(s.vmax * 1.02, fältTempo * (press ? 1.05 : ledarLugn) * öppning);
+        const öppning = kvar > dist * 0.72 && hårdÖppning ? 1.03 : 1;
+        const plan = TEMPOPLANER[s.tempoplan || "normalt"];
+        /* Under press måste ledaren svara — men bara upp till en nivå. En
+           smygkusk kör inte ihjäl sig för att någon ligger utvändigt. */
+        const svar = press ? Math.max(plan.fart, 1.01) : plan.fart;
+        mål = Math.min(s.vmax * 1.02, fältTempo * svar * öppning);
       } else {
         /* Fältet är packat. Alla siktar på hjulet framför — även den som
            ligger långt bak försöker upp i kön, inte gå på egen marschfart.
@@ -547,6 +640,21 @@ export function simulera(fält, lopp) {
       }
       s.instängd = s.låst && kvar < 500;
 
+      /* Galopp under loppets gång. Varje galopp får en orsak: hästen är
+         tom, den pressas över sin kapacitet, eller det blir trångt. */
+      if (s.galoppTills < t && Math.abs(t % 1) < DT && t > 4) {
+        const faktorer = [];
+        if (s.kraft < 22) faktorer.push(0.15);                     // trötthet
+        if (s.v > s.vmax * 1.005) faktorer.push(0.15);             // över kapacitet
+        const nära = H.filter((o) => !o.ur && o !== s && Math.abs(o.d0 - s.d0) < 5).length;
+        if (nära >= 4) faktorer.push(0.25);                        // trängsel
+        if (kvar < 300) faktorer.push(0.10);                       // slutstriden
+        if (faktorer.length && Math.random() < galoppRisk(s, faktorer) * 0.0016) {
+          galoppera(s, s.kraft < 22 ? "av trötthet"
+            : nära >= 4 ? "i trängseln" : "under hårt tempo");
+        }
+      }
+
       /* ---------- Kraft och förflyttning ---------- */
       /* Att springa fortare än sin egen toppfart går — men det kostar
          oproportionerligt mycket. Det är så en långsammare häst kan hänga
@@ -559,6 +667,10 @@ export function simulera(fält, lopp) {
          häst hänga med i tempot — men det kostar mer, eftersom uttaget går
          i kubik mot farten. Det är så svagare hästar spricker sent. */
       const tak = Math.max(s.vmax, fältTempo) * (0.84 + 0.20 * klamp(s.kraft / 18, 0, 1));
+      /* Under galoppen tar kusken upp hästen. Den travar långsamt tills
+         gångarten är stabil och accelererar sedan tillbaka av egen kraft —
+         det är därför även en kort galopp kostar flera längder. */
+      if (s.galoppTills > t) mål = Math.min(mål, 9.8);
       mål = Math.min(mål, tak);
       s.v = Math.max(8, s.v + (mål - s.v) * (mål > s.v ? 0.55 : 0.9) * DT * 2.2);
 
