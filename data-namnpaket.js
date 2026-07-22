@@ -111,8 +111,15 @@ export function byggKuskkår(antal = 90) {
     const ryktbarhet = Math.round(
       klass === "elit" ? 78 + r() * 20 : klass === "etablerad" ? 45 + r() * 30 : 14 + r() * 30
     );
+    /* Offensivitet är kuskens STIL, inte skicklighet. Den är stabil över
+       hela karriären, så spelaren kan lära sig att en viss kusk kör mot
+       spets och en annan hellre tar rygg. Utan den kör alla likadant i
+       genomsnitt och en kår på nittio personer är meningslös. */
+    const offensivitet = Math.max(5, Math.min(95, Math.round(20 + r() * 70)));
     kår.push({
       namn,
+      offensivitet,
+      stil: offensivitet > 66 ? "offensiv" : offensivitet < 38 ? "avvaktande" : "balanserad",
       start: Math.max(20, Math.min(96, v())),
       taktik: Math.max(20, Math.min(96, v())),
       avslutning: Math.max(20, Math.min(96, v())),
