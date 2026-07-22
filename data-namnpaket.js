@@ -71,6 +71,25 @@ const EFTERNAMN = [
   "Ferm", "Gyllen", "Hovmark", "Iversen", "Jerner", "Kraft", "Lo", "Mörk",
 ];
 
+/**
+ * Körstilar. Varje kusk tillhör en, och stilen bestämmer spannet för
+ * offensivitet och tålamod. Det gör att kuskarna får identiteter i stället
+ * för bara olika siffror — och att spelaren efter några säsonger vet vem
+ * hon vill ha när loppet kräver is i magen.
+ */
+const ARKETYPER = [
+  { namn: "spetskusk",  offensivitet: 82, tålamod: 22,
+    text: "Laddar mot spets och släpper sällan initiativet." },
+  { namn: "smygkusk",   offensivitet: 26, tålamod: 78,
+    text: "Söker ryggar och väntar in luckan." },
+  { namn: "stayerkusk", offensivitet: 66, tålamod: 30,
+    text: "Går tidigt utvändigt och maler ner fältet." },
+  { namn: "chanskusk",  offensivitet: 62, tålamod: 48,
+    text: "Varierar mycket och tar större risker än de flesta." },
+  { namn: "taktiker",   offensivitet: 46, tålamod: 62,
+    text: "Anpassar sig efter motstånd och loppets utveckling." },
+];
+
 /** Enkel deterministisk slump så att kuskkåren ser likadan ut varje gång. */
 function frö(n) {
   let x = (n * 1103515245 + 12345) % 2147483648;
@@ -111,15 +130,23 @@ export function byggKuskkår(antal = 90) {
     const ryktbarhet = Math.round(
       klass === "elit" ? 78 + r() * 20 : klass === "etablerad" ? 45 + r() * 30 : 14 + r() * 30
     );
-    /* Offensivitet är kuskens STIL, inte skicklighet. Den är stabil över
-       hela karriären, så spelaren kan lära sig att en viss kusk kör mot
-       spets och en annan hellre tar rygg. Utan den kör alla likadant i
-       genomsnitt och en kår på nittio personer är meningslös. */
-    const offensivitet = Math.max(5, Math.min(95, Math.round(20 + r() * 70)));
+    /* Kuskarna tillhör en KÖRSTIL, inte bara en siffra. Stilen ger
+       identitet — spetskusken laddar nästan alltid, smygkusken söker
+       ryggar, stayerkusken går tidigt och maler ner fältet. Parametrarna
+       varierar inom stilen, så två spetskuskar är inte identiska.
+       tålamod = hur länge man väntar med att gå. Lågt tålamod går redan
+       1200 meter från mål, högt väntar till 500. */
+    const ark = ARKETYPER[Math.floor(r() * ARKETYPER.length)];
+    const inom = (mitt, spann) =>
+      Math.max(5, Math.min(95, Math.round(mitt + (r() - 0.5) * spann)));
+    const offensivitet = inom(ark.offensivitet, 22);
+    const tålamod = inom(ark.tålamod, 26);
     kår.push({
       namn,
       offensivitet,
-      stil: offensivitet > 66 ? "offensiv" : offensivitet < 38 ? "avvaktande" : "balanserad",
+      tålamod,
+      stil: ark.namn,
+      stilText: ark.text,
       start: Math.max(20, Math.min(96, v())),
       taktik: Math.max(20, Math.min(96, v())),
       avslutning: Math.max(20, Math.min(96, v())),
