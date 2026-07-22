@@ -51,7 +51,7 @@ export function simulera(fält, lopp) {
   /* Marschfarten sätts av fältet, inte av ledarens toppfart. Alla hästar i
      ett lopp KAN hålla tempot — skillnaden mellan dem visar sig i vad de har
      kvar på upploppet, inte i om de hänger med på baksidan. */
-  const vmaxAv = (h) => (12.42 + h.fart * 0.042) * (1 + (h.form - 50) * 0.0016);
+  const vmaxAv = (h) => (11.60 + h.fart * 0.042) * (1 + (h.form - 50) * 0.0016);
   const sorteradeVmax = fält.map(vmaxAv).sort((a, b) => a - b);
   const fältTempo = sorteradeVmax[Math.floor(sorteradeVmax.length / 2)] * 1.025;
 
@@ -170,7 +170,15 @@ export function simulera(fält, lopp) {
     });
   }
 
-  const iOrdning = () => H.filter((s) => !s.ur).sort((a, b) => b.d0 - a.d0);
+  /* Den som gått i mål rangordnas efter sin måltid; övriga efter meter.
+     Utan detta kan en häst som passerat linjen först hamna efter en som
+     rullar ut fortare efteråt. */
+  const iOrdning = () => H.filter((s) => !s.ur).sort((a, b) => {
+    if (a.mål !== null && b.mål !== null) return a.mål - b.mål;
+    if (a.mål !== null) return -1;
+    if (b.mål !== null) return 1;
+    return b.d0 - a.d0;
+  });
   /** Närmaste häst framför i samma kolumn, oavsett avstånd — sätter tempot. */
   /* En häst som galopperar styrs ut ur spåret. Den slutar alltså blockera
      dem bakom — galoppen blir en lucka för någon annan, inte en propp för
@@ -290,7 +298,15 @@ export function simulera(fält, lopp) {
     }
 
     H.forEach((s) => {
-      if (s.ur || s.mål !== null) return;
+      if (s.ur) return;
+      if (s.mål !== null) {
+        /* Redan i mål. Ekipaget rullar vidare i stället för att frysa på
+           linjen — annars staplas hela fältet på samma punkt och avstånden
+           i tracking-listan blir noll trots sekunder i skillnad. */
+        s.v = Math.max(8, s.v * 0.995);
+        s.d += s.v * DT;
+        return;
+      }
 
       /* Den som gått förbi hela innerraden går ner till spåret och blir
          ledare på riktigt. Utan detta blir en häst "ledare" medan den
@@ -455,6 +471,10 @@ export function simulera(fält, lopp) {
         /* Fältet är packat. Alla siktar på hjulet framför — även den som
            ligger långt bak försöker upp i kön, inte gå på egen marschfart.
            Den som inte har farten nog faller tillbaka av sig själv. */
+        /* Följaren får sträcka sig över sin egen toppfart för att hålla
+           kontakten — det kostar kraft, men annars kan en långsammare häst
+           aldrig hänga med i fältet och det spricker i klungor. */
+        const kontakttak = Math.max(s.vmax, fältTempo) * 1.02;
         const fram = närmastFram(s);
         /* Justeringen måste vara begränsad nedåt. Ligger man tätare än
            målgapet vill man sakta in — men om alla gör det utan tak bromsar
@@ -466,7 +486,7 @@ export function simulera(fält, lopp) {
              lägger sig ekipaget stilla på hjulet framför. */
           const avstånd = fram.d0 - s.d0 - MÅLGAP;
           const fartskillnad = s.v - fram.v0;
-          mål = Math.min(fram.v0 + klamp(avstånd * 0.32 - fartskillnad * 0.25, -0.3, 2.5), s.vmax);
+          mål = Math.min(fram.v0 + klamp(avstånd * 0.32 - fartskillnad * 0.25, -0.3, 2.5), kontakttak);
         } else if (s.kol0 >= 1) {
           /* Först utvändigt utan rygg. En stark häst ligger där för att
              pressa och gå förbi. En svagare vill egentligen inte vara där
@@ -484,7 +504,7 @@ export function simulera(fält, lopp) {
             : Math.min(s.vmax, led.v0 - 0.1);
         } else {
           // Först i sin kolumn men inte i ledningen: håll tempo med ledaren
-          mål = Math.min(led.v0 + klamp((led.d0 - s.d0 - MÅLGAP) * 0.35, -0.2, 2.5), s.vmax);
+          mål = Math.min(led.v0 + klamp((led.d0 - s.d0 - MÅLGAP) * 0.35, -0.2, 2.5), kontakttak);
         }
       }
 
@@ -516,12 +536,17 @@ export function simulera(fält, lopp) {
       s.instängd = s.låst && kvar < 500;
 
       /* ---------- Kraft och förflyttning ---------- */
+      /* Att springa fortare än sin egen toppfart går — men det kostar
+         oproportionerligt mycket. Det är så en långsammare häst kan hänga
+         med i fältet och ändå vara tom när det gäller, och det är därför
+         ledningen är värd något: ledaren behöver aldrig sträcka sig. */
+      const översträckning = Math.max(0, s.v / s.vmax - 1);
       s.kraft = Math.max(0, s.kraft - DT * 0.62 * Math.pow(s.v / 13.6, 3)
-        * kostnadFör(s, led, harSkydd) / s.sf);
+        * (1 + översträckning * 4) * kostnadFör(s, led, harSkydd) / s.sf);
       /* Taket faller med krafterna. Med full kraft kan även en långsammare
          häst hänga med i tempot — men det kostar mer, eftersom uttaget går
          i kubik mot farten. Det är så svagare hästar spricker sent. */
-      const tak = Math.max(s.vmax, fältTempo) * (0.70 + 0.32 * klamp(s.kraft / 55, 0, 1));
+      const tak = Math.max(s.vmax, fältTempo) * (0.84 + 0.20 * klamp(s.kraft / 18, 0, 1));
       mål = Math.min(mål, tak);
       s.v = Math.max(8, s.v + (mål - s.v) * (mål > s.v ? 0.55 : 0.9) * DT * 2.2);
 
