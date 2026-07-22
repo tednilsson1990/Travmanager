@@ -107,7 +107,12 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
      behöva vila. */
   const dåligDag = min.dagsform !== undefined && min.dagsform < 0.945;
   const toppdag = min.dagsform !== undefined && min.dagsform > 1.02;
-  const brutto = min.ur ? 0 : lopp.pris[min.plats - 1] || 0;
+  /* Alla startande får normalt en garanterad prispeng — även oplacerade
+     och diskvalificerade. Och eftersom startsumman avgör vilka lopp hästen
+     får starta i flyttar även en femteplats hästens karriär. */
+  const brutto = min.ur
+    ? (lopp.garanterad || 0)
+    : (lopp.pris[min.plats - 1] ?? lopp.garanterad ?? 0);
   const kuskandel = Math.round(brutto * kusk.andel);
   const netto = brutto - kuskandel;
   const vann = !min.ur && min.plats === 1;
