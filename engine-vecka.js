@@ -105,7 +105,7 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit }) {
      kapacitet — och då är ett dåligt resultat inte ett misslyckande utan
      en upplysning. Pressen och ägarna dömer mildare, men hästen kan
      behöva vila. */
-  const dålig​Dag = min.dagsform !== undefined && min.dagsform < 0.945;
+  const dåligDag = min.dagsform !== undefined && min.dagsform < 0.945;
   const toppdag = min.dagsform !== undefined && min.dagsform > 1.02;
   const brutto = min.ur ? 0 : lopp.pris[min.plats - 1] || 0;
   const kuskandel = Math.round(brutto * kusk.andel);
@@ -122,7 +122,7 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit }) {
   spel.kassa += netto;
   spel.intjänat += netto;
   if (Math.random() < (häst.energi < 25 ? 0.18 : 0.05)) häst.skada = int(1, 2);
-  if (dålig​Dag && Math.random() < 0.35) häst.skada = Math.max(häst.skada, int(1, 2));
+  if (dåligDag && Math.random() < 0.35) häst.skada = Math.max(häst.skada, int(1, 2));
 
   let renΔ = 0, relΔ = 0, hypeΔ = 0, troΔ = 0;
   const kortnamn = lopp.namn.split(",")[0].toLowerCase();
@@ -153,7 +153,7 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit }) {
   if (!min.ur && min.utanSkydd > 50 && min.plats > 4) relΔ -= 2;
 
   // Ett svagt lopp med en häst som inte var bra döms mildare
-  if (dålig​Dag && renΔ < 0) { renΔ *= 0.5; troΔ *= 0.5; }
+  if (dåligDag && renΔ < 0) { renΔ *= 0.5; troΔ *= 0.5; }
   spel.renommé = klamp(spel.renommé + renΔ);
   spel.spelförtroende = klamp(spel.spelförtroende + troΔ);
   spel.kuskrelation[kusk.namn] = klamp((spel.kuskrelation[kusk.namn] ?? kusk.startrelation) + relΔ + 1);
@@ -186,13 +186,13 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit }) {
   }
 
   const dagstext = min.dagsformText
-    ? (dålig​Dag
+    ? (dåligDag
         ? `${häst.namn} ${min.dagsformText} idag${häst.skada > 0 ? " och behöver vila" : ""}.`
         : toppdag ? `${häst.namn} ${min.dagsformText}.` : `${häst.namn} ${min.dagsformText}.`)
     : null;
-  if (dålig​Dag) {
+  if (dåligDag) {
     skrivPress(spel, `Svagt av ${häst.namn}`,
       `Björkhaga uppger att hästen inte var i slag.`, "neutral");
   }
-  return { brutto, kuskandel, netto, renΔ, relΔ, hypeΔ, troΔ, ägartext, dagstext, dålig​Dag };
+  return { brutto, kuskandel, netto, renΔ, relΔ, hypeΔ, troΔ, ägartext, dagstext, dåligDag };
 }
