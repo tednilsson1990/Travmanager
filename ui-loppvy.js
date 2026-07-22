@@ -3,7 +3,8 @@ import { html } from "htm/preact";
 import { TAKTIKER } from "./data-lopp.js";
 import { veckansLopp, startförbud, kravText } from "./data-kalender.js";
 import { KUSKAR, villig, svar } from "./data-kuskar.js";
-import { motståndare, distanspassning } from "./engine-hast.js";
+import { distanspassning } from "./engine-hast.js";
+import { byggFält, rustaFält, bokför } from "./engine-varld.js";
 import { beräknaStreck } from "./engine-streck.js";
 import { simulera } from "./engine-simulera.js";
 import { efterLopp } from "./engine-vecka.js";
@@ -306,18 +307,15 @@ export default function LoppVy({ spel, uppdatera }) {
 
   /* Steg 1 → 2: anmälan klar, spåren lottas */
   const anmäl = ({ häst, lopp, kusk }) => {
-    const antal = lopp.startande || 12;
-    const fält = [häst, ...motståndare(lopp.nivå, antal - 1)];
-    const spårnr = blanda(Array.from({ length: antal }, (_, i) => i + 1));
-    const övriga = blanda(KUSKAR.filter((k) => k.namn !== kusk.namn)).slice(0, antal - 1);
-    let n = 0;
-    fält.forEach((h, i) => {
-      h.spår = spårnr[i];
-      h.kusk = h.egen ? kusk : (övriga[n++] || KUSKAR[i % KUSKAR.length]);
-      h.taktik = h.egen ? "rygg" : plock(Object.keys(TAKTIKER));
-    });
+    /* Motståndarna hämtas ur världen — samma individer som tävlar mot
+       varandra de veckor du inte möter dem. */
+    const fält = byggFält(spel.värld, lopp, spel.vecka, new Set(), häst);
+    rustaFält(fält, lopp, kusk, "rygg");
     beräknaStreck(fält, spel);
-    uppdatera((s) => { s.kassa -= kusk.arvode; });
+    uppdatera((s) => {
+      s.kassa -= kusk.arvode;
+      s.startadeLopp = [...(s.startadeLopp || []), lopp.id];
+    });
     sättKörning({ häst, lopp, kusk, fält });
     sättSteg("lottning");
   };
@@ -355,6 +353,8 @@ export default function LoppVy({ spel, uppdatera }) {
     uppdatera((s) => {
       const h = s.stall.find((x) => x.id === häst.id) || häst;
       h.senasteStartVecka = s.vecka;
+      // Motståndarnas meriter och prispengar bokförs i världen
+      bokför(s.värld, lopp, sim.resultat, s.vecka);
       sammanfattning = efterLopp(s, {
         häst: h, kusk, lopp, min,
         varFavorit: favorit === häst,

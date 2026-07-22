@@ -2,6 +2,7 @@ import { klamp, kr, int, plock, rnd } from "./engine-util.js";
 import { nyHäst, TRÄNING } from "./engine-hast.js";
 import { KUSKAR } from "./data-kuskar.js";
 import { ÄGARNAMN, ÄGARKRAV, ARVODE_PER_VECKA } from "./data-agare.js";
+import { körVärldensVecka, skötVärlden } from "./engine-varld.js";
 
 const DRIFT_PER_HÄST = 4200;
 
@@ -64,6 +65,13 @@ export function körVecka(spel) {
     const r = spel.kuskrelation[k.namn] ?? k.startrelation;
     spel.kuskrelation[k.namn] = klamp(r - 0.4);
   });
+
+  /* Världen lever vidare oavsett vad du gör. AI-stallen kör sina lopp,
+     deras hästar tjänar pengar och flyttas mellan klasserna. */
+  const världensNyheter = körVärldensVecka(spel);
+  skötVärlden(spel.värld);
+  spel.startadeLopp = [];
+  världensNyheter.forEach((n) => skrivPress(spel, n.rubrik, n.byline, "neutral"));
 
   media(spel);
 

@@ -1,6 +1,7 @@
 import { html } from "htm/preact";
 import { KUSKAR, relation, svar } from "./data-kuskar.js";
-import { klamp } from "./engine-util.js";
+import { klamp, kr } from "./engine-util.js";
+import { tränarliga } from "./engine-varld.js";
 import { Tom } from "./ui-delar.js";
 
 export default function SfarVy({ spel }) {
@@ -12,7 +13,32 @@ export default function SfarVy({ spel }) {
       ? "Dina hästar har underpresterat mot sina odds. Marknaden är skeptisk, vilket ger dig utrymme."
       : "Marknaden prissätter ditt stall ungefär rätt.";
 
+  const liga = tränarliga(spel);
+  const minPlats = liga.findIndex((r) => r.du) + 1;
+
   return html`
+    <h2>Tränarligan</h2>
+    <div class="kort">
+      <div class="meta" style="margin-bottom:8px">
+        Du ligger ${minPlats}:a av ${liga.length} stall, räknat på insprunget
+      </div>
+      <table class="liga">
+        <thead><tr><th>#</th><th>Stall</th><th>Insprunget</th><th>Seg</th></tr></thead>
+        <tbody>
+          ${liga.slice(0, 12).map((r, i) => html`
+            <tr key=${r.namn} class=${r.du ? "din" : ""}>
+              <td>${i + 1}</td>
+              <td>${r.namn}${r.filosofi ? html`<br /><span class="ligamini">${r.tränare} · ${r.filosofi}</span>` : ""}</td>
+              <td>${kr(r.insprunget)}</td>
+              <td>${r.segrar}</td>
+            </tr>`)}
+          ${minPlats > 12 && html`
+            <tr class="din"><td>${minPlats}</td><td>${spel.stallnamn}</td>
+              <td>${kr(spel.intjänat)}</td><td>—</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+
     <h2>Stallets ställning</h2>
     <div class="kort">
       <div class="relrad">

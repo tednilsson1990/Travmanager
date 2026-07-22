@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "preact/hooks";
 import { nyHäst, sättIdRäknare, idRäknare } from "./engine-hast.js";
+import { byggVärld } from "./engine-varld.js";
 
 const NYCKEL = "travmanager.sparfil.v1";
 
@@ -12,6 +13,8 @@ export function nyttSpel() {
     kassa: 180000, intjänat: 0,
     renommé: 25, spelförtroende: 40,
     stallform: 50, marknadsbild: 0, resultathistorik: [],
+    värld: byggVärld(),
+    startadeLopp: [],
     stall: [nyHäst({ ålder: 5 }), nyHäst({ ålder: 4 }), nyHäst({ ålder: 7 })],
     kuskrelation: {},
     logg: [], press: [], föl: [],
@@ -39,6 +42,9 @@ export function ladda() {
     spel.stallform ??= 50;
     spel.marknadsbild ??= 0;
     spel.resultathistorik ??= [];
+    spel.startadeLopp ??= [];
+    // Världen tillkom efter att äldre sparfiler skapades
+    if (!spel.värld) spel.värld = byggVärld();
     spel.stall.forEach((h) => {
       h.distans ??= { optimal: 2140, tolerans: 520, typ: "medeldistans" };
       h.senasteStartVecka ??= 0;
