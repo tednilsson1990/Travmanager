@@ -180,40 +180,62 @@ då fyra millisekunder i stället för drygt en sekund.
 ## Kalibrering
 
 All slump går genom `slump()` i `engine-util.js`. I spelet är det
-Math.random; i kalibrering och tester sätts en seedad generator med
-`sättRng(seedad(frö))`. Samma seed ger exakt samma lopp, vilket gör att ett
-misstänkt utfall går att köra om och felsöka.
+Math.random; i kalibrering sätts en seedad generator med
+`sättRng(seedad(frö))`. Samma seed ger exakt samma lopp.
 
 ```
-node kalibrering.mjs           tolv seeds à 120 lopp
+node kalibrering.mjs           tolv fasta seeds à 120 lopp
 node kalibrering.mjs 18472     bara den seeden
 ```
 
-Skriptet mäter segrarens resa, spelmarknadens fördelning och träffsäkerhet,
-kilometertider, galoppfrekvens och hur mycket ledaren pressas — och visar
-spridningen mellan seeds, så att en avvikelse går att skilja från brus.
+### Om måttet — läs detta innan något trimmas
 
-**Läget i version 35** (tolv seeds, mål från Statistikbibeln):
+Källmaterialet (Statistikbibeln, Åbystatistiken) anger segrarens position
+**cirka 1 000 meter från mål**. Det är därför huvudmåttet.
 
-| Läge | Vår | Mål |
-|---|---|---|
-| Ledningen | 49 % | 42 % |
-| Rygg ledaren | 14 % | 7 % |
-| Dödens | 8 % | 13 % |
-| Andra utvändigt | 2 % | 9,6 % |
-| Tredje utvändigt | 1 % | 7 % |
-| Tredje invändigt | 4 % | 3 % |
+Tidigare mättes i stället "var vinnaren tillbringade mest tid mellan 20 och
+80 procent av loppet" — ett eget påfund som gav systematiskt andra siffror
+och som motorn under en period trimmades emot. Skillnaden är stor: en häst
+kan ligga 1 200 meter i andra utvändigt, gå fram sista 700 och då räknas som
+dödens av tidsmåttet men som andra utvändigt av källans.
 
-De utvändiga lägena vinner alltså alldeles för sällan. Tidigare mätningar
-visade motsatsen, men de kördes mot slumpgenererade motståndare i ett enda
-lopp — den här mätningen använder världens hästar över hela kalendern och
-är den som gäller.
+Diagnostiken nedan visar hur mycket det spelar roll — vinnaren har varit i
+dödens någon gång i tre lopp av fyra, men tillbringar i snitt bara 220 meter
+där mot 800 i ledningen.
 
-Spelmarknaden: favoriten streckas 34 %, två främsta 52 %, tre främsta 63 %,
-mot verklighetens 35, 55–60 och 70–75. Fältets bästa häst vinner 33 %, vilket
-ligger inom det verkliga spannet 30–40. Favoriten vinner 19 % — marknaden är
-alltså mer självsäker än den är träffsäker, delvis med flit genom
-marknadsbruset på ±8,5 %.
+**Trimma aldrig mot ett mått som inte är källans.**
+
+### Läget i version 36
+
+Tolv seeds, 120 lopp per seed, hela kalendern.
+
+| Läge 1 000 m från mål | Vår | Mål | |
+|---|---|---|---|
+| Ledningen | 37,6 % | 42 | −4 |
+| Dödens | 13,3 % | 13 | ✓ |
+| Rygg ledaren | 14,9 % | 7 | +8 |
+| Andra utvändigt | 6,7 % | 9,6 | ✓ |
+| Tredje utvändigt | 3,2 % | 7 | −4 |
+| Tredje invändigt | 4,2 % | 3 | ✓ |
+
+Spelmarknaden: favoriten streckas 36 %, två främsta 54 %, tre främsta 65 %,
+mot verklighetens 35, 55–60 och 70–75. Fältets bästa häst vinner 37 %, inom
+det verkliga spannet 30–40. Favoriten vinner 21 % — marknaden är mer
+självsäker än träffsäker, delvis med flit genom marknadsbruset på ±8,5 %.
+
+Ledaren har någon utvändigt intill sig 69 % av loppet, men utsätts för
+verklig press — någon som håller farten vid hjulet — 38 % av tiden. Det är
+skillnaden mellan närvaro och tryck.
+
+### Kvarvarande avvikelser
+
+**Rygg ledaren vinner dubbelt så ofta som den ska.** Positionen har fri väg
+vid 400 meter i 98 procent av loppen, vilket sannolikt är för generöst.
+
+**Tredje utvändigt vinner för sällan.** Vinnaren har varit där någon gång i
+64 procent av loppen men bara 68 meter i snitt. Trolig orsak: en häst kan
+inte haka på någon annans attack och få draghjälp, utan måste göra hela
+avancemanget själv.
 
 ## Nästa steg
 

@@ -105,7 +105,13 @@ export function simulera(fält, lopp) {
      kvar på upploppet, inte i om de hänger med på baksidan. */
   const vmaxAv = (h) => (10.95 + h.fart * 0.042) * (1 + (h.form - 50) * 0.0016);
   const sorteradeVmax = fält.map(vmaxAv).sort((a, b) => a - b);
-  const fältTempo = sorteradeVmax[Math.floor(sorteradeVmax.length * 0.30)] * 1.02;
+  /* Marschfarten skalar med distansen. Ett långlopp körs långsammare per
+     kilometer — annars tvingas hela den bakre halvan av fältet ligga över
+     sin uthålliga fart i tre och en halv minut och är slut långt före mål.
+     Det är därför ledningen tidigare vann 67 % på 2640 meter: ingen orkade
+     fram och pressa. */
+  const distansfaktor = 1 - klamp((dist - 1640) / 1500, 0, 1.2) * 0.055;
+  const fältTempo = sorteradeVmax[Math.floor(sorteradeVmax.length * 0.30)] * 1.02 * distansfaktor;
 
   /* Dold dagsform. Publiken ser form och meriter, men inte att hästen
      kände sig tung i morse. En stark häst som inte var bra den dagen
