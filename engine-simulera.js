@@ -15,12 +15,12 @@ const EXTRA_VÄG = 0.0063;
 /* Kraftuttag per läge. Dödens är dyrast eftersom man varken har rygg
    eller kort väg. Andra utvändigt har rygg av dödenshästen. */
 const KOSTNAD = {
-  ledare: 0.97,
+  ledare: 0.90,
   rygg: 0.82,     // andra invändigt
   kö: 0.80,       // tredje invändigt och bakåt
   friInner: 0.93, // inne men utan rygg
   öppet: 0.95,    // open stretch — kort väg men ingen rygg
-  dödens: 1.08,   // första utvändigt
+  dödens: 1.34,   // första utvändigt
   utvRygg: 0.88,  // andra och tredje utvändigt, med rygg
   tredje: 1.18,   // tredje spåret med rygg — alltid dyrare
   tredjeFri: 1.34, // tredje spåret utan rygg
@@ -97,13 +97,15 @@ export function simulera(fält, lopp) {
 
   const snittKapacitet =
     fält.reduce((a, h) => a + (h.start + h.fart + h.styrka) / 3, 0) / fält.length;
+  const snittFart = fält.reduce((a, h) => a + h.fart, 0) / fält.length;
+  const snittStyrka = fält.reduce((a, h) => a + h.styrka, 0) / fält.length;
 
   /* Marschfarten sätts av fältet, inte av ledarens toppfart. Alla hästar i
      ett lopp KAN hålla tempot — skillnaden mellan dem visar sig i vad de har
      kvar på upploppet, inte i om de hänger med på baksidan. */
   const vmaxAv = (h) => (11.60 + h.fart * 0.042) * (1 + (h.form - 50) * 0.0016);
   const sorteradeVmax = fält.map(vmaxAv).sort((a, b) => a - b);
-  const fältTempo = sorteradeVmax[Math.floor(sorteradeVmax.length / 2)] * 1.025;
+  const fältTempo = sorteradeVmax[Math.floor(sorteradeVmax.length * 0.30)] * 1.02;
 
   /* Dold dagsform. Publiken ser form och meriter, men inte att hästen
      kände sig tung i morse. En stark häst som inte var bra den dagen
@@ -138,6 +140,18 @@ export function simulera(fält, lopp) {
       respekt: klamp(h.streck / 45, 0, 1),
       /* Travsäkerheten är hästens grundläggande förmåga att hålla gångarten.
          Unghästar och orutinerade galopperar mest, travsäkra nästan aldrig. */
+      /* Har hästen en avslutning att använda om den får fri väg? Och orkar
+         den jobba utvändigt? Utan något av det finns ingen anledning att
+         lämna innerspåret — man ligger kvar och kör för bästa placering. */
+      harSpurt: h.fart >= snittFart + 2,
+      stark: h.styrka >= snittStyrka + 2,
+      /* Vad är bästa möjliga resultat för just den här hästen?
+         Har du en bra häst i klassen är seger målet. Har du en svag är
+         pengar på kontot målet — och med prisstegen betalar sig en femte-
+         plats. En svag häst kan ändå vinna om loppet faller rätt och den
+         blir smygkörd, men kusken kör inte för det. */
+      målsättning: kapacitet >= snittKapacitet + 5 ? "vinna"
+        : kapacitet >= snittKapacitet - 4 ? "placering" : "insprunget",
       travsäkerhet: klamp(
         0.902 + (h.lynne / 100) * 0.088
         - (h.ålder <= 4 ? 0.028 : h.ålder === 5 ? 0.012 : 0)
@@ -160,6 +174,8 @@ export function simulera(fält, lopp) {
         0.22 + ((h.kusk.offensivitet ?? 50) / 100) * 0.56
         + (kapacitet - snittKapacitet) / 160
         + (h.taktik === "utv" ? 0.24 : h.taktik === "ledning" ? 0.18 : h.taktik === "skydd" ? -0.22 : 0)
+        + (kapacitet >= snittKapacitet + 5 ? 0.10
+           : kapacitet >= snittKapacitet - 4 ? 0 : -0.12)
         + rnd(-0.11, 0.11),
         0, 1
       ),
@@ -422,9 +438,19 @@ export function simulera(fält, lopp) {
           const pressare = H.find((o) => !o.ur && o.kol0 === 1 && platsIKolumn(o) === 1);
           /* En avvaktande kusk släpper hellre initiativet än sliter ut
              hästen i en spetsstrid. En offensiv försvarar in i det sista. */
+          /* På en bana med öppet innerspår är rygg ledaren inget fängelse —
+             man kommer alltid loss över upploppet. Därför är kuskarna
+             mycket mer villiga att släppa spetsen där, och ledarbyten är
+             betydligt vanligare än på en vanlig bana. */
           const stilfaktor = 1.6 - (s.kusk.offensivitet ?? 50) / 62;
-          const vinsthål = (lopp.openStretch ? 0.05 : 0.04) * Math.max(0.2, stilfaktor);
-          s.släpperTill = (pressare && pressare.ambition > s.ambition + 0.08 &&
+          const vinsthål = (lopp.openStretch ? 0.19 : 0.035) * Math.max(0.2, stilfaktor);
+          /* På open stretch räcker det att angriparen är ungefär jämbördig
+             för att man ska välja ryggen — där är den ett vinnarläge. På en
+             vanlig bana krävs att angriparen är klart bättre, för rygg
+             ledaren är ett fängelse om luckan aldrig kommer. */
+          const tröskel = lopp.openStretch ? -0.06 : 0.08;
+          const villHellreHaRygg = lopp.openStretch && s.målsättning !== "vinna";
+          s.släpperTill = (pressare && (villHellreHaRygg || pressare.ambition > s.ambition + tröskel) &&
             Math.random() < vinsthål) ? pressare : null;
         } else if (s !== led) {
           s.släpperTill = null;
@@ -454,9 +480,13 @@ export function simulera(fält, lopp) {
            man väljer. Kuskar söker hellre rygg på den som redan gått ut.
            Utan den asymmetrin hamnar alla toppekipage frivilligt i dödens. */
         const uteUtanRygg = s.kol === 0 && !upptaget(1, s.d0);
-        const kostarDödens = uteUtanRygg
-          ? (s.ambition < 0.5 ? 0.15 : Math.pow(s.ambition, 2))
-          : 1.6; // att lägga sig i rygg på dödenshästen är mycket attraktivt
+        /* Dödenspriset gäller under resan — att frivilligt parkera utvändigt
+           utan rygg är dyrt. På upploppet handlar utflyttning inte om dödens
+           utan om fri väg, och då gäller inte samma motvilja. */
+        const kostarDödens = upplopp ? 1.15
+          : uteUtanRygg
+            ? (s.ambition < 0.5 ? 0.15 : Math.pow(s.ambition, 2))
+            : 1.6; // att lägga sig i rygg på dödenshästen är mycket attraktivt
         /* Kedjeeffekten: när en häst går ut följer ofta den bakom, och
            sedan nästa. Utan den töms ytterraden i stället för att fyllas
            på, och då får rygg ledaren fri väg ut — vilket den sällan får. */
@@ -467,18 +497,49 @@ export function simulera(fält, lopp) {
         /* Övriga reagerar på ledarens tempo. Går det långsamt måste någon
            göra något; går det hårt är det dyrt att gå ut och fler sitter kvar. */
         const tempoläge = led.v0 / (fältTempo || led.v0);
-        const tempolockelse = klamp(1.9 - tempoläge * 0.95, 0.45, 1.7);
+        const tempolockelse = klamp(1.9 - tempoläge * 0.95, 0.45, 1.7)
+          * (lopp.openStretch ? 1.2 : 1);   // öppet innerspår gör angrepp billigare
         const respekt = drag ? drag.respekt : 0;
         /* Före attackfönstret ligger man kvar. Att flytta ut på baksidan
            första varvet gör man bara om körordern säger det — annars är
            ytterraden full redan efter 300 meter och ledaren får aldrig
            ett lugnt lopp. */
-        const förTidigt = kvar > gårVid && s.taktik !== "ledning" && s.taktik !== "utv";
+        /* Loppet har tre skeden. Först en positionsstrid där alla jagar
+           bästa möjliga läge och ytterraden fylls på. Sedan en mellanfas
+           där man ligger stilla. Sist attackfönstret. Utan positionsstriden
+           bildas ytterraden aldrig och alla ligger på en lång rad inne. */
+        const positionsstrid = kvar > dist * 0.76;
+        const mellanfas = !positionsstrid && kvar > gårVid;
+
+        /* Mellanfasen är inte tom. En stark häst kliver ut och avancerar mot
+           dödens OM ledaren inte får tillräckligt med press — men ligger
+           kvar om tempot redan är högt. Och en häst utan spurt har ingen
+           anledning att lämna innerspåret: den kör för bästa placering och
+           chansar på en lucka. */
+        const ledarenOpressad = !H.some(
+          (o) => !o.ur && o.kol0 === 1 && Math.abs(o.d0 - led.d0) < 9
+        );
+        const lågtTempo = led.v0 < fältTempo * 0.985;
+        const villAvancera = mellanfas && (ledarenOpressad || lågtTempo)
+          && (s.stark || s.ambition > 0.64) && s.kraft > 52;
+        const förTidigt = mellanfas && !villAvancera
+          && s.taktik !== "ledning" && s.taktik !== "utv";
         const chans = villFram
-          ? (upplopp ? 0.55 : (långspurt || (s.kol0 >= 1 && attackfönster)) ? 0.3
+          ? (upplopp ? 0.6
+             : villAvancera ? 0.05
+             : positionsstrid ? (blockerad ? 0.30 : 0.10)
+             : (långspurt || (s.kol0 >= 1 && attackfönster)) ? 0.3
              : blockerad ? (förTidigt ? 0.025 : 0.11) : (förTidigt ? 0.004 : 0.02))
             * iKedjan * yttreMotstånd * kostarDödens * (1 - respekt * 0.5)
             * (0.68 + (s.kusk.offensivitet ?? 50) / 130) * tempolockelse
+            /* Den som kör för pengar på kontot lämnar inte innerspåret i
+               onödan — en dyr resa utvändigt förstör placeringen som
+               faktiskt betalar. Att den ändå kan vinna på en smygresa är
+               inte något kusken kör för, men det händer. */
+            * (upplopp ? 1
+               : s.målsättning === "insprunget" ? 0.28
+               : s.målsättning === "placering" ? (s.harSpurt || s.stark ? 0.85 : 0.5)
+               : 1)
             * (0.65 + s.kusk.taktik / 180)
           : 0;
 
@@ -509,14 +570,17 @@ export function simulera(fält, lopp) {
            fast bakom ledaren gå INÅT i stället för utåt de sista metrarna.
            Det är hela poängen med konstruktionen — rygg ledaren får en
            väg förbi som annars inte finns. */
-        if (lopp.openStretch && kvar < 190 && s.kol === 0 && blockerad &&
-            !upptaget(-1, s.d0) && Math.random() < 0.055) {
+        if (lopp.openStretch && kvar < 210 && s.kol === 0 && harSkydd &&
+            !upptaget(-1, s.d0) && Math.random() < 0.34) {
           s.kol = -1;
           säg(`<b>${s.h.namn}</b> går in i det öppna innerspåret.`, "hot");
         }
         const rakt = !upptaget(s.kol + 1, s.d0);
         const bakom = blockerad && !upptaget(s.kol + 1, s.d0 - 5.5, 0.8, 4.2);
-        if (fårGåUtAlls && s.kraft > 28 && Math.random() < chans && s.kol < maxKol &&
+        /* På upploppet fäller man ut för att få fri väg, inte för att man
+           har krafter kvar. Kraftspärren gäller därför bara under resan. */
+        const orkar = upplopp ? s.kraft > 4 : s.kraft > 28;
+        if (fårGåUtAlls && orkar && Math.random() < chans && s.kol < maxKol &&
             fårTaTredje && (rakt || bakom)) {
           s.kol++;
           s.kraft -= 1.2;
@@ -539,7 +603,7 @@ export function simulera(fält, lopp) {
           if (Math.random() < galoppRisk(s, bytfaktorer) * 0.26) {
             galoppera(s, "i rycket");
           }
-        } else if (s.kol > 0 && !upptaget(s.kol - 1, s.d0) &&
+        } else if (!upplopp && s.kol > 0 && !upptaget(s.kol - 1, s.d0) &&
                    ((s.kol >= 2 && !attackfönster) || !villFram || s.kraft < 38) &&
                    Math.random() < (s.kol >= 2 ? 0.7 : 0.5)) {
           s.kol--; // in i ledet igen så fort en lucka finns
