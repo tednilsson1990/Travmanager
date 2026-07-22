@@ -100,7 +100,7 @@ export function körVecka(spel) {
  * Efter ett lopp: pengar, form, och hela sfärens reaktion.
  * Returnerar en sammanfattning som UI:t kan visa.
  */
-export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit }) {
+export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang, förväntan = 0 }) {
   /* Dold dagsform. En häst som inte var bra den dagen presterar under sin
      kapacitet — och då är ett dåligt resultat inte ett misslyckande utan
      en upplysning. Pressen och ägarna dömer mildare, men hästen kan
@@ -125,13 +125,17 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit }) {
   if (dåligDag && Math.random() < 0.35) häst.skada = Math.max(häst.skada, int(1, 2));
 
   let renΔ = 0, relΔ = 0, hypeΔ = 0, troΔ = 0;
-  const kortnamn = lopp.namn.split(",")[0].toLowerCase();
+  const kortnamn = lopp.kortnamn || lopp.namn.split(",")[0];
+
+  /* En V85-avdelning ses av hela landet. Allt väger tyngre där. */
+  const v85 = !!lopp.v85;
+  const vikt = v85 ? 1.6 : 1;
 
   if (vann) {
-    renΔ = 2.5 * lopp.prestige; relΔ = 9; hypeΔ = 14 + lopp.prestige * 5;
+    renΔ = 2.5 * lopp.prestige * vikt; relΔ = 9; hypeΔ = (14 + lopp.prestige * 5) * vikt;
     troΔ = varFavorit ? 2 : 5;
     if (!varFavorit) renΔ += 2;
-    skrivPress(spel, `${häst.namn} vinner ${kortnamn}`,
+    skrivPress(spel, v85 ? `${häst.namn} vinner V85-avdelningen` : `${häst.namn} vinner ${kortnamn}`,
       `${kusk.namn} körde. ${varFavorit ? "Favoritskapet infriades."
         : `Skrällen var ett faktum — bara ${min.streck.toFixed(0)} % streck.`}`, "bra");
   } else if (pall) {
@@ -141,9 +145,15 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit }) {
   } else {
     relΔ = -3; hypeΔ = -5;
     if (varFavorit) {
-      renΔ = -3; relΔ = -5; troΔ = -7;
-      skrivPress(spel, `Storfavoriten föll — ${häst.namn} ${min.ur ? "bortkörd" : `bara ${min.plats}:a`}`,
-        `${min.streck.toFixed(0)} % av spelarna hade satsat.`, "dålig");
+      renΔ = -3 * vikt; relΔ = -5; troΔ = -7 * vikt;
+      const spikad = v85 && min.streck > 40;
+      skrivPress(spel,
+        spikad
+          ? `Spiken sprack — ${häst.namn} ${min.ur ? "bortkörd" : `bara ${min.plats}:a`} i V85`
+          : `Storfavoriten föll — ${häst.namn} ${min.ur ? "bortkörd" : `bara ${min.plats}:a`}`,
+        spikad
+          ? `${min.streck.toFixed(0)} % hade spikat ekipaget. Systemen sprack över hela landet.`
+          : `${min.streck.toFixed(0)} % av spelarna hade satsat.`, "dålig");
     } else if (min.ur) {
       renΔ = -1; troΔ = -2;
       skrivPress(spel, `Galopp för ${häst.namn}`, `Ingen lugn resa för ${kusk.namn}.`, "dålig");
@@ -151,6 +161,25 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit }) {
   }
   // Att offra en kusk i dödens utan resultat kostar relation
   if (!min.ur && min.utanSkydd > 50 && min.plats > 4) relΔ -= 2;
+
+  /* Vad du sa till pressen före loppet får följder. Talade du upp hästen
+     har du satt din trovärdighet i pant; tonade du ner den blir fallet
+     mjukare, men ägarna ville synas. */
+  if (förväntan > 0) {
+    if (vann) { renΔ += 1.5; hypeΔ += 6; }
+    else {
+      renΔ -= 2; troΔ -= 2;
+      skrivPress(spel, `Stora ord, tunt resultat för ${häst.namn}`,
+        "Björkhaga lovade rakt inför loppet. Så blev det inte.", "dålig");
+    }
+  } else if (förväntan < 0) {
+    if (vann) {
+      renΔ += 1;
+      skrivPress(spel, `${häst.namn} vann — trots att tränaren tonade ner`,
+        "Antingen blygsamhet eller taktik. Spelarna noterade i alla fall oddset.", "bra");
+    } else { renΔ *= 0.7; troΔ *= 0.7; }
+    if (häst.ägare) häst.tålamod -= 1;
+  }
 
   // Ett svagt lopp med en häst som inte var bra döms mildare
   if (dåligDag && renΔ < 0) { renΔ *= 0.5; troΔ *= 0.5; }
@@ -194,5 +223,33 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit }) {
     skrivPress(spel, `Svagt av ${häst.namn}`,
       `Björkhaga uppger att hästen inte var i slag.`, "neutral");
   }
+  /* ---------- Stallform och marknadens bild av dig ----------
+     Stallformen är offentlig och påverkar oddsen på ALLA dina hästar. En
+     usel månad gör även din bästa häst underspelad — vilket blir din chans.
+     Marknadsbilden mäter om dina hästar brukar överträffa sina odds. Gör de
+     det blir de hårdare spelade, och kanten äts upp. */
+  if (!min.ur && min.plats) {
+    const startande = lopp.startande || 12;
+    /* Överprestation mäts mot spelarnas RANGORDNING, inte mot procenttalet.
+       Var hästen tredje mest spelad och slutade tvåa har den överträffat
+       förväntan med en placering. Jämför man i stället placering mot
+       streckprocent blir även en vinnande favorit "underpresterande",
+       eftersom procenttalet kan vara högre än vad någon placering kan matcha. */
+    const rang = streckRang || Math.ceil(startande / 2);
+    const prestation = (1 - (min.plats - 1) / Math.max(1, startande - 1)) / 0.5;
+    const överprestation = (rang - min.plats) / Math.max(1, startande - 1);
+    spel.resultathistorik = [
+      { prestation, överprestation },
+      ...(spel.resultathistorik || []),
+    ].slice(0, 12);
+  }
+  const hist = spel.resultathistorik || [];
+  if (hist.length) {
+    const snittPrestation = hist.reduce((a, b) => a + b.prestation, 0) / hist.length;
+    const snittÖver = hist.reduce((a, b) => a + b.överprestation, 0) / hist.length;
+    spel.stallform = klamp(50 + (snittPrestation - 1) * 45);
+    spel.marknadsbild = klamp(snittÖver * 2.2, -1.2, 1.2);
+  }
+
   return { brutto, kuskandel, netto, renΔ, relΔ, hypeΔ, troΔ, ägartext, dagstext, dåligDag };
 }

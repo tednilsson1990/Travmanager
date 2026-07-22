@@ -137,3 +137,62 @@ header{ padding-top: calc(12px + env(safe-area-inset-top)); }
 @media (prefers-reduced-motion: reduce){
   .puck, .nb-puck{ transition: none; }
 }
+
+/* Loppfakta i anmälan — proposition, bana och distanspassning */
+.loppfakta{
+  background:#141C26;border:1px solid var(--linje);border-radius:2px;
+  padding:9px 11px;margin:-4px 0 10px;font-size:13px;color:var(--dis);
+}
+.loppfakta > div{display:flex;gap:8px;padding:2px 0}
+.loppfakta span{
+  font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;color:rgba(233,230,223,.4);min-width:78px;padding-top:2px;
+}
+.loppfakta .bra{color:var(--form)}
+.loppfakta .dålig{color:#E5B4B4}
+.loppfakta .v85{color:var(--strålkastare)}
+
+/* ---- Tävlingsdagen: samtal och val ---- */
+.samtal{
+  background:#141C26;border:1px solid var(--linje);border-left:3px solid var(--kall);
+  border-radius:2px;padding:11px 13px;margin-bottom:12px;
+}
+.samtal-vem{
+  font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--kall);margin-bottom:5px;
+}
+.samtal-text{font-size:14px;color:var(--rail);line-height:1.5}
+
+.val{
+  display:block;width:100%;text-align:left;background:var(--panel);
+  border:1px solid var(--linje);border-radius:3px;padding:12px;margin-bottom:9px;
+  cursor:pointer;color:var(--rail);font-family:inherit;
+}
+.val:active{background:#22303D}
+.val.rek{border-color:var(--strålkastare)}
+.val-rubrik{
+  font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:19px;
+  text-transform:uppercase;line-height:1.1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.rek-marke{
+  font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--strålkastare);
+  border:1px solid var(--strålkastare);border-radius:2px;padding:1px 5px;
+}
+.val-citat{font-size:13px;color:var(--rail);margin-top:6px;font-style:italic;opacity:.9}
+.val-följd{font-size:12px;color:var(--dis);margin-top:6px}
+
+/* ---- Spårlottningen ---- */
+.lottning{
+  background:linear-gradient(180deg,#1A1208,#241708);border:1px solid #3A2716;
+  border-radius:3px;padding:20px;text-align:center;margin-bottom:12px;
+}
+.lott-etikett{
+  font-family:'Roboto Mono',monospace;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--dis);
+}
+.lott-spår{display:flex;justify-content:center;margin:12px 0 8px;transform:scale(2.1)}
+.lott-text{
+  font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:22px;
+  text-transform:uppercase;color:var(--strålkastare);margin-top:14px;
+}

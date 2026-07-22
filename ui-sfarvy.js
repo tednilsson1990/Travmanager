@@ -5,7 +5,28 @@ import { Tom } from "./ui-delar.js";
 
 export default function SfarVy({ spel }) {
   const externa = spel.stall.filter((h) => h.ägare);
+  const marknad = spel.marknadsbild ?? 0;
+  const marknadsText = marknad > 0.25
+    ? "Dina hästar har överträffat sina odds. Spelarna har noterat det — räkna med kortare odds."
+    : marknad < -0.25
+      ? "Dina hästar har underpresterat mot sina odds. Marknaden är skeptisk, vilket ger dig utrymme."
+      : "Marknaden prissätter ditt stall ungefär rätt.";
+
   return html`
+    <h2>Stallets ställning</h2>
+    <div class="kort">
+      <div class="relrad">
+        <div>
+          <div class="relnamn">Stallform</div>
+          <div class="relmini">senaste tolv starterna · påverkar oddsen på alla dina hästar</div>
+        </div>
+        <div class="relbar"><i class=${(spel.stallform ?? 50) < 40 ? "kall" : ""}
+          style=${{ width: klamp(spel.stallform ?? 50) + "%" }} /></div>
+        <div class="svar">${Math.round(spel.stallform ?? 50)}</div>
+      </div>
+      <div class="logg" style="margin-top:8px">${marknadsText}</div>
+    </div>
+
     <h2>Travmedia</h2>
     ${spel.press.length === 0
       ? html`<${Tom}>Ingen har skrivit om dig än.<//>`
@@ -16,8 +37,13 @@ export default function SfarVy({ spel }) {
           </div>`)}
 
     <h2>Kuskkåren</h2>
+    <div class="hint">Kuskar du kört med, plus kårens mest ryktbara.</div>
     <div class="kort">
-      ${[...KUSKAR].sort((a, b) => b.ryktbarhet - a.ryktbarhet).map((k) => {
+      ${[...KUSKAR]
+        .filter((k) => spel.kuskrelation[k.namn] !== undefined || k.ryktbarhet > 62)
+        .sort((a, b) => b.ryktbarhet - a.ryktbarhet)
+        .slice(0, 24)
+        .map((k) => {
         const r = relation(spel, k);
         const sv = svar(spel, k);
         return html`

@@ -1,5 +1,6 @@
 import { rnd, klamp, LÄNGD, kmtid } from "./engine-util.js";
 import { spårfördel, framförSpår, ärSpringspår } from "./data-lopp.js";
+import { distanspassning } from "./engine-hast.js";
 
 const DT = 0.25;            // sekunder per tick
 const MAXTID = 400;
@@ -50,7 +51,7 @@ export function simulera(fält, lopp) {
   /* Marschfarten sätts av fältet, inte av ledarens toppfart. Alla hästar i
      ett lopp KAN hålla tempot — skillnaden mellan dem visar sig i vad de har
      kvar på upploppet, inte i om de hänger med på baksidan. */
-  const vmaxAv = (h) => (11.78 + h.fart * 0.042) * (1 + (h.form - 50) * 0.0016);
+  const vmaxAv = (h) => (12.42 + h.fart * 0.042) * (1 + (h.form - 50) * 0.0016);
   const sorteradeVmax = fält.map(vmaxAv).sort((a, b) => a - b);
   const fältTempo = sorteradeVmax[Math.floor(sorteradeVmax.length / 2)] * 1.025;
 
@@ -68,13 +69,18 @@ export function simulera(fält, lopp) {
   const H = fält.map((h) => {
     const kapacitet = (h.start + h.fart + h.styrka) / 3;
     const dag = dagsformAv();
+    /* Fel distans märks mest i tanken. En häst som tvingas gå längre än den
+       vill tappar uthållighet; en som går kortare än den vill får aldrig
+       användning för sin styrka. */
+    const passning = distanspassning(h, dist);
     return {
       dagsform: dag.värde, dagsformText: dag.text,
+      passning,
       h, kusk: h.kusk, taktik: h.taktik, spår: h.spår,
       d: 0, v: 0,
-      vmax: vmaxAv(h) * dag.värde,
+      vmax: vmaxAv(h) * dag.värde * (0.972 + 0.028 * passning),
       kraft: (100 + (h.form - 50) * 0.28 + (h.energi - 85) * 0.12) * dag.värde,
-      sf: 0.68 + (h.styrka / 100) * 0.62,
+      sf: (0.68 + (h.styrka / 100) * 0.62) * (0.90 + 0.10 * passning),
       kol: 0,                       // 0 innerspår, 1 utvändigt, 2 tredje spår
       galopp: 0, ur: false,
       låst: false, instängd: false,
@@ -244,6 +250,21 @@ export function simulera(fält, lopp) {
     if (s.kol0 === 2) return harSkydd ? KOSTNAD.tredje : KOSTNAD.tredjeFri;
     return harSkydd ? KOSTNAD.utvRygg : KOSTNAD.dödens;
   };
+
+  /* ---------- Loppets tempoförlopp ----------
+     Tre förlopp förekommer i verkligheten och de ger helt olika lopp:
+     ledaren får bestämma och tempot sjunker, någon pressar i dödens och
+     tempot rusar, eller ingen vill köra och allt avgörs sista 500.
+     Utan detta får varje lopp samma profil och alla lopp liknar varandra. */
+  const spetskämpar = H.filter((s) => !s.ur && s.taktik === "ledning").length;
+  /* Hård öppning ska vara en av tre loppsorter, inte normalbilden. Med femton
+     hästar och fem taktiker har i snitt tre ekipage "till ledningen", så
+     tröskeln måste ligga högre än så. */
+  const hårdÖppning = spetskämpar >= 5 || (spetskämpar === 4 && Math.random() < 0.5);
+  const ledarLugn = hårdÖppning ? rnd(0.98, 1.04) : rnd(0.885, 0.96);
+  if (hårdÖppning) {
+    H.filter((s) => s.taktik === "ledning").forEach((s) => { s.kraft -= rnd(4, 9); });
+  }
 
   frys();
   let t = 0, klara = 0, förraLedare = null;
@@ -428,7 +449,8 @@ export function simulera(fält, lopp) {
            Får ekipaget vara ifred sänks tempot och krafterna sparas till
            upploppet. Kommer någon utvändigt måste ledaren försvara sig. */
         const press = H.some((o) => !o.ur && o.kol0 > 0 && Math.abs(o.d0 - s.d0) < 8);
-        mål = Math.min(s.vmax * 1.02, fältTempo * (press ? 1.05 : 1.02));
+        const öppning = kvar > dist * 0.72 && hårdÖppning ? 1.04 : 1;
+        mål = Math.min(s.vmax * 1.02, fältTempo * (press ? 1.05 : ledarLugn) * öppning);
       } else {
         /* Fältet är packat. Alla siktar på hjulet framför — även den som
            ligger långt bak försöker upp i kön, inte gå på egen marschfart.

@@ -40,6 +40,7 @@ function Hästkort({ häst, uppdatera }) {
         ${häst.ålder} år · ${häst.kön} · ${häst.starter} st · ${häst.segrar} seg · ${kr(häst.intjänat)} kr
       </div>
       <div class="taggar">
+        <span class="tagg">${häst.distans?.optimal ?? 2140} m · ${häst.distans?.typ ?? "medeldistans"}</span>
         ${häst.ägare
           ? html`<span class="tagg ext">${häst.ägare}</span>
                  <span class=${"tagg" + (kvar <= 1 ? " varning" : "")}>

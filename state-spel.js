@@ -11,6 +11,7 @@ export function nyttSpel() {
     vecka: 1, veckor: 20,
     kassa: 180000, intjänat: 0,
     renommé: 25, spelförtroende: 40,
+    stallform: 50, marknadsbild: 0, resultathistorik: [],
     stall: [nyHäst({ ålder: 5 }), nyHäst({ ålder: 4 }), nyHäst({ ålder: 7 })],
     kuskrelation: {},
     logg: [], press: [], föl: [],
@@ -34,6 +35,14 @@ export function ladda() {
     const spel = JSON.parse(rå);
     if (spel.version !== 1) return null;
     sättIdRäknare(spel.nästaId || 1000);
+    // Fält som tillkommit efter att sparfilen skapades
+    spel.stallform ??= 50;
+    spel.marknadsbild ??= 0;
+    spel.resultathistorik ??= [];
+    spel.stall.forEach((h) => {
+      h.distans ??= { optimal: 2140, tolerans: 520, typ: "medeldistans" };
+      h.senasteStartVecka ??= 0;
+    });
     return spel;
   } catch { return null; }
 }
@@ -48,12 +57,7 @@ export function raderaSparfil() {
  */
 export function useSpel() {
   const ref = useRef(null);
-  if (ref.current === null) {
-    const laddat = ladda();
-    ref.current = laddat ?? nyttSpel();
-    // Spara direkt, annars lottas ett nytt stall vid varje omladdning
-    if (!laddat) spara(ref.current);
-  }
+  if (ref.current === null) ref.current = ladda() ?? nyttSpel();
   const [, sättVersion] = useState(0);
 
   const uppdatera = useCallback((fn) => {

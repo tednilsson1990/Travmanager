@@ -1,8 +1,10 @@
 import { plock } from "./engine-util.js";
+import { HÄST_FÖRLED, HÄST_EFTERLED } from "./data-namnpaket.js";
 
-export const FÖRLED = ["Global","Zenit","Nordisk","Vinter","Ravel","Cyklon","Åsa","Trolle",
-  "Mimer","Saga","Bore","Elden","Ymer","Vixen","Kajsa","Haga","Stjärn","Torp","Järva","Rimfrost"];
-export const EFTERLED = ["Broline","Gift","Face","Boko","Sisu","Palema","Am","Diamant",
-  "Hornline","Kronos","Tilly","Vinge","Ester","Rapid","Crown","Sund"];
+/* Hästnamnen byggs ur namnlagret. Efterleden är påhittade i stället för
+   verkliga uppfödarsuffix, så att genererade namn inte krockar med
+   existerande hästar. */
+export const FÖRLED = HÄST_FÖRLED;
+export const EFTERLED = HÄST_EFTERLED;
 
 export const nyttNamn = () => plock(FÖRLED) + " " + plock(EFTERLED);

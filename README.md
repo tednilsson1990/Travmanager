@@ -29,17 +29,27 @@ index.html              importmap + manifest, enda HTML-filen
 manifest.webmanifest    hemskärmsapp
 styles.css
 main.js                 monterar appen
-data-*.js               kuskar, lopp, ägare, hingstar, namn
+data-namnpaket.js       ALLT namngivande: banor, kuskar, loppserier, hästnamn
+data-kalender.js        tävlingskalender, propositioner, storlopp
+data-lopp.js            taktiker och spårens värde
+data-*.js               ägare, hingstar, kuskar, namn
 engine-util.js          slump, formatering, nummertäcken
-engine-hast.js          hästar, motståndare, träningsformer
+engine-hast.js          hästar, distansprofiler, träningsformer
 engine-streck.js        streckprocent ur publikens synvinkel
 engine-simulera.js      tick-baserad loppsimulering (0,25 s)
-engine-vecka.js         veckoloop, mediareaktioner, ägarkrav
+engine-vecka.js         veckoloop, mediareaktioner, ägarkrav, stallform
 state-spel.js           speltillstånd + sparfil
 ui-*.js                 preact-komponenter, en fil per vy
 ```
 
 `engine-*` känner inte till gränssnittet och går att testa fristående.
+
+### Namnlagret
+
+All identitet ligger i `data-namnpaket.js` och ingenstans annars. Motorn
+känner bara till egenskaper — banlängd, upploppets längd, open stretch,
+kuskens startsnabbhet. Ett licensierat namnpaket kan därför bytas in senare
+utan att röra simuleringen. Bygg aldrig in ett namn någon annanstans.
 
 ## Modellen i korthet
 
