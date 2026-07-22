@@ -51,7 +51,7 @@ export default function SfarVy({ spel }) {
             <div>
               <div class="relnamn">${k.namn}</div>
               <div class="relmini">
-                rykte ${k.ryktbarhet} · st ${k.start}/ta ${k.taktik}/av ${k.avslutning}/kyla ${k.kyla}
+                ${k.stil} · rykte ${k.ryktbarhet} · st ${k.start}/av ${k.avslutning}/kyla ${k.kyla}
               </div>
             </div>
             <div class="relbar"><i class=${r < 35 ? "kall" : ""} style=${{ width: klamp(r) + "%" }} /></div>
