@@ -73,7 +73,7 @@ function Anmälan({ spel, onStart }) {
       <select id="v-kusk" value=${kusk.namn} onChange=${(e) => sättKusk(e.target.value)}>
         ${valbara.map((k) => html`
           <option key=${k.namn} value=${k.namn} disabled=${!villig(spel, k)}>
-            ${k.namn} — st ${k.start}/ta ${k.taktik}/av ${k.avslutning} · ${svar(spel, k).t} · ${kr(k.arvode)}
+            ${k.namn} — ${k.stil} · st ${k.start}/av ${k.avslutning} · ${svar(spel, k).t} · ${kr(k.arvode)}
           </option>`)}
       </select>
     </div>
