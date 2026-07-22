@@ -103,7 +103,7 @@ export function simulera(fält, lopp) {
   /* Marschfarten sätts av fältet, inte av ledarens toppfart. Alla hästar i
      ett lopp KAN hålla tempot — skillnaden mellan dem visar sig i vad de har
      kvar på upploppet, inte i om de hänger med på baksidan. */
-  const vmaxAv = (h) => (11.60 + h.fart * 0.042) * (1 + (h.form - 50) * 0.0016);
+  const vmaxAv = (h) => (10.95 + h.fart * 0.042) * (1 + (h.form - 50) * 0.0016);
   const sorteradeVmax = fält.map(vmaxAv).sort((a, b) => a - b);
   const fältTempo = sorteradeVmax[Math.floor(sorteradeVmax.length * 0.30)] * 1.02;
 
@@ -725,7 +725,16 @@ export function simulera(fält, lopp) {
          med i fältet och ändå vara tom när det gäller, och det är därför
          ledningen är värd något: ledaren behöver aldrig sträcka sig. */
       const översträckning = Math.max(0, s.v / s.vmax - 1);
-      s.kraft = Math.max(0, s.kraft - DT * 0.62 * Math.pow(s.v / 13.6, 3)
+      /* Kraftuttaget har två delar. En låg grundkostnad som hästen kan bära
+         nästan hur länge som helst, och en brant del som slår in när farten
+         överstiger den uthålliga. Utan uppdelningen är tanken en fast budget
+         som töms av tiden — och då är alla slut långt före mål på 2640 meter,
+         varpå loppet avgörs av vem som straffas minst i stället för av
+         vem som har mest kvar. */
+      const hållbar = s.vmax * 0.93;
+      const över = Math.max(0, s.v / hållbar - 1);
+      const uttag = 0.115 + 11.5 * Math.pow(över, 1.55);
+      s.kraft = Math.max(0, s.kraft - DT * uttag
         * (1 + översträckning * 4) * kostnadFör(s, led, harSkydd) / s.sf);
       /* Taket faller med krafterna. Med full kraft kan även en långsammare
          häst hänga med i tempot — men det kostar mer, eftersom uttaget går
