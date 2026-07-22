@@ -130,7 +130,7 @@ function Facit({ körning, facit, onKlart }) {
         spelförtroende ${facit.troΔ >= 0 ? "+" : ""}${facit.troΔ} ·
         relation ${kusk.namn} ${facit.relΔ >= 0 ? "+" : ""}${facit.relΔ}
       </div>
-      ${facit.dagstext && html`<div class=${facit.dålig​Dag ? "skada" : "logg"}>${facit.dagstext}</div>`}
+      ${facit.dagstext && html`<div class=${facit.dåligDag ? "skada" : "logg"}>${facit.dagstext}</div>`}
       ${facit.ägartext && html`<div class=${facit.ägartext.ton === "dålig" ? "skada" : "logg"}>${facit.ägartext.text}</div>`}
       ${häst.skada > 0 && html`<div class="skada">Kom ur loppet ömmande — ${häst.skada} vecka(or) vila.</div>`}
     </div>
