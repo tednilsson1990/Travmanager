@@ -10,12 +10,17 @@ const INNERSPÅR = -9;
 const SPÅRBREDD = 7.5;
 
 /* Närbilden: fältet från sidan, som på en tv-bild. */
+/* Närbilden rymmer upp till sju spår i bredd. Så brett fälls fältet ut
+   bara på upploppet, och sällan — men det förekommer. */
 const NB = {
-  bredd: 360, höjd: 128,
-  vänster: 42, höger: 344,   // plats för radetiketterna till vänster
+  bredd: 360, höjd: 176,
+  vänster: 46, höger: 344,
   fönster: 40,               // meter bakom ledaren som ryms i bilden
-  rad: { 0: 92, 1: 64, 2: 36 },
+  staket: 152,
+  radAvstånd: 18,
 };
+const nbRad = (lane) => NB.staket - 14 - Math.min(lane, 6) * NB.radAvstånd;
+const RADNAMN = ["INNE", "UTV", "3:E", "4:E", "5:E", "6:E", "7:E"];
 
 function banaPunkter(radie = RADIE, halvRak = HALV_RAK, bågsteg = 60) {
   const p = [];
@@ -66,7 +71,7 @@ export default function BanVy({ lopp, fält, bild }) {
       const len = Math.hypot(nx, ny) || 1;
       nx /= len; ny /= len;
       if ((pt.x - MITT.x) * nx + (pt.y - MITT.y) * ny < 0) { nx = -nx; ny = -ny; }
-      const ut = INNERSPÅR + p.lane * SPÅRBREDD;
+      const ut = INNERSPÅR + Math.min(p.lane, 6) * 4.2;
       g.setAttribute("transform",
         `translate(${(pt.x + nx * ut).toFixed(2)},${(pt.y + ny * ut).toFixed(2)})`);
     });
@@ -81,7 +86,7 @@ export default function BanVy({ lopp, fält, bild }) {
       const utanför = efter > NB.fönster;
       g.setAttribute("opacity", p.ur ? "0.2" : utanför ? "0.3" : "1");
       const x = NB.höger - Math.min(efter, NB.fönster) * skala;
-      const y = NB.rad[Math.min(p.lane, 2)];
+      const y = nbRad(p.lane);
       g.setAttribute("transform", `translate(${x.toFixed(1)},${y})`);
     });
   }, [bild, lopp]);
@@ -125,36 +130,34 @@ export default function BanVy({ lopp, fält, bild }) {
 
       <svg viewBox=${`0 0 ${NB.bredd} ${NB.höjd}`} class="narbild">
         <!-- banunderlag och innerstaket -->
-        <rect x="0" y="20" width=${NB.bredd} height="90" fill="#2A1D12" />
-        <line x1="0" y1="107" x2=${NB.bredd} y2="107" stroke="rgba(233,230,223,.4)" stroke-width="2.5" />
+        <rect x="0" y="14" width=${NB.bredd} height=${NB.staket - 14} fill="#2A1D12" />
+        <line x1="0" y1=${NB.staket} x2=${NB.bredd} y2=${NB.staket}
+          stroke="rgba(233,230,223,.4)" stroke-width="2.5" />
         <!-- avståndsmarkeringar var tionde meter -->
         ${[10, 20, 30, 40].map((m) => {
           const x = NB.höger - m * ((NB.höger - NB.vänster) / NB.fönster);
           return html`
             <g key=${"m" + m}>
-              <line x1=${x} y1="22" x2=${x} y2="107" stroke="rgba(233,230,223,.10)" stroke-width="1" />
-              <text x=${x} y="122" fill="#6C7B8A" font-size="9" text-anchor="middle"
+              <line x1=${x} y1="16" x2=${x} y2=${NB.staket} stroke="rgba(233,230,223,.10)" stroke-width="1" />
+              <text x=${x} y=${NB.staket + 15} fill="#6C7B8A" font-size="9" text-anchor="middle"
                 font-family="'Roboto Mono',monospace">${m} m</text>
             </g>`;
         })}
-        <text x=${NB.höger} y="122" fill="#F2B134" font-size="9"
+        <text x=${NB.höger} y=${NB.staket + 15} fill="#F2B134" font-size="9"
           font-family="'Roboto Mono',monospace" text-anchor="middle">mål ▶</text>
         <!-- spårledernas etiketter -->
-        <text x="4" y=${NB.rad[0] + 4} fill="#8FA0B0" font-size="9"
-          font-family="'Roboto Mono',monospace">INNE</text>
-        <text x="4" y=${NB.rad[1] + 4} fill="#8FA0B0" font-size="9"
-          font-family="'Roboto Mono',monospace">UTV</text>
-        <text x="4" y=${NB.rad[2] + 4} fill="#8FA0B0" font-size="9"
-          font-family="'Roboto Mono',monospace">3:E</text>
+        ${RADNAMN.map((namn, i) => html`
+          <text key=${"r" + i} x="4" y=${nbRad(i) + 4} fill="#8FA0B0" font-size="9"
+            font-family="'Roboto Mono',monospace">${namn}</text>`)}
         <g>
           ${fält.map((h) => {
             const t = täcke(h.spår);
             return html`
               <g key=${"n" + h.spår} class="puck nb-puck" ref=${(n) => { nära.current[h.spår] = n; }}>
-                <circle r="10.5" fill=${t.bg}
+                <circle r="8.6" fill=${t.bg}
                   stroke=${h.egen ? "#F2B134" : "rgba(0,0,0,.55)"}
                   stroke-width=${h.egen ? 3 : 1} />
-                <text text-anchor="middle" y="4" fill=${t.fg} font-size="12"
+                <text text-anchor="middle" y="3.4" fill=${t.fg} font-size="10"
                   font-weight="700" font-family="'Roboto Mono',monospace">${h.spår}</text>
               </g>`;
           })}
