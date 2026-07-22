@@ -63,6 +63,39 @@ const STORLOPP = STORLOPPSMALLAR.map((m) => ({
 
 export const ärV85Vecka = (vecka) => vecka % 4 === 0;
 
+/**
+ * Prisstegen.
+ *
+ * I trav får nästan alltid flera hästar betalt, och alla startande får
+ * normalt en garanterad prispeng — även oplacerade och diskvalificerade.
+ * Hur många som får pris beror på förstaprisets storlek och antalet
+ * startande:
+ *
+ *   förstapris ≤ 30 000 kr  → 8 pris oavsett fältstorlek
+ *   förstapris > 30 000 kr  → 5 pris vid ≤9 startande
+ *                             6 pris vid 10–12
+ *                             7 pris vid 13–15
+ *
+ * Det spelar roll långt utöver kassan: startsumman avgör vilka lopp hästen
+ * får starta i, så en femteplats kan flytta en häst till tuffare motstånd.
+ */
+const STEGE = [1, 0.5, 0.35, 0.25, 0.16, 0.11, 0.08, 0.06];
+
+export function prisstege(förstapris, startande) {
+  const antalPris = förstapris <= 30000 ? 8
+    : startande <= 9 ? 5
+    : startande <= 12 ? 6
+    : 7;
+  const garanterad = Math.max(500, Math.round(förstapris * 0.03 / 100) * 100);
+  const pris = [];
+  for (let i = 0; i < startande; i++) {
+    pris.push(i < antalPris
+      ? Math.round(förstapris * STEGE[i] / 500) * 500
+      : garanterad);
+  }
+  return { pris, garanterad, antalPris };
+}
+
 function byggLopp(r, { id, namn, banaId, dist, start, klass, extra = {} }) {
   const bana = BANOR[banaId];
   const startande = extra.startande ?? klass.startande;
@@ -85,7 +118,11 @@ function byggLopp(r, { id, namn, banaId, dist, start, klass, extra = {} }) {
     förstaVolt: start === "volt" ? 12 : undefined,
     tillägg: start === "volt" ? 20 : undefined,
     krav: extra.krav ?? klass.krav ?? {},
-    pris: [...(extra.pris ?? klass.pris), 0, 0, 0],
+    ...(() => {
+      const förstapris = (extra.pris ?? klass.pris)[0];
+      const { pris, garanterad, antalPris } = prisstege(förstapris, startande);
+      return { pris, garanterad, antalPris, förstapris };
+    })(),
   };
 }
 
