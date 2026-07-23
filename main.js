@@ -1,7 +1,6 @@
 import { render } from "preact";
 import { html } from "htm/preact";
 import App from "./ui-app.js";
-import "./styles.css";
 
 /**
  * Felgräns.
