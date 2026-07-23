@@ -17,7 +17,12 @@ webbeditor, committa, och ändringen är live direkt.
 3. Öppna URL:en i mobilen → Dela → **Lägg till på hemskärmen**.
 
 Manifestet gör att den startar i helskärm utan adressfält. Karriären sparas i
-localStorage och ligger kvar mellan besöken.
+localStorage och ligger kvar mellan besöken. Service workern cachar alla filer
+vid första besöket, så spelet startar även utan nät.
+
+**Versionsnumret finns på TVÅ ställen:** `?v=N` i `index.html` och `VERSION`
+i `sw.js`. De ska alltid höjas ihop. Höjs bara det ena serverar service
+workern den gamla versionen för evigt — även online.
 
 ## Struktur
 
@@ -26,6 +31,7 @@ ladda upp i ett svep från en telefon. Prefixet i filnamnet är mappen.
 
 ```
 index.html              importmap + manifest, enda HTML-filen
+sw.js                   service worker — spelet fungerar utan nät
 manifest.webmanifest    hemskärmsapp
 styles.css
 main.js                 monterar appen
@@ -130,6 +136,17 @@ Nittio kuskar i fem körstilar: spetskusk, smygkusk, stayerkusk, chanskusk
 och taktiker. Stilen ger spann för offensivitet och tålamod, så två
 spetskuskar liknar varandra utan att vara identiska. Kusken påverkar
 tajming, beslutskvalitet och galopprisk — aldrig hästens fart direkt.
+
+**En kusk kan vara uppbokad** av ett annat stall i just det loppet — då
+hjälper varken renommé eller pengar. Elitkuskarna är tagna i ungefär vart
+tredje lopp, breda kåren i vart åttonde, och en god relation gör att kusken
+håller sig ledig för din skull. De uppbokade sitter sedan på riktigt i
+startlistan, på de starkaste motståndarna. Att samma kusk är ledig i nästa
+avdelning är poängen: ibland är rätt drag att byta lopp i stället för kusk.
+
+Uppbokningen avgörs av en hash på (säsong, vecka, lopp, kusk) — inte av
+`slump()`. Därför ger samma fråga alltid samma svar hur många gånger vyn än
+ritas om, och kalibreringens seedade körningar förblir reproducerbara.
 
 ### Galopp
 
@@ -356,7 +373,11 @@ ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
 ## Nästa steg
 
-- Tävlingskalender med propositioner istället för tre fasta lopp
-- Rivaliserande tränare och en tabell att jagas av
-- Kuskar som tackar nej för att de fått bättre erbjudande i samma lopp
-- Service worker så spelet fungerar offline
+- Rygg ledaren vinner för ofta (15,4 % mot mål 7) — diagnostiken pekar på
+  att det är för lätt att avancera hela vägen till ledningen
+- Andra utvändigt vinner för sällan (4,9 % mot mål 9,6)
+- Kuskrelationer som byggs aktivt: att anlita samma kusk om och om igen
+  borde märkas mer än det gör
+
+Klart och struket: tävlingskalendern med propositioner, tränarligan,
+uppbokade kuskar (v45) och service workern (v44).

@@ -160,15 +160,33 @@ function välTaktik(häst, lopp, kusk) {
   return slump() < 0.5 + off * 0.2 ? "rygg" : "skydd";
 }
 
-/** Lottar spår, kuskar och körorder på ett fält. */
-export function rustaFält(fält, lopp, egenKusk = null, egenTaktik = null) {
+/**
+ * Lottar spår, kuskar och körorder på ett fält.
+ *
+ * `bokade` är kuskarna som redan tackat ja åt andra stall i loppet — de SKA
+ * synas i fältet, annars ljuger anmälan. De sätts på de starkaste
+ * motståndarna: det är därför rivalen bokade dem, och det är det som gör
+ * beskedet till ett hot i stället för en notis. Resten lottas som förut.
+ */
+export function rustaFält(fält, lopp, egenKusk = null, egenTaktik = null, bokade = []) {
   const antal = fält.length;
   const spårnr = blanda(Array.from({ length: antal }, (_, i) => i + 1));
-  const kuskar = blanda(KUSKAR.filter((k) => !egenKusk || k.namn !== egenKusk.namn));
+  const upptagna = new Set([...bokade.map((k) => k.namn), egenKusk?.namn].filter(Boolean));
+  const kuskar = blanda(KUSKAR.filter((k) => !upptagna.has(k.namn)));
+
+  const motstånd = fält.filter((h) => !h.egen)
+    .sort((a, b) => (b.fart + b.form) - (a.fart + a.form));
+  /* Är fler bokade än fältet rymmer får de största namnen platserna —
+     det är dem spelaren letar efter i startlistan. */
+  const ordnade = [...bokade].sort((a, b) => b.ryktbarhet - a.ryktbarhet);
+  const bokning = new Map();
+  motstånd.slice(0, ordnade.length).forEach((h, i) => bokning.set(h, ordnade[i]));
+
   let n = 0;
   fält.forEach((h, i) => {
     h.spår = spårnr[i];
-    h.kusk = h.egen && egenKusk ? egenKusk : (kuskar[n++] || KUSKAR[i % KUSKAR.length]);
+    h.kusk = h.egen && egenKusk ? egenKusk
+           : bokning.get(h) || kuskar[n++] || KUSKAR[i % KUSKAR.length];
     h.taktik = h.egen && egenTaktik ? egenTaktik : välTaktik(h, lopp, h.kusk);
   });
   return fält;

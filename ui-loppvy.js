@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { html } from "htm/preact";
 import { TAKTIKER } from "./data-lopp.js";
 import { veckansLopp, startförbud, kravText } from "./data-kalender.js";
-import { KUSKAR, villig, svar } from "./data-kuskar.js";
+import { KUSKAR, villig, svar, uppbokad, uppbokadeI } from "./data-kuskar.js";
 import { distanspassning } from "./engine-hast.js";
 import { byggFält, rustaFält, bokför } from "./engine-varld.js";
 import { beräknaStreck } from "./engine-streck.js";
@@ -49,7 +49,9 @@ function Anmälan({ spel, onStart }) {
   const förbud = startförbud(häst, lopp);
   const passning = passningsText(häst, lopp);
   const kusk = KUSKAR.find((k) => k.namn === kuskNamn) || villiga[0] || KUSKAR[KUSKAR.length - 1];
-  const kanStarta = !förbud && villig(spel, kusk) && spel.kassa >= kusk.arvode;
+  /* Uppbokad gäller PER LOPP — byter man lopp kan samma kusk vara ledig. */
+  const bokad = uppbokad(spel, kusk, lopp);
+  const kanStarta = !förbud && villig(spel, kusk) && !bokad && spel.kassa >= kusk.arvode;
 
   return html`
     <h2>Vecka ${spel.vecka} — anmälan</h2>
@@ -73,8 +75,8 @@ function Anmälan({ spel, onStart }) {
       <label class="fält" for="v-kusk">Kusk</label>
       <select id="v-kusk" value=${kusk.namn} onChange=${(e) => sättKusk(e.target.value)}>
         ${valbara.map((k) => html`
-          <option key=${k.namn} value=${k.namn} disabled=${!villig(spel, k)}>
-            ${k.namn} — ${k.stil} · st ${k.start}/av ${k.avslutning} · ${svar(spel, k).t} · ${kr(k.arvode)}
+          <option key=${k.namn} value=${k.namn} disabled=${!villig(spel, k) || uppbokad(spel, k, lopp)}>
+            ${k.namn} — ${k.stil} · st ${k.start}/av ${k.avslutning} · ${uppbokad(spel, k, lopp) ? "uppbokad i loppet" : svar(spel, k).t} · ${kr(k.arvode)}
           </option>`)}
       </select>
     </div>
@@ -93,7 +95,9 @@ function Anmälan({ spel, onStart }) {
     </button>
     ${förbud && html`<div class="hint skada">${häst.namn} får inte starta: ${förbud.toLowerCase()}.</div>`}
     ${!förbud && !kanStarta && html`<div class="hint">
-      ${villig(spel, kusk) ? "Kassan räcker inte till kuskarvodet." : `${kusk.namn} tackar nej.`}
+      ${!villig(spel, kusk) ? `${kusk.namn} tackar nej.`
+        : bokad ? `${kusk.namn} kör för ett annat stall i det här loppet. Välj en annan kusk — eller ett annat lopp.`
+        : "Kassan räcker inte till kuskarvodet."}
     </div>`}`;
 }
 
@@ -108,7 +112,7 @@ function Startlista({ fält, favorit, visaStreck }) {
       <div class="startlista">
         ${[...fält].sort((a, b) => a.spår - b.spår).map((h) => html`
           <div key=${h.spår} class=${"sl-rad" + (h.egen ? " din" : "") + (h === favorit ? " favorit" : "")}>
-            <${Täcke} nr=${h.spår} /> ${h.namn} — ${h.kusk.namn}
+            <${Täcke} nr=${h.spår} /> ${h.namn} — ${h.kusk.ryktbarhet >= 78 ? "★ " : ""}${h.kusk.namn}
             ${visaStreck && html`<span class="streck">${h.streck.toFixed(1)} %</span>`}
           </div>`)}
       </div>
@@ -310,7 +314,9 @@ export default function LoppVy({ spel, uppdatera }) {
     /* Motståndarna hämtas ur världen — samma individer som tävlar mot
        varandra de veckor du inte möter dem. */
     const fält = byggFält(spel.värld, lopp, spel.vecka, new Set(), häst);
-    rustaFält(fält, lopp, kusk, "rygg");
+    /* De uppbokade kuskarna sitter i det här fältet på riktigt — samma
+       kuskar som anmälan nekade dig syns nu hos motståndarna. */
+    rustaFält(fält, lopp, kusk, "rygg", uppbokadeI(spel, lopp).filter((k) => k.namn !== kusk.namn));
     beräknaStreck(fält, spel, lopp);
     uppdatera((s) => {
       s.kassa -= kusk.arvode;
