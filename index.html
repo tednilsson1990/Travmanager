@@ -18,10 +18,26 @@
   Inget byggsteg. Beroenden hämtas som ES-moduler.
 
   VERSIONSNUMRET: importkartan pekar varje modul till samma fil med ?v=N.
-  Höj N här nere när något ändrats, så hämtar webbläsaren om ALLA filer.
+  Höj N här nere när något ändrats — OCH i sw.js, det är samma nummer.
   Utan detta cachas modulerna var för sig och ändringar syns inte, hur
   många gånger man än laddar om sidan.
 -->
+<script>
+/* Felgräns som fångar även laddningsfel — körs innan modulerna hämtas,
+   så en trasig import ger ett meddelande i stället för svart skärm. */
+window.addEventListener("error", (e) => {
+  const rot = document.getElementById("root");
+  if (!rot || rot.childElementCount) return;
+  const text = String((e.error && e.error.message) || e.message || "okänt fel");
+  rot.innerHTML = '<div class="felruta"><div class="fel-rubrik">Något gick fel</div>' +
+    '<div class="fel-text">' + text.replace(/</g, "&lt;") + '</div>' +
+    '<div class="fel-hjalp">Din karriär är sparad och ligger kvar. Ladda om sidan — ' +
+    'eller skicka meddelandet ovan vidare, det räcker för att hitta felet.</div></div>';
+});
+if ("serviceWorker" in navigator) {
+  addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
+}
+</script>
 <script type="importmap">
 {
   "imports": {
