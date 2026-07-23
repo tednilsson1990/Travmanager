@@ -33,7 +33,9 @@ ladda upp i ett svep från en telefon. Prefixet i filnamnet är mappen.
 index.html              importmap + manifest, enda HTML-filen
 sw.js                   service worker — spelet fungerar utan nät
 ui-startvy.js           spelstarten: namn, dräkt, hemmabana
+ui-gardvy.js            gården: byggen, boxar, personal
 engine-forstaman.js     förstamannen: träningsråd och loppmatchning
+engine-gard.js          anläggningens effekter på veckan
 manifest.webmanifest    hemskärmsapp
 styles.css
 main.js                 monterar appen
@@ -464,9 +466,22 @@ respektive 62/16 hör en större bana av med ett flytterbjudande (60 000
 respektive 140 000 kr) — flytten byter hemmabana och därmed var storloppen
 ligger nära. Erbjudandet ligger kvar tills spelaren väljer.
 
-Nästa etapp av bågen, i fallande ordning: egen hästgård med utbyggbara
-träningsmöjligheter (rakbana, backe, vattenband), fler anställda med egna
-profiler, och förstamansrepliker efter lopp — hen såg samma lopp som du.
+**Gården (v51).** Stallet börjar med fyra boxar och en grusad slinga.
+Boxarna är stallets tak — ägarförfrågningar slutar komma när det är fullt —
+och byggs ut två i taget. Rakbanan lyfter snabbjobben, backen bygger ork
+med avtagande utbyte mot ett tak (en svag häst vinner ~5 punkter på en
+säsong, en stark nästan inget), vattenbandet återhämtar och skonar.
+Veterinären kortar varje skada en vecka, hovslagaren sänker skaderisken.
+Allt kostar drift per vecka — pengar som kunde ha blivit hästar.
+
+DESIGNGRÄNS: gården påverkar VECKAN (träning, återhämtning, skador,
+kapacitet) — aldrig loppmotorn. Kalibreringen kan inte se om spelaren har
+vattenband. Äldre sparfiler migreras till 8 boxar (gamla taket) utan byggen.
+
+Nästa etapp av bågen: fler anställda med egna profiler (unghästtränare,
+transport), förstamansrepliker efter lopp — hen såg samma lopp som du —
+och långsiktiga mål som visas i spelet (vinn storloppen, bli landets
+bästa tränare via tränarligan).
 
 ## Nästa steg
 
@@ -477,4 +492,4 @@ profiler, och förstamansrepliker efter lopp — hen såg samma lopp som du.
 Klart och struket: tävlingskalendern med propositioner, tränarligan,
 uppbokade kuskar (v45), service workern (v44), kuskkännedomen (v46),
 ledarförsvaret (v47), radensfixen (v49) och karriärbågen med spelstart,
-förstaman och uppstigning (v50).
+förstaman och uppstigning (v50) samt gården med byggen och personal (v51).

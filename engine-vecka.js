@@ -5,6 +5,7 @@ import { ÄGARNAMN, ÄGARKRAV, ARVODE_PER_VECKA } from "./data-agare.js";
 import { körVärldensVecka, skötVärlden, handelIVärlden } from "./engine-varld.js";
 import { avslutaSäsong, säsongstext } from "./engine-sasong.js";
 import { säkraFörstaman } from "./engine-forstaman.js";
+import { säkraAnläggning, gårdseffekt, gåraugifter, läkning, boxplats } from "./engine-gard.js";
 import { BANOR } from "./data-namnpaket.js";
 
 const DRIFT_PER_HÄST = 3200;
@@ -32,6 +33,7 @@ function media(spel) {
 /** Kör en vecka framåt: träning, skador, ekonomi, media, ägarförfrågningar, föl. */
 export function körVecka(spel) {
   /* Äldre karriärer saknar förstaman — en dyker upp med en pressnotis. */
+  säkraAnläggning(spel);
   if (säkraFörstaman(spel)) {
     skrivPress(spel, `${spel.förstaman.namn} ny förstaman hos ${spel.stallnamn}`,
       "Stallet förstärker", "positiv");
@@ -66,21 +68,27 @@ export function körVecka(spel) {
       return;
     }
     const t = TRÄNING[h.träning];
-    h.energi = klamp(h.energi + t.energi);
-    h.form = klamp(h.form + t.form + (h.energi < 25 ? -6 : 0));
-    h.start = klamp(h.start + t.start);
-    const risk = t.risk * (h.energi < 30 ? 2.2 : 1) * (h.ålder > 8 ? 1.4 : 1);
+    /* Gården förbättrar utbytet — rakbanan lyfter snabbjobben, backen
+       bygger ork, vattenbandet återhämtar och skonar. Aldrig loppmotorn. */
+    const g = gårdseffekt(spel, h);
+    h.energi = klamp(h.energi + t.energi + g.energi);
+    h.form = klamp(h.form + t.form + g.form + (h.energi < 25 ? -6 : 0));
+    h.start = klamp(h.start + t.start + g.start);
+    if (g.styrka) h.styrka = klamp(h.styrka + g.styrka);
+    const risk = t.risk * g.riskfaktor * (h.energi < 30 ? 2.2 : 1) * (h.ålder > 8 ? 1.4 : 1);
     if (slump() < risk) {
-      h.skada = int(1, 3);
+      h.skada = läkning(spel, int(1, 3));
       h.form = klamp(h.form - 12);
       spel.logg.push(`<b>${h.namn}</b> kom ur jobbet ömmande. Borta ${h.skada} v.`);
     }
   });
 
   const externa = spel.stall.filter((h) => h.ägare).length;
-  const kostnad = spel.stall.length * DRIFT_PER_HÄST;
+  const gård = gåraugifter(spel);
+  const kostnad = spel.stall.length * DRIFT_PER_HÄST + gård;
   const intäkt = externa * ARVODE_PER_VECKA;
   spel.kassa += intäkt - kostnad;
+  if (gård) spel.logg.push(`Anläggning och personal: <b>−${kr(gård)} kr</b>`);
 
   /* Kassagolv. Utan det kan stallet driva hur långt som helst under noll
      utan att spelet säger något — och en karriär som tyst blivit omöjlig är
@@ -140,7 +148,7 @@ export function körVecka(spel) {
 
   media(spel);
 
-  if (!spel.erbjudande && spel.stall.length < 8 && slump() < 0.1 + spel.renommé / 220) {
+  if (!spel.erbjudande && boxplats(spel) > 0 && slump() < 0.1 + spel.renommé / 220) {
     const nivå = 30 + spel.renommé * 0.55;
     const h = nyHäst({
       start: klamp(Math.round(rnd(nivå - 12, nivå + 14))),
@@ -238,8 +246,8 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
     skrivPress(spel, `${häst.namn} inbjuden till arrangörslopp`,
       `Segern i ${lopp.kortnamn || lopp.namn} öppnade dörren`, "positiv");
   }
-  if (slump() < (häst.energi < 25 ? 0.18 : 0.05)) häst.skada = int(1, 2);
-  if (dåligDag && slump() < 0.35) häst.skada = Math.max(häst.skada, int(1, 2));
+  if (slump() < (häst.energi < 25 ? 0.18 : 0.05)) häst.skada = läkning(spel, int(1, 2));
+  if (dåligDag && slump() < 0.35) häst.skada = Math.max(häst.skada, läkning(spel, int(1, 2)));
 
   let renΔ = 0, relΔ = 0, hypeΔ = 0, troΔ = 0;
   const kortnamn = lopp.kortnamn || lopp.namn.split(",")[0];
@@ -256,7 +264,7 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
        tar sig uppåt på riktigt. */
     if (lopp.storlopp || v85) {
       spel.spelförtroende = klamp(spel.spelförtroende + 6);
-      if (!spel.erbjudande && spel.stall.length < 9) {
+      if (!spel.erbjudande && boxplats(spel) > 0) {
         const nivå = 42 + spel.renommé * 0.6 + lopp.prestige * 4;
         const ny = nyHäst({
           ålder: int(4, 7),

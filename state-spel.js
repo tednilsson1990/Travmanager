@@ -1,3 +1,4 @@
+import { nyAnläggning } from "./engine-gard.js";
 import { useEffect, useRef, useState, useCallback } from "preact/hooks";
 import { nyHäst, sättIdRäknare, idRäknare } from "./engine-hast.js";
 import { byggVärld } from "./engine-varld.js";
@@ -25,6 +26,7 @@ export function nyttSpel() {
     kuskrelation: {},
     dräkt: null, hemmabana: null, uppstartKlar: false,
     förstaman: null, banerbjudande: null, inbjudan: null, segrarTotalt: 0,
+    anläggning: nyAnläggning(),
     logg: [], press: [], föl: [],
     erbjudande: null,
     nästaId: idRäknare(),

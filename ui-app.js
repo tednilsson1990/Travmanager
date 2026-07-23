@@ -8,9 +8,11 @@ import SfarVy from "./ui-sfarvy.js";
 import AvelVy from "./ui-avelvy.js";
 import MarknadVy from "./ui-marknadvy.js";
 import StartVy from "./ui-startvy.js";
+import GårdVy from "./ui-gardvy.js";
 
 const FLIKAR = [
   { id: "stall", namn: "Stall" },
+  { id: "gård", namn: "Gård" },
   { id: "lopp", namn: "Lopp" },
   { id: "marknad", namn: "Marknad" },
   { id: "sfar", namn: "Sfären" },
@@ -46,6 +48,7 @@ export default function App() {
 
     <div class="wrap">
       ${flik === "stall" && html`<${StallVy} spel=${spel} uppdatera=${uppdatera} nystart=${nystart} />`}
+      ${flik === "gård" && html`<${GårdVy} spel=${spel} uppdatera=${uppdatera} />`}
       ${flik === "lopp" && html`<${LoppVy} spel=${spel} uppdatera=${uppdatera} />`}
       ${flik === "marknad" && html`<${MarknadVy} spel=${spel} uppdatera=${uppdatera} />`}
       ${flik === "sfar" && html`<${SfarVy} spel=${spel} />`}
