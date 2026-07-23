@@ -311,10 +311,21 @@ export function simulera(fält, lopp) {
      hjul och att andra utvändigt täcker rygg ledaren. Utan den blir
      ytterraden en andra kö som glider bakåt genom loppet. */
   const STATIONSTAPP = 1.3;
+  /* RANG MOT RANG, utan avståndsfönster (v49). Ytterhäst nummer k hör
+     hemma jämsides innerhäst nummer k — dödens vid ledarens hjul, andra
+     utvändigt över rygg ledaren — oavsett hur långt bak den halkat. Det
+     tidigare närmaste-siktet lät den som halkat efter låsa om på en
+     innerhäst längre bak, och raden blev en andra kö: diagnos-radenergi
+     visar radens främsta 7–11 längder bakom ryggen med kraft 47+ kvar.
+     Klampen (+2,2) och kontakttaket begränsar stigtakten, så en tom häst
+     når ändå aldrig upp — men en pigg slutar sikta fel. */
   const innerBredvid = (s) => {
+    const rang = platsIKolumn(s);
+    const inner = H.filter((o) => !o.ur && o !== s && o.kol0 === 0)
+      .sort((a, b) => b.d0 - a.d0);
+    if (inner[rang - 1]) return inner[rang - 1];
     let bäst = null, bästAvst = 99;
-    H.forEach((o) => {
-      if (o.ur || o === s || o.kol0 !== 0) return;
+    inner.forEach((o) => {
       const avst = Math.abs(o.d0 - STATIONSTAPP - s.d0);
       if (avst < bästAvst) { bästAvst = avst; bäst = o; }
     });
@@ -727,9 +738,14 @@ export function simulera(fält, lopp) {
              bakom fältet i stället för en rad bredvid det. Den som svänger ut
              gör det för att avancera, och avancerar därefter snabbt. */
           const attHämta = led.d0 - s.d0;
+          /* HÅLLER, RETIRERAR INTE (v49). Tidigare fick icke-pressaren
+             led.v0 − 0,1: en ständig avdrift som över loppet blev 6–8
+             meter — diagnos-radenergi.mjs visade att radens främsta låg
+             7–11 längder bakom ryggen MED kraft 47+ kvar. En svagare häst
+             utvändigt sätter inget tempo, men den backar inte heller. */
           mål = orkarPressa
             ? Math.min(s.vmax * 1.06, led.v0 + klamp(0.4 + attHämta * 0.035, 0.4, 2.1))
-            : Math.min(s.vmax, led.v0 - 0.1);
+            : Math.min(s.vmax, led.v0);
         } else {
           // Först i sin kolumn men inte i ledningen: håll tempo med ledaren
           mål = Math.min(led.v0 + klamp((led.d0 - s.d0 - MÅLGAP) * 0.35, -0.2, 2.5), kontakttak);

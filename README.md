@@ -295,6 +295,8 @@ Math.random; i kalibrering sätts en seedad generator med
 node kalibrering.mjs           tolv fasta seeds à 120 lopp
 node kalibrering.mjs 18472     bara den seeden
 node diagnos-ledarbyte.mjs     ledarbyten: håller 1000-metersledaren?
+node diagnos-ytterrad.mjs      ytterraden: vem täcker rygg ledaren?
+node diagnos-radenergi.mjs     raden bakåt: energi eller beteende?
 ```
 
 Regeln bakom `diagnos-ledarbyte.mjs` gäller alla framtida trimningar: bygg
@@ -318,21 +320,21 @@ där mot 800 i ledningen.
 
 **Trimma aldrig mot ett mått som inte är källans.**
 
-### Läget i version 47
+### Läget i version 49
 
 Tolv seeds, 120 lopp per seed, hela kalendern.
 
 | Läge 1 000 m från mål | Vår | Mål | |
 |---|---|---|---|
-| Ledningen | 38,9 % | 42 | −3 |
-| Dödens | 11,3 % | 13 | ✓ |
-| Rygg ledaren | 13,7 % | 7 | +7 |
-| Andra utvändigt | 6,0 % | 9,6 | −4 |
-| Tredje utvändigt | 5,4 % | 7 | ✓ |
-| Tredje invändigt | 5,5 % | 3 | ✓ |
+| Ledningen | 38,5 % | 42 | −3 |
+| Dödens | 13,8 % | 13 | ✓ |
+| Rygg ledaren | 13,1 % | 7 | +6 |
+| Andra utvändigt | 6,1 % | 9,6 | −3 |
+| Tredje utvändigt | 6,3 % | 7 | ✓ |
+| Tredje invändigt | 4,1 % | 3 | ✓ |
 
-Total avvikelse 19,2, ner från 22,3 i v43 — och för första gången utan att
-någon siffra försämrats på köpet.
+Total avvikelse 15,7 — ner från 22,3 i v43 och 19,2 i v47, utan regression
+i något mått. Rygg ledaren under +7 för första gången.
 
 Spelmarknaden: favoriten streckas 36 %, två främsta 54 %, tre främsta 65 %,
 mot verklighetens 35, 55–60 och 70–75. Fältets bästa häst vinner 37 %, inom
@@ -377,23 +379,42 @@ Prövat och avfärdat, i tur och ordning:
 
 1. Dyrare sen utfällning som skalar med antalet hästar utanför
    (13,4 → 14,4 %, alltså ingen effekt).
-2. **Rang mot rang-station** (ytterhäst k jämsides innerhäst k i stället
-   för närmaste). Hypotesen var att närmaste-siktet var självförstärkande:
-   den som halkat efter låser om på en innerhäst längre bak. Fel — raden
-   glider bakåt av ENERGI, inte av siktet: `diagnos-ytterrad.mjs` visar att
-   hela ytterraden ligger bakom ryggen i 47 % av loppen vid 400 m, och
-   rangsiktet flyttade den siffran till 45 medan totalavvikelsen försämrades
-   från 19,2 till 22,4 (tidigare press sliter ut ledaren). Återställt.
+2. **Rang mot rang-station med 9-metersfönster.** Försämrade totalen till
+   22,4 och avfärdades — FELAKTIGT. Raden ligger 17–27 meter bak, så
+   9-metersfönstret gjorde att rangsiktet föll tillbaka till närmaste-
+   varianten i nästan alla lopp: experimentet testade aldrig sin hypotes.
+   Utan fönstret (v49, se nedan) är samma idé projektets största vinst.
+   Lärdom: när ett experiment ger noll effekt på mekanismen det riktar sig
+   mot — kontrollera att det ÄR aktivt innan hypotesen avfärdas.
 3. **Bredare blockeringsfönster för instängd.** Visade sig vara en dubblett:
    TÄCKER_FRAM är redan 4,2 m, så dödens på 1,3 längder före blockerar redan
    utgången rakt ut. Kalibreringen blev identisk till decimalen — död kod,
    borttagen.
 
-Lärdomen av 2 och 3: de kvarvarande ryggsegrarna kommer inte av att vägen
-ut är för billig VID 400 m — v43-diagnostiken visar att vinnarna lämnar
-ryggen långt tidigare (vid 300 m har 36 % redan tagit ledningen). Nästa
-angrepp bör rikta in sig på avancemanget MELLAN 1000 och 400 m kvar,
-inte på slutfasen.
+4. **Avdriftsstopp och långsamt avancemang för icke-pressare** utvändigt
+   utan rygg. Avdriften −0,1 m/s var verklighetsvidrig och togs bort
+   (behållet), men gav ensam bara decimaler. Att därtill låta icke-pressare
+   klättra mot dödens FÖRSÄMRADE (20,6): de nådde fram, tömdes på 1,34×
+   och rev täckningen bakom sig. Klättringen återställd.
+
+**Radensfixen (v49).** `diagnos-radenergi.mjs` avgjorde frågan energi
+eller beteende: radens främsta ytterhäst låg 7–11 längder bakom ryggen med
+kraft 47+ kvar — mer än ryggen själv. Beteende alltså. Åtgärden är rang
+mot rang-siktet utan avståndsfönster: ytterhäst nummer k hör hemma
+jämsides innerhäst nummer k oavsett hur långt bak den halkat. Klampen och
+kontakttaket begränsar stigtakten, så en tom häst når ändå aldrig upp —
+men en pigg slutar sikta fel. Resultat: total avvikelse 19,2 → 15,7,
+täckningen av ryggen 22 → 27 %, luckorna mitt i raden 25 → 21 %, radens
+eftersläpning 10,9 → 9,2 längder. Tider, galoppfrekvens och marknad
+orörda.
+
+Kvarvarande: raden ligger fortfarande bakom i 49 % av loppen — hästarna
+siktar nu rätt men stigtakten hinner inte ikapp när eftersläpningen väl
+uppstått. Stigtaktsklampen 2,2 → 2,9 är prövad: geometrin blev bättre
+(raden bakom 47 → 43,5 %) men kalibreringen backade till 17,1 — dödens
+och andra utvändigt betalade för trafiken. Återställd. Nästa idé bör
+angripa VARFÖR eftersläpningen uppstår (utflyttningar sker långt bak i
+fältet) snarare än hur fort den hämtas in.
 
 Rygghästen är instängd 27–46 % av loppet, men borde vara det så länge det
 finns en yttre rad alls — någon ligger utvändigt intill ledaren 70 % av
@@ -422,9 +443,9 @@ ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
 ## Nästa steg
 
-- Rygg ledaren vinner för ofta (13,7 % mot mål 7) — ledarbytet är nu
-  dyrare, men det är fortfarande för lätt att komma LOSS ur ryggen sent;
-  fri väg vid 400 m ligger på 96 %
-- Andra utvändigt vinner för sällan (6,0 % mot mål 9,6)
+- Rygg ledaren vinner för ofta (13,1 % mot mål 7) och andra utvändigt för
+  sällan (6,1 % mot 9,6) — raden siktar rätt men ligger ändå bakom i halva
+  loppen; stigtaktsklampen är prövad och avfärdad, nästa angrepp är VAR
+  utflyttningarna sker (de byggs långt bak i fältet)
 Klart och struket: tävlingskalendern med propositioner, tränarligan,
 uppbokade kuskar (v45), service workern (v44) och kuskkännedomen (v46).
