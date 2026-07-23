@@ -92,6 +92,10 @@ export function simulera(fält, lopp) {
     let risk = (1 - s.travsäkerhet);
     faktorer.forEach((f) => { risk *= 1 + f; });
     risk *= 1 - ((s.kusk.kyla ?? 60) - 60) / 420;   // kylan dämpar
+    /* Kuskkännedom: en kusk som kört hästen förut vet var felstegen sitter.
+       Upp till −15 % risk efter sex gemensamma starter. Världens hästar
+       saknar fältet helt (?? 0) och påverkas inte — kalibreringen är orörd. */
+    risk *= 1 - Math.min(s.h.kuskbekant?.[s.kusk.namn] ?? 0, 6) * 0.025;
     return Math.max(0, risk);
   };
 
@@ -653,7 +657,9 @@ export function simulera(fält, lopp) {
       /* Rycket sätts in när kusken bedömer att krafterna räcker hem.
          Mycket kvar i tanken ger tidigare ryck; dålig tajming straffar sig. */
       const idealSpurt = 300 + klamp(s.kraft, 0, 60) * 2.2;
-      const tajmingsfel = s.spurtFel * (1 - s.kusk.avslutning / 100) * 260;
+      const bekant = Math.min(s.h.kuskbekant?.[s.kusk.namn] ?? 0, 6);
+      const tajmingsfel = s.spurtFel * (1 - s.kusk.avslutning / 100) * 260
+        * (1 - bekant * 0.05);   /* kuskkännedom: vet när hästen svarar */
       const spurtNu = kvar < idealSpurt + tajmingsfel;
 
       if (spurtNu) {
@@ -672,8 +678,15 @@ export function simulera(fält, lopp) {
         const plan = TEMPOPLANER[s.tempoplan || "normalt"];
         /* Under press måste ledaren svara — men bara upp till en nivå. En
            smygkusk kör inte ihjäl sig för att någon ligger utvändigt. */
-        const svar = press ? Math.max(plan.fart, 1.01) : plan.fart;
-        mål = Math.min(s.vmax * 1.02, fältTempo * svar * öppning);
+        /* SENT FÖRSVAR: i sista 900 metrarna släpper ingen kusk spetsen
+           billigt — utmanaren ska förbi på egen kraft, i dödens, inte
+           vinkas förbi. Diagnos (diagnos-ledarbyte.mjs) visade att
+           ledarbytet var för billigt: 1000-metersledaren vann 33 % mot
+           verklighetens 42, och segrarna hamnade hos rygg ledaren. */
+        const sentFörsvar = press && kvar < 900;
+        const svar = sentFörsvar ? Math.max(plan.fart, 1.032)
+                   : press ? Math.max(plan.fart, 1.01) : plan.fart;
+        mål = Math.min(s.vmax * (sentFörsvar ? 1.028 : 1.02), fältTempo * svar * öppning);
       } else {
         /* Fältet är packat. Alla siktar på hjulet framför — även den som
            ligger långt bak försöker upp i kön, inte gå på egen marschfart.

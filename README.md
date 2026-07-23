@@ -148,6 +148,15 @@ Uppbokningen avgörs av en hash på (säsong, vecka, lopp, kusk) — inte av
 `slump()`. Därför ger samma fråga alltid samma svar hur många gånger vyn än
 ritas om, och kalibreringens seedade körningar förblir reproducerbara.
 
+**Kuskkännedom.** En kusk som kört hästen förut kör den bättre: upp till
+18 % färre galopper och skarpare spurttajming efter sex gemensamma starter.
+Kännedomen bor på hästen (`kuskbekant`), följer med i sparfilen och visas i
+anmälan. Effekten sitter i risk och tajming — aldrig i hästens fart — och
+mätt över 600 lopp flyttar den snittplaceringen bara någon hundradel.
+Världens hästar saknar fältet och påverkas inte, så kalibreringen är orörd.
+Tillsammans med uppbokningen ger det trohet ett pris och ett värde: byter du
+kusk för att din vanliga är uppbokad börjar den nya om från noll.
+
 ### Galopp
 
 Fyra nivåer: kort felsteg (1,5–4 m förlorade), galopp (7–16 m), lång galopp
@@ -285,7 +294,12 @@ Math.random; i kalibrering sätts en seedad generator med
 ```
 node kalibrering.mjs           tolv fasta seeds à 120 lopp
 node kalibrering.mjs 18472     bara den seeden
+node diagnos-ledarbyte.mjs     ledarbyten: håller 1000-metersledaren?
 ```
+
+Regeln bakom `diagnos-ledarbyte.mjs` gäller alla framtida trimningar: bygg
+ett mätskript som testar hypotesen INNAN motorn röres, och spara skriptet i
+repot så att mätningen kan göras om.
 
 ### Om måttet — läs detta innan något trimmas
 
@@ -304,18 +318,21 @@ där mot 800 i ledningen.
 
 **Trimma aldrig mot ett mått som inte är källans.**
 
-### Läget i version 43
+### Läget i version 47
 
 Tolv seeds, 120 lopp per seed, hela kalendern.
 
 | Läge 1 000 m från mål | Vår | Mål | |
 |---|---|---|---|
-| Ledningen | 35,8 % | 42 | −6 |
-| Dödens | 12,6 % | 13 | ✓ |
-| Rygg ledaren | 15,4 % | 7 | +8 |
-| Andra utvändigt | 4,9 % | 9,6 | −5 |
-| Tredje utvändigt | 5,6 % | 7 | ✓ |
-| Tredje invändigt | 4,2 % | 3 | ✓ |
+| Ledningen | 38,9 % | 42 | −3 |
+| Dödens | 11,3 % | 13 | ✓ |
+| Rygg ledaren | 13,7 % | 7 | +7 |
+| Andra utvändigt | 6,0 % | 9,6 | −4 |
+| Tredje utvändigt | 5,4 % | 7 | ✓ |
+| Tredje invändigt | 5,5 % | 3 | ✓ |
+
+Total avvikelse 19,2, ner från 22,3 i v43 — och för första gången utan att
+någon siffra försämrats på köpet.
 
 Spelmarknaden: favoriten streckas 36 %, två främsta 54 %, tre främsta 65 %,
 mot verklighetens 35, 55–60 och 70–75. Fältets bästa häst vinner 37 %, inom
@@ -328,14 +345,27 @@ skillnaden mellan närvaro och tryck.
 
 ### Kvarvarande avvikelser
 
-**Rygg ledaren vinner för ofta** — 13,4 % mot måltalet 7.
+**Rygg ledaren vinner för ofta** — 13,7 % mot måltalet 7.
 
-Modellen är rättad så att hästen kommer loss av GEOMETRIN, inte av tur: en
+**Sent ledarförsvar (v47).** Diagnostiken i `diagnos-ledarbyte.mjs` visade
+att ledningen −6 och rygg ledaren +8 hade samma orsak: ledarbytet var för
+billigt. 1000-metersledaren vann bara 33 % mot verklighetens 42, och när hen
+kördes om kom vinnaren oftast från rygg ledaren (16 % av loppen) eller
+dödens (16 %). Åtgärd: i sista 900 metrarna försvarar ledaren spetsen upp
+till `max(plan, 1,032)` och får sträcka sig till 1,028 × toppfart —
+utmanaren ska förbi på egen kraft, i dödens, inte vinkas förbi.
+
+Dosen är medvetet mild. Starkare försvar (1,045/1,035) tog ledningen ända
+till 40,9 ✓ men sänkte tredje utvändigt till 3,5 — samma jämnt-ut-byte som
+stationshållningen. Milda dosen förbättrar allt den rör utan att försämra
+något: ledningen −6 → −3, rygg +8 → +7, andra utvändigt −5 → −4.
+
+Kvarvarande grundproblem: modellen är rättad så att hästen kommer loss av GEOMETRIN, inte av tur: en
 tidigare slumpmässig frigörelsechans per 1,5 sekund är borttagen. Nu öppnar
 sig läget när ledaren drar ifrån, dödenshästen tappar eller avancerar, och
 ingen fyller luckan. Fältet fäller dessutom ut först i de sista 300 metrarna
 i stället för 420, eftersom luckan i verkligheten oftast kommer då — när
-kuskarna gör sina drag inför upploppet. Det tog siffran från 15,9 till 13,4.
+kuskarna gör sina drag inför upploppet. Det tog siffran från 15,9 till 13,4; sena ledarförsvaret därefter till 13,7 med bättre helhet.
 
 Diagnostik: av vinnarna som låg i rygg ledaren vid 1 000 meter låg bara 3 %
 kvar där vid 300 meter. 36 % hade tagit ledningen, 28 % låg utvändigt bakom
@@ -343,8 +373,27 @@ fältet, 18 % i dödens. Positionen lämnas alltså och betalas för, precis som
 den ska — det är magnituden som är fel, inte mekaniken. Sannolikt är det för
 lätt att avancera hela vägen till ledningen.
 
-Prövat och avfärdat: dyrare sen utfällning som skalar med antalet hästar
-utanför (13,4 → 14,4 %, alltså ingen effekt).
+Prövat och avfärdat, i tur och ordning:
+
+1. Dyrare sen utfällning som skalar med antalet hästar utanför
+   (13,4 → 14,4 %, alltså ingen effekt).
+2. **Rang mot rang-station** (ytterhäst k jämsides innerhäst k i stället
+   för närmaste). Hypotesen var att närmaste-siktet var självförstärkande:
+   den som halkat efter låser om på en innerhäst längre bak. Fel — raden
+   glider bakåt av ENERGI, inte av siktet: `diagnos-ytterrad.mjs` visar att
+   hela ytterraden ligger bakom ryggen i 47 % av loppen vid 400 m, och
+   rangsiktet flyttade den siffran till 45 medan totalavvikelsen försämrades
+   från 19,2 till 22,4 (tidigare press sliter ut ledaren). Återställt.
+3. **Bredare blockeringsfönster för instängd.** Visade sig vara en dubblett:
+   TÄCKER_FRAM är redan 4,2 m, så dödens på 1,3 längder före blockerar redan
+   utgången rakt ut. Kalibreringen blev identisk till decimalen — död kod,
+   borttagen.
+
+Lärdomen av 2 och 3: de kvarvarande ryggsegrarna kommer inte av att vägen
+ut är för billig VID 400 m — v43-diagnostiken visar att vinnarna lämnar
+ryggen långt tidigare (vid 300 m har 36 % redan tagit ledningen). Nästa
+angrepp bör rikta in sig på avancemanget MELLAN 1000 och 400 m kvar,
+inte på slutfasen.
 
 Rygghästen är instängd 27–46 % av loppet, men borde vara det så länge det
 finns en yttre rad alls — någon ligger utvändigt intill ledaren 70 % av
@@ -373,11 +422,9 @@ ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
 ## Nästa steg
 
-- Rygg ledaren vinner för ofta (15,4 % mot mål 7) — diagnostiken pekar på
-  att det är för lätt att avancera hela vägen till ledningen
-- Andra utvändigt vinner för sällan (4,9 % mot mål 9,6)
-- Kuskrelationer som byggs aktivt: att anlita samma kusk om och om igen
-  borde märkas mer än det gör
-
+- Rygg ledaren vinner för ofta (13,7 % mot mål 7) — ledarbytet är nu
+  dyrare, men det är fortfarande för lätt att komma LOSS ur ryggen sent;
+  fri väg vid 400 m ligger på 96 %
+- Andra utvändigt vinner för sällan (6,0 % mot mål 9,6)
 Klart och struket: tävlingskalendern med propositioner, tränarligan,
-uppbokade kuskar (v45) och service workern (v44).
+uppbokade kuskar (v45), service workern (v44) och kuskkännedomen (v46).

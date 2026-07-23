@@ -87,6 +87,9 @@ function Anmälan({ spel, onStart }) {
       <div><span>Prispengar</span> ${kr(lopp.förstapris)} kr till segraren · ${lopp.antalPris} pris · ${kr(lopp.garanterad)} kr garanterat</div>
       <div><span>Start</span> ${lopp.start === "volt" ? "voltstart" : "autostart"}</div>
       <div class=${passning.c}><span>Distans</span> ${passning.t}</div>
+      ${(häst.kuskbekant?.[kusk.namn] ?? 0) > 0 && html`<div><span>Ekipaget</span>
+        ${kusk.namn} har kört ${häst.namn} ${häst.kuskbekant[kusk.namn]} ${häst.kuskbekant[kusk.namn] === 1 ? "gång" : "gånger"}
+        — ${häst.kuskbekant[kusk.namn] >= 6 ? "kan hästen utan och innan" : "kännedomen växer för varje start"}</div>`}
       ${lopp.v85 && html`<div class="v85"><span>V85</span> hela landet spelar på omgången</div>`}
     </div>
 

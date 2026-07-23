@@ -284,6 +284,11 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   spel.renommé = klamp(spel.renommé + renΔ);
   spel.spelförtroende = klamp(spel.spelförtroende + troΔ);
   spel.kuskrelation[kusk.namn] = klamp((spel.kuskrelation[kusk.namn] ?? kusk.startrelation) + relΔ + 1);
+  /* Kuskkännedom byggs per häst och kusk — sex starter ger full effekt i
+     galopprisk och spurttajming. Följer med i sparfilen eftersom den bor
+     på hästen. Äldre sparfiler saknar fältet; ?? {} initierar det. */
+  häst.kuskbekant = häst.kuskbekant ?? {};
+  häst.kuskbekant[kusk.namn] = (häst.kuskbekant[kusk.namn] ?? 0) + 1;
   häst.hype = klamp(häst.hype + hypeΔ);
 
   let ägartext = null;
