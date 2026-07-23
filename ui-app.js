@@ -6,10 +6,12 @@ import StallVy from "./ui-stallvy.js";
 import LoppVy from "./ui-loppvy.js";
 import SfarVy from "./ui-sfarvy.js";
 import AvelVy from "./ui-avelvy.js";
+import MarknadVy from "./ui-marknadvy.js";
 
 const FLIKAR = [
   { id: "stall", namn: "Stall" },
   { id: "lopp", namn: "Lopp" },
+  { id: "marknad", namn: "Marknad" },
   { id: "sfar", namn: "Sfären" },
   { id: "avel", namn: "Avel" },
 ];
@@ -21,8 +23,8 @@ export default function App() {
   return html`
     <header>
       <div class="brand">Stallet<span>·</span>${spel.stallnamn}</div>
-      <div class="status">          <div>Säsong<b>${spel.säsong ?? 1}</b></div>
-
+      <div class="status">
+        <div>Säsong<b>${spel.säsong ?? 1}</b></div>
         <div>Vecka<b>${Math.min(spel.vecka, spel.veckor)}/${spel.veckor}</b></div>
         <div>Kassa<b>${kr(spel.kassa)}</b></div>
         <div>Renommé<b>${Math.round(spel.renommé)}</b></div>
@@ -34,6 +36,7 @@ export default function App() {
     <div class="wrap">
       ${flik === "stall" && html`<${StallVy} spel=${spel} uppdatera=${uppdatera} nystart=${nystart} />`}
       ${flik === "lopp" && html`<${LoppVy} spel=${spel} uppdatera=${uppdatera} />`}
+      ${flik === "marknad" && html`<${MarknadVy} spel=${spel} uppdatera=${uppdatera} />`}
       ${flik === "sfar" && html`<${SfarVy} spel=${spel} />`}
       ${flik === "avel" && html`<${AvelVy} spel=${spel} uppdatera=${uppdatera} />`}
     </div>

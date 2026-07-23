@@ -4,7 +4,7 @@ import { körVecka } from "./engine-vecka.js";
 import { nySäsong, säsongstext } from "./engine-sasong.js";
 import { kr, klamp } from "./engine-util.js";
 import { ARVODE_PER_VECKA } from "./data-agare.js";
-import { Stapel, Rad } from "./ui-delar.js";
+import { Stapel, Rad, Form } from "./ui-delar.js";
 
 function Erbjudande({ spel, uppdatera }) {
   const h = spel.erbjudande;
@@ -39,6 +39,9 @@ function Hästkort({ häst, uppdatera }) {
       <div class="namn">${häst.namn}</div>
       <div class="meta">
         ${häst.ålder} år · ${häst.kön} · ${häst.starter} st · ${häst.segrar} seg · ${kr(häst.intjänat)} kr
+      </div>
+      <div class="meta">
+        <${Form} häst=${häst} />
       </div>
       <div class="taggar">
         <span class="tagg">${häst.distans?.optimal ?? 2140} m · ${häst.distans?.typ ?? "medeldistans"}</span>

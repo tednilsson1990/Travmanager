@@ -42,18 +42,21 @@ export default function SfarVy({ spel }) {
         Du ligger ${minPlats}:a av ${liga.length} stall, räknat på insprunget
       </div>
       <table class="liga">
-        <thead><tr><th>#</th><th>Stall</th><th>Insprunget</th><th>Seg</th></tr></thead>
+        <thead><tr><th>#</th><th>Stall</th><th>Insprunget</th><th>Per häst</th><th>Seg</th></tr></thead>
         <tbody>
           ${liga.slice(0, 12).map((r, i) => html`
             <tr key=${r.namn} class=${r.du ? "din" : ""}>
               <td>${i + 1}</td>
               <td>${r.namn}${r.filosofi ? html`<br /><span class="ligamini">${r.tränare} · ${r.filosofi}</span>` : ""}</td>
               <td>${kr(r.insprunget)}</td>
+              <td>${kr(r.perHäst ?? 0)}</td>
               <td>${r.segrar}</td>
             </tr>`)}
           ${minPlats > 12 && html`
             <tr class="din"><td>${minPlats}</td><td>${spel.stallnamn}</td>
-              <td>${kr(spel.intjänat)}</td><td>—</td></tr>`}
+              <td>${kr(spel.intjänat)}</td>
+              <td>${kr(Math.round(spel.intjänat / Math.max(1, spel.stall.length)))}</td>
+              <td>—</td></tr>`}
         </tbody>
       </table>
     </div>

@@ -2,10 +2,10 @@ import { klamp, kr, int, plock, rnd, slump } from "./engine-util.js";
 import { nyHäst, TRÄNING } from "./engine-hast.js";
 import { KUSKAR } from "./data-kuskar.js";
 import { ÄGARNAMN, ÄGARKRAV, ARVODE_PER_VECKA } from "./data-agare.js";
-import { körVärldensVecka, skötVärlden } from "./engine-varld.js";
+import { körVärldensVecka, skötVärlden, handelIVärlden } from "./engine-varld.js";
 import { avslutaSäsong, säsongstext } from "./engine-sasong.js";
 
-const DRIFT_PER_HÄST = 4200;
+const DRIFT_PER_HÄST = 3200;
 
 export function skrivPress(spel, rubrik, byline, ton, hästMål, hypeΔ) {
   spel.press.unshift({ rubrik, byline, ton, vecka: spel.vecka });
@@ -56,11 +56,44 @@ export function körVecka(spel) {
   const kostnad = spel.stall.length * DRIFT_PER_HÄST;
   const intäkt = externa * ARVODE_PER_VECKA;
   spel.kassa += intäkt - kostnad;
+
+  /* Kassagolv. Utan det kan stallet driva hur långt som helst under noll
+     utan att spelet säger något — och en karriär som tyst blivit omöjlig är
+     värre än en som tar slut med besked. */
+  if (spel.kassa < 0) {
+    spel.kassa = 0;
+    spel.iKris = (spel.iKris || 0) + 1;
+    spel.logg.push("<b>Kassan är tom.</b> Sälj en häst eller sänk kostnaderna.");
+    if (spel.iKris >= 3 && spel.stall.length > 1) {
+      /* Tredje veckan i rad utan pengar: banken tvingar fram en försäljning. */
+      const offer = [...spel.stall].filter((h) => !h.ägare)
+        .sort((a, b) => (a.intjänat || 0) - (b.intjänat || 0))[0];
+      if (offer) {
+        spel.stall = spel.stall.filter((h) => h.id !== offer.id);
+        spel.kassa += 40000;
+        spel.iKris = 0;
+        skrivPress(spel, `${offer.namn} såld i tvångsförsäljning`,
+          "Björkhaga tvingas göra sig av med en häst för att klara driften.", "dålig");
+        spel.logg.push(`<b>${offer.namn}</b> tvångssåld för 40 000 kr.`);
+      }
+    }
+  } else if (spel.kassa > 60000) {
+    spel.iKris = 0;
+  }
   spel.logg.push(`Drift ${spel.stall.length} hästar: <b>−${kr(kostnad)} kr</b>`);
   if (externa) spel.logg.push(`Träningsarvoden: <b>+${kr(intäkt)} kr</b>`);
 
   // Renommé och relationer svalnar av tystnad
-  spel.renommé = klamp(spel.renommé - 0.6);
+  /* Renommét sjunker av sig självt, men får inte kollapsa till noll av
+     ordinärt tävlande — vid noll tackar alla kuskar nej och inga ägare hör
+     av sig, och då är karriären permanent låst. Golvet följer stallets
+     faktiska verksamhet: den som tävlar och tjänar pengar behåller ett
+     grundanseende även under en svag period. */
+  const golv = klamp(
+    6 + Math.min(spel.stall.length, 8) * 1.5 + Math.min(spel.intjänat / 60000, 12),
+    5, 34
+  );
+  spel.renommé = Math.max(golv, klamp(spel.renommé - 0.6));
   spel.spelförtroende = klamp(spel.spelförtroende + (spel.spelförtroende < 40 ? 0.5 : -0.3));
   KUSKAR.forEach((k) => {
     const r = spel.kuskrelation[k.namn] ?? k.startrelation;
@@ -71,6 +104,12 @@ export function körVecka(spel) {
      deras hästar tjänar pengar och flyttas mellan klasserna. */
   const världensNyheter = körVärldensVecka(spel);
   skötVärlden(spel.värld);
+  handelIVärlden(spel.värld).forEach((a) => {
+    if (slump() < 0.4) {
+      skrivPress(spel, `${a.häst} byter stall`,
+        `${a.från} säljer till ${a.till}.`, "neutral");
+    }
+  });
   spel.startadeLopp = [];
   världensNyheter.forEach((n) => skrivPress(spel, n.rubrik, n.byline, "neutral"));
 
@@ -138,6 +177,15 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   const pall = !min.ur && min.plats <= 3;
 
   häst.starter++;
+  /* Loppraden. Det första en travmänniska läser om en häst är dess senaste
+     starter — inte totalsiffror. Utan den ser hästarna likadana ut. */
+  häst.resultat = [{
+    säsong: spel.säsong || 1, vecka: spel.vecka,
+    lopp: lopp.kortnamn || lopp.namn, dist: lopp.dist, start: lopp.start,
+    plats: min.ur ? null : min.plats, startande: lopp.startande,
+    km: min.ur ? null : min.km, läge: min.läge, spår: min.spår,
+    kusk: kusk.namn, pris: brutto,
+  }, ...(häst.resultat || [])].slice(0, 20);
   /* Startsumman är hästens OFFICIELLA insprungna och avgör vilka lopp den
      får starta i — den räknas brutto, precis som för världens hästar.
      Kuskens andel dras från kassan, inte från hästens merit. */
@@ -160,6 +208,29 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
 
   if (vann) {
     renΔ = 2.5 * lopp.prestige * vikt; relΔ = 9; hypeΔ = (14 + lopp.prestige * 5) * vikt;
+
+    /* En seger i ett storlopp ska märkas i mer än kassan. Ägare hör av sig,
+       och stallet får ett lyft som håller i sig — det är så ett litet stall
+       tar sig uppåt på riktigt. */
+    if (lopp.storlopp || v85) {
+      spel.spelförtroende = klamp(spel.spelförtroende + 6);
+      if (!spel.erbjudande && spel.stall.length < 9) {
+        const nivå = 42 + spel.renommé * 0.6 + lopp.prestige * 4;
+        const ny = nyHäst({
+          ålder: int(4, 7),
+          start: klamp(Math.round(rnd(nivå - 8, nivå + 12))),
+          fart: klamp(Math.round(rnd(nivå - 8, nivå + 12))),
+          styrka: klamp(Math.round(rnd(nivå - 8, nivå + 12))),
+        });
+        ny.ägare = plock(ÄGARNAMN);
+        ny.krav = plock(ÄGARKRAV);
+        ny.hype = klamp(24 + spel.renommé * 0.2);
+        spel.erbjudande = ny;
+        spel.logg.push(
+          `<b>${ny.ägare}</b> hörde av sig efter segern och vill placera <b>${ny.namn}</b> hos dig.`
+        );
+      }
+    }
     troΔ = varFavorit ? 2 : 5;
     if (!varFavorit) renΔ += 2;
     skrivPress(spel, v85 ? `${häst.namn} vinner V85-avdelningen` : `${häst.namn} vinner ${kortnamn}`,

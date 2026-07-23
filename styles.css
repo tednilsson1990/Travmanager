@@ -234,3 +234,16 @@ table.liga td:nth-child(4){text-align:right}
   background:#0F1720;border-radius:2px;padding:10px;margin-bottom:12px;word-break:break-word;
 }
 .fel-hjalp{font-size:13px;color:var(--dis);line-height:1.5}
+
+/* Formraden — senaste starterna, nyast först */
+.formrad{display:inline-flex;gap:3px;align-items:center;margin-top:3px}
+.formrad.tom{color:rgba(233,230,223,.3);font-style:italic}
+.formrad .fp{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:17px;height:17px;padding:0 3px;border-radius:2px;
+  font-family:'Roboto Mono',monospace;font-size:10px;font-weight:700;
+  background:#1B242E;color:var(--dis);border:1px solid var(--linje);
+}
+.formrad .fp.seger{background:var(--strålkastare);color:#10161D;border-color:var(--strålkastare)}
+.formrad .fp.pall{background:#2C4636;color:#CFE8D8;border-color:#3D6249}
+.formrad .fp.ur{background:#2E1A1A;color:#E5B4B4;border-color:#4A2626}

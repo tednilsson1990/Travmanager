@@ -185,11 +185,71 @@ det stiger världens snittålder ett år per säsong och unghästloppen står ti
 slut tomma. Med det ligger populationen stabil kring 183 hästar och en dryg
 sjättedel är treåringar.
 
-**Känd lucka:** spelaren har ingen motsvarande förnyelse. Dina hästar åldras
-och tappar medan världen fylls på med unga, och den enda vägen in är avel
-eller att en ägare placerar en häst hos dig. I ett testspel över tre säsonger
-faller stallet från femtonde till sista plats av den anledningen. En
-hästmarknad — köpa och sälja — är nästa nödvändiga bygge.
+### Aveln
+
+Ett sto kan bara bära ett föl i taget, och dräktigheten är tio veckor — halva
+säsongen. Tidigare kunde samma sto betäckas varje vecka så länge kassan
+räckte, vilket gjorde aveln till en hästautomat i stället för ett
+långsiktigt beslut.
+
+### Storloppen
+
+En seger i ett storlopp eller en storspelsavdelning ger mer än prispengar:
+spelförtroendet stiger, och en ägare hör ofta av sig direkt efteråt och vill
+placera en häst hos dig. Det är den snabbaste vägen uppåt för ett litet
+stall — och skälet att satsa en häst på ett lopp den kanske inte klarar.
+
+### Formraden
+
+Varje häst för loppbok — dina och världens. De senaste starterna visas i
+travets eget skrivsätt, nyast först: **1-3-d-2-5**, där d är diskvalificerad.
+Den syns på hästkortet och i marknaden, och är avgörande för ett köpbeslut:
+totalsiffror säger vad hästen gjort på tre år, formraden vad den gör nu.
+
+### Hästmarknaden
+
+Varje vecka ligger sex till åtta hästar ute: överskott från AI-stallen — äldre
+hästar och sådana som inte håller stallets klass — plus ett par otestade
+treåringar från uppfödningen.
+
+Du köper på **offentlig information**: ålder, meriter, form och ett omdöme.
+Aldrig de sanna värdena. Det är först när hästen springer du vet vad du köpt,
+precis som i verklig hästhandel. Priset följer prispengar per start, ålder och
+form; en fyraåring kostar långt mer än en tioåring med samma siffror, eftersom
+man betalar för de år som återstår.
+
+En såld häst försvinner inte ur världen — den hamnar i ett annat stall och kan
+möta dig i ett lopp längre fram.
+
+**Världen handlar också med sig själv.** Varje vecka byter en eller två hästar
+stall utan din inblandning: ett stall i knipa säljer sin bästa häst, ett
+starkt köper på sig. Över en säsong blir det ett trettiotal affärer, och
+stallstorlekarna glider isär — utbudet du ser nästa vecka har ändrats av skäl
+som inte har med dig att göra.
+
+### Ekonomin
+
+Drift 3 200 kr per häst och vecka. Ägarhästar betalar 9 800 kr i träningsarvode
+och är därför stallets ekonomiska ryggrad — de kommer när renommét stiger.
+
+Kassan har ett golv: går den under noll varnar spelet, och efter tre veckor i
+rad tvingas en försäljning fram. En karriär som tyst blivit omöjlig är värre
+än en som tar slut med besked.
+
+**Renommét har också ett golv**, och det är viktigare än det låter. Vid noll
+tackar alla kuskar nej och inga ägare hör av sig — karriären låser sig
+permanent. Ett testspel över fyra säsonger fastnade på sista plats med
+renommé 0 av den anledningen. Golvet följer stallets faktiska verksamhet:
+antal hästar och insprunget. Med det klättrade samma testspel från
+tjugoförsta till tolfte plats på tre säsonger.
+
+**Var man börjar.** AI-stallen tjänar mellan 156 000 och 4,6 miljoner på en
+säsong. Ett nystartat stall med tre hästar landar kring 250 000 och hamnar
+ungefär på artonde plats av tjugoen. De svagaste stallen är alltså möjliga att
+passera direkt, medan toppen kräver flera säsonger av växande stall och
+välkalibrerade köp. Tabellen visar även insprunget per häst, eftersom ett
+stall med tio hästar alltid tjänar mer än ett med fyra — men inte
+nödvändigtvis är bättre.
 
 ### Världen
 
@@ -227,7 +287,7 @@ där mot 800 i ledningen.
 
 **Trimma aldrig mot ett mått som inte är källans.**
 
-### Läget i version 39
+### Läget i version 43
 
 Tolv seeds, 120 lopp per seed, hela kalendern.
 

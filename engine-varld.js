@@ -221,6 +221,13 @@ export function bokför(värld, lopp, resultat, vecka) {
     if (h.egen || h.tillfällig) return;     // spelarens häst bokförs på annat håll
     h.starter = (h.starter || 0) + 1;
     h.energi = klamp(h.energi - int(14, 24));
+    /* Även världens hästar för loppbok — annars kan spelaren inte läsa
+       formen på en häst hen funderar på att köpa. */
+    h.resultat = [{
+      vecka, lopp: lopp.kortnamn || lopp.namn, dist: lopp.dist,
+      plats: r.ur ? null : r.plats, startande: lopp.startande,
+      km: r.ur ? null : r.km, spår: r.spår,
+    }, ...(h.resultat || [])].slice(0, 6);
     h.senasteStartVecka = vecka;
     const pris = r.ur
       ? (lopp.garanterad || 0)
@@ -278,6 +285,38 @@ export function körVärldensVecka(spel) {
   return nyheter;
 }
 
+/**
+ * Handel mellan AI-stallen.
+ *
+ * Utan den är marknaden enkelriktad: du kan köpa ur världen och sälja till
+ * den, men världen gör aldrig något själv. Nu byter hästar stall även utan
+ * dig — ett svagt stall säljer sin bästa häst för att överleva, ett starkt
+ * köper på sig, och utbudet du ser nästa vecka har ändrats av skäl som inte
+ * har med dig att göra.
+ */
+export function handelIVärlden(värld) {
+  if (!värld || värld.stall.length < 4) return [];
+  const affärer = [];
+  const antal = 1 + (slump() < 0.4 ? 1 : 0);
+
+  for (let i = 0; i < antal; i++) {
+    const säljare = plock(värld.stall.filter((s) => s.insprunget < 400000));
+    const köpare = plock(värld.stall.filter((s) => s !== säljare && s.styrka > 0.6));
+    if (!säljare || !köpare) continue;
+
+    const stallets = värld.hästar.filter((h) => h.stallId === säljare.id);
+    if (stallets.length <= 4) continue;
+    /* Ett stall i knipa säljer det som är värt mest, inte det sämsta. */
+    const häst = stallets.sort((a, b) =>
+      ((b.start + b.fart + b.styrka) / 3) - ((a.start + a.fart + a.styrka) / 3))[0];
+    if (!häst) continue;
+
+    häst.stallId = köpare.id;
+    affärer.push({ häst: häst.namn, från: säljare.namn, till: köpare.namn });
+  }
+  return affärer;
+}
+
 /** Veckans skötsel av världens hästar — träning, vila, återhämtning. */
 export function skötVärlden(värld) {
   if (!värld) return;
@@ -299,6 +338,7 @@ export function skötVärlden(värld) {
 
 /** Tränarligan — ditt stall inräknat. */
 export function tränarliga(spel) {
+  const antalHästar = (id) => (spel.värld?.hästar || []).filter((h) => h.stallId === id).length || 1;
   const rader = (spel.värld?.stall || []).map((s) => ({
     namn: s.namn,
     tränare: s.tränare,
@@ -306,12 +346,18 @@ export function tränarliga(spel) {
     insprunget: s.insprunget,
     segrar: s.segrar,
     starter: s.starter,
+    hästar: antalHästar(s.id),
+    /* Per häst säger mer om kvalitet än totalen. Ett stall med tjugo hästar
+       tjänar alltid mer än ett med fyra — men inte nödvändigtvis bättre. */
+    perHäst: Math.round(s.insprunget / antalHästar(s.id)),
     du: false,
   }));
   rader.push({
     namn: spel.stallnamn,
     tränare: "du",
     filosofi: "",
+    hästar: spel.stall.length || 1,
+    perHäst: Math.round(spel.intjänat / (spel.stall.length || 1)),
     insprunget: spel.intjänat,
     segrar: spel.stall.reduce((a, h) => a + (h.segrar || 0), 0),
     starter: spel.stall.reduce((a, h) => a + (h.starter || 0), 0),
