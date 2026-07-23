@@ -20,23 +20,51 @@
    openStretch = extra innerspår öppnas på upploppet
    karaktär = kort beskrivning till spelaren                              */
 export const BANOR = {
-  nordstad:   { namn: "Nordstad",     bana: 1000, upplopp: 190, openStretch: false,
+  nordstad:   { storlek: 2, namn: "Nordstad",     bana: 1000, upplopp: 190, openStretch: false,
                 karaktär: "Snabb bana med kort upplopp — spetsen är svårslagen." },
-  kvarnbacken:{ namn: "Kvarnbacken",  bana: 1000, upplopp: 240, openStretch: true,
+  kvarnbacken:{ storlek: 3, namn: "Kvarnbacken",  bana: 1000, upplopp: 240, openStretch: true,
                 karaktär: "Långt upplopp och öppet innerspår. Vinnarhålet finns här." },
-  bjorkeby:   { namn: "Björkeby",     bana: 1000, upplopp: 205, openStretch: true,
+  bjorkeby:   { storlek: 1, namn: "Björkeby",     bana: 1000, upplopp: 205, openStretch: true,
                 karaktär: "Öppet innerspår, men trång före sista kurvan." },
-  storangen:  { namn: "Storängen",    bana: 1000, upplopp: 230, openStretch: false,
+  storangen:  { storlek: 1, namn: "Storängen",    bana: 1000, upplopp: 230, openStretch: false,
                 karaktär: "Rymlig bana där ytterspår kostar mindre än vanligt." },
-  vinterviken:{ namn: "Vinterviken",  bana: 1000, upplopp: 175, openStretch: false,
+  vinterviken:{ storlek: 1, namn: "Vinterviken",  bana: 1000, upplopp: 175, openStretch: false,
                 karaktär: "Kort upplopp och tunga vinterförhållanden." },
-  sundtravet: { namn: "Sundtravet",   bana: 1000, upplopp: 215, openStretch: true,
+  sundtravet: { storlek: 2, namn: "Sundtravet",   bana: 1000, upplopp: 215, openStretch: true,
                 karaktär: "Jämn bana, öppet innerspår, ofta höga tempon." },
-  ekhaga:     { namn: "Ekhaga",       bana: 1000, upplopp: 250, openStretch: false,
+  ekhaga:     { storlek: 3, namn: "Ekhaga",       bana: 1000, upplopp: 250, openStretch: false,
                 karaktär: "Landets längsta upplopp. Spurtare får sin chans." },
   sorgarden:  { namn: "Sörgården",    bana: 1000, upplopp: 195, openStretch: false,
                 karaktär: "Liten bana med snäva kurvor — innerspåret är guld." },
 };
+
+/* ==================== Tränardräkter ====================
+   Stallets färger. Bärs av kusken i spelarens lopp och pryder rubriken.
+   Kombinationerna är valda för kontrast — dräkten ska synas över ett helt
+   varv, inte bara i närbild. */
+export const DRÄKTER = [
+  { id: "vinröd",   namn: "Vinröd/guld",     bg: "#7a1f2b", fg: "#e8c766" },
+  { id: "kungsblå", namn: "Kungsblå/vit",    bg: "#1d3f8f", fg: "#f5f5f0" },
+  { id: "grön",     namn: "Skogsgrön/gul",   bg: "#1f5c33", fg: "#f2d43d" },
+  { id: "svart",    namn: "Svart/orange",    bg: "#191919", fg: "#f28c28" },
+  { id: "vit",      namn: "Vit/röd",         bg: "#f2efe8", fg: "#b3252e" },
+  { id: "lila",     namn: "Lila/silver",     bg: "#4b2a6b", fg: "#cfcfd6" },
+  { id: "brun",     namn: "Kastanj/kräm",    bg: "#5c3a21", fg: "#efe3c8" },
+  { id: "turkos",   namn: "Petrol/vit",      bg: "#0f5a5f", fg: "#f0f4f2" },
+];
+
+/* ==================== Förstamän ====================
+   Förstamannen sköter den dagliga träningen och har åsikter. Profilen
+   färgar råden — en fostrare vill vila, en pådrivare vill jobba. */
+export const FÖRSTAMANSNAMN = [
+  "Gunnar Lidén", "Maj-Britt Åkerlund", "Bo Sjöqvist", "Irene Falk",
+  "Rune Vestman", "Anja Kolehmainen", "Sixten Dahl", "Marta Nyström",
+];
+export const FÖRSTAMANSPROFILER = [
+  { id: "fostrare",  namn: "fostrare",  text: "tror på tålamod och håller hellre igen en vecka för mycket än en för lite" },
+  { id: "pådrivare", namn: "pådrivare", text: "vill se jobb i backen och tycker att form byggs, inte väntas fram" },
+  { id: "taktiker",  namn: "taktiker",  text: "läser propositioner som andra läser romaner och matchar hellre rätt än ofta" },
+];
 
 /* ==================== Hästnamn ====================
    Efterleden är påhittade i stället för verkliga uppfödarsuffix, så att

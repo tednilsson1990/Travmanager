@@ -23,6 +23,8 @@ export function nyttSpel() {
     startadeLopp: [],
     stall: [nyHäst({ ålder: 5 }), nyHäst({ ålder: 4 }), nyHäst({ ålder: 7 })],
     kuskrelation: {},
+    dräkt: null, hemmabana: null, uppstartKlar: false,
+    förstaman: null, banerbjudande: null, inbjudan: null, segrarTotalt: 0,
     logg: [], press: [], föl: [],
     erbjudande: null,
     nästaId: idRäknare(),

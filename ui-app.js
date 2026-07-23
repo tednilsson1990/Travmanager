@@ -7,6 +7,7 @@ import LoppVy from "./ui-loppvy.js";
 import SfarVy from "./ui-sfarvy.js";
 import AvelVy from "./ui-avelvy.js";
 import MarknadVy from "./ui-marknadvy.js";
+import StartVy from "./ui-startvy.js";
 
 const FLIKAR = [
   { id: "stall", namn: "Stall" },
@@ -20,9 +21,19 @@ export default function App() {
   const { spel, uppdatera, nystart } = useSpel();
   const [flik, sättFlik] = useState("stall");
 
+  /* Nya karriärer går genom uppstarten. Äldre sparfiler (fältet saknas)
+     släpps rakt in — deras val är redan gjorda av historien. */
+  if (spel.uppstartKlar === false) {
+    return html`
+      <header><div class="brand">Stallet<span>·</span>nytt kapitel</div></header>
+      <div class="wrap"><${StartVy} uppdatera=${uppdatera} /></div>`;
+  }
+
   return html`
     <header>
-      <div class="brand">Stallet<span>·</span>${spel.stallnamn}</div>
+      <div class="brand">
+        ${spel.dräkt && html`<span class="draktprick" style=${{ background: spel.dräkt.bg, color: spel.dräkt.fg }}>▮</span>`}
+        Stallet<span>·</span>${spel.stallnamn}</div>
       <div class="status">
         <div>Säsong<b>${spel.säsong ?? 1}</b></div>
         <div>Vecka<b>${Math.min(spel.vecka, spel.veckor)}/${spel.veckor}</b></div>

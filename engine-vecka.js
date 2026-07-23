@@ -4,6 +4,8 @@ import { KUSKAR } from "./data-kuskar.js";
 import { ÄGARNAMN, ÄGARKRAV, ARVODE_PER_VECKA } from "./data-agare.js";
 import { körVärldensVecka, skötVärlden, handelIVärlden } from "./engine-varld.js";
 import { avslutaSäsong, säsongstext } from "./engine-sasong.js";
+import { säkraFörstaman } from "./engine-forstaman.js";
+import { BANOR } from "./data-namnpaket.js";
 
 const DRIFT_PER_HÄST = 3200;
 
@@ -29,6 +31,29 @@ function media(spel) {
 
 /** Kör en vecka framåt: träning, skador, ekonomi, media, ägarförfrågningar, föl. */
 export function körVecka(spel) {
+  /* Äldre karriärer saknar förstaman — en dyker upp med en pressnotis. */
+  if (säkraFörstaman(spel)) {
+    skrivPress(spel, `${spel.förstaman.namn} ny förstaman hos ${spel.stallnamn}`,
+      "Stallet förstärker", "positiv");
+  }
+  /* Passerad inbjudan förfaller. */
+  if (spel.inbjudan && spel.inbjudan.vecka < spel.vecka) spel.inbjudan = null;
+  /* UPPSTIGNINGEN. Med renommé och segrar hör de större banorna av sig.
+     Erbjudandet ligger kvar tills spelaren bestämmer sig — men kommer
+     bara en gång per storlekssteg. */
+  const hemma = BANOR[spel.hemmabana];
+  if (hemma && !spel.banerbjudande) {
+    const nästaStorlek = (hemma.storlek ?? 1) + 1;
+    const krav = nästaStorlek === 2 ? { renommé: 40, segrar: 6, kostnad: 60000 }
+               : nästaStorlek === 3 ? { renommé: 62, segrar: 16, kostnad: 140000 } : null;
+    if (krav && spel.renommé >= krav.renommé && (spel.segrarTotalt ?? 0) >= krav.segrar) {
+      const kandidater = Object.entries(BANOR).filter(([, b]) => b.storlek === nästaStorlek);
+      const [id, bana] = kandidater[Math.floor(slump() * kandidater.length)];
+      spel.banerbjudande = { banaId: id, kostnad: krav.kostnad };
+      skrivPress(spel, `${bana.namn} öppnar dörren för ${spel.stallnamn}`,
+        "Banchefen bekräftar kontakten", "positiv");
+    }
+  }
   spel.logg = [];
 
   spel.stall.forEach((h) => {
@@ -196,6 +221,23 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   häst.form = klamp(häst.form + (pall ? 4 : -2));
   spel.kassa += netto;
   spel.intjänat += netto;
+  if (vann) spel.segrarTotalt = (spel.segrarTotalt ?? 0) + 1;
+  /* Hemmapubliken. På hemmabanan går folk och man får del av entrén —
+     ekonomiskt skäl att bygga sitt namn där man bor. */
+  const hemmabana = spel.hemmabana && BANOR[spel.hemmabana];
+  let publik = 0;
+  if (hemmabana && lopp.banaNamn === hemmabana.namn) {
+    publik = 1000 + Math.round(brutto * 0.08 / 100) * 100;
+    spel.kassa += publik;
+  }
+  /* Vinst i ett fint lopp kan ge en INBJUDAN — arrangörer vill ha
+     vinnare i sina fält. Gäller om två veckor, tackar man inte ja
+     genom att starta förfaller den. */
+  if (vann && (lopp.storlopp || (lopp.pris?.[0] ?? 0) >= 40000) && !spel.inbjudan && slump() < 0.55) {
+    spel.inbjudan = { vecka: spel.vecka + 2, häst: häst.namn };
+    skrivPress(spel, `${häst.namn} inbjuden till arrangörslopp`,
+      `Segern i ${lopp.kortnamn || lopp.namn} öppnade dörren`, "positiv");
+  }
   if (slump() < (häst.energi < 25 ? 0.18 : 0.05)) häst.skada = int(1, 2);
   if (dåligDag && slump() < 0.35) häst.skada = Math.max(häst.skada, int(1, 2));
 
@@ -354,5 +396,5 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
     spel.marknadsbild = klamp(snittÖver * 2.2, -1.2, 1.2);
   }
 
-  return { brutto, kuskandel, netto, renΔ, relΔ, hypeΔ, troΔ, ägartext, dagstext, dåligDag };
+  return { brutto, kuskandel, netto, publik, renΔ, relΔ, hypeΔ, troΔ, ägartext, dagstext, dåligDag };
 }

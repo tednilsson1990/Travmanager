@@ -3,6 +3,8 @@ import { html } from "htm/preact";
 import { TAKTIKER } from "./data-lopp.js";
 import { veckansLopp, startförbud, kravText } from "./data-kalender.js";
 import { KUSKAR, villig, svar, uppbokad, uppbokadeI } from "./data-kuskar.js";
+import { loppmatchning } from "./engine-forstaman.js";
+import { BANOR } from "./data-namnpaket.js";
 import { distanspassning } from "./engine-hast.js";
 import { byggFält, rustaFält, bokför } from "./engine-varld.js";
 import { beräknaStreck } from "./engine-streck.js";
@@ -28,7 +30,11 @@ function Anmälan({ spel, onStart }) {
   const startbara = spel.stall.filter(
     (h) => h.skada === 0 && h.senasteStartVecka !== spel.vecka
   );
-  const veckans = veckansLopp(spel.vecka);
+  /* Inbjudningsloppet läggs överst de veckor en inbjudan gäller —
+     arrangörens pengar och ett fält i högre klass. */
+  const veckans = spel.inbjudan?.vecka === spel.vecka
+    ? [medInbjudningspengar(inbjudningslopp(spel.vecka)), ...veckansLopp(spel.vecka)]
+    : veckansLopp(spel.vecka);
   /* Kåren är stor. Visa dem som tackar ja, plus några snäpp över för att
      visa vad du kan sikta på när renommét stiger. */
   const villiga = KUSKAR.filter((k) => villig(spel, k));
@@ -51,10 +57,29 @@ function Anmälan({ spel, onStart }) {
   const kusk = KUSKAR.find((k) => k.namn === kuskNamn) || villiga[0] || KUSKAR[KUSKAR.length - 1];
   /* Uppbokad gäller PER LOPP — byter man lopp kan samma kusk vara ledig. */
   const bokad = uppbokad(spel, kusk, lopp);
-  const kanStarta = !förbud && villig(spel, kusk) && !bokad && spel.kassa >= kusk.arvode;
+  /* Hemmaplan: ingen resa och hemmapubliken ger extra. Bortalopp kostar. */
+  const hemmabana = spel.hemmabana && BANOR[spel.hemmabana];
+  const hemma = hemmabana && lopp.banaNamn === hemmabana.namn;
+  const resa = hemmabana && !hemma ? 1200 : 0;
+  const kanStarta = !förbud && villig(spel, kusk) && !bokad && spel.kassa >= kusk.arvode + resa;
+
+  const matchning = spel.förstaman ? loppmatchning(spel.förstaman, häst, veckans) : null;
 
   return html`
     <h2>Vecka ${spel.vecka} — anmälan</h2>
+    ${spel.inbjudan?.vecka === spel.vecka && html`
+      <div class="kort inbjudan">
+        <div class="meta">Inbjudan · gäller bara denna vecka</div>
+        <div class="logg">Efter <b>${spel.inbjudan.häst}</b>s seger vill arrangören ha stallet
+          i sitt inbjudningslopp — förhöjda prispengar, men fältet håller klass. ✉-loppet i listan.</div>
+      </div>`}
+    ${matchning && html`
+      <div class="kort">
+        <div class="meta">Förstamannen om ${häst.namn}</div>
+        <div class="logg">»${matchning.text}«</div>
+        ${matchning.lopp && html`<button class="btn liten sekundär" onClick=${() =>
+          sättLopp(veckans.indexOf(matchning.lopp))}>Ta det loppet</button>`}
+      </div>`}
     <div class="kort">
       <label class="fält" for="v-hast">Häst</label>
       <select id="v-hast" value=${hästId} onChange=${(e) => sättHäst(+e.target.value)}>
@@ -68,7 +93,7 @@ function Anmälan({ spel, onStart }) {
       <select id="v-lopp" value=${loppIx} onChange=${(e) => sättLopp(+e.target.value)}>
         ${veckans.map((l, i) => html`
           <option key=${l.id} value=${i}>
-            ${l.v85 ? "★ " : ""}${l.namn} · ${l.dist} m · ${kr(l.pris[0])} kr
+            ${l.id.endsWith("-inbjudan") ? "✉ " : ""}${l.v85 ? "★ " : ""}${l.namn} · ${l.dist} m · ${kr(l.pris[0])} kr${spel.hemmabana && BANOR[spel.hemmabana]?.namn === l.banaNamn ? " · hemma" : ""}
           </option>`)}
       </select>
 
@@ -87,6 +112,8 @@ function Anmälan({ spel, onStart }) {
       <div><span>Prispengar</span> ${kr(lopp.förstapris)} kr till segraren · ${lopp.antalPris} pris · ${kr(lopp.garanterad)} kr garanterat</div>
       <div><span>Start</span> ${lopp.start === "volt" ? "voltstart" : "autostart"}</div>
       <div class=${passning.c}><span>Distans</span> ${passning.t}</div>
+      ${resa > 0 && html`<div><span>Resa</span> Bortalopp — ${kr(resa)} kr i resekostnad</div>`}
+      ${hemma && html`<div><span>Hemmaplan</span> Ingen resa, och hemmapubliken ger extra prispengar</div>`}
       ${(häst.kuskbekant?.[kusk.namn] ?? 0) > 0 && html`<div><span>Ekipaget</span>
         ${kusk.namn} har kört ${häst.namn} ${häst.kuskbekant[kusk.namn]} ${häst.kuskbekant[kusk.namn] === 1 ? "gång" : "gånger"}
         — ${häst.kuskbekant[kusk.namn] >= 6 ? "kan hästen utan och innan" : "kännedomen växer för varje start"}</div>`}
@@ -290,6 +317,7 @@ function Facit({ körning, facit, onKlart }) {
         Prispengar ${kr(facit.brutto)} − kuskandel ${kr(facit.kuskandel)} =
         <b>${kr(facit.netto)} kr</b> (arvode −${kr(kusk.arvode)})
       </div>
+      ${facit.publik > 0 && html`<div class="logg pris">Hemmapubliken: <b>+${kr(facit.publik)} kr</b></div>`}
       <div class="logg">
         Renommé ${facit.renΔ >= 0 ? "+" : ""}${facit.renΔ.toFixed(1)} ·
         spelförtroende ${facit.troΔ >= 0 ? "+" : ""}${facit.troΔ} ·
@@ -322,7 +350,10 @@ export default function LoppVy({ spel, uppdatera }) {
     rustaFält(fält, lopp, kusk, "rygg", uppbokadeI(spel, lopp).filter((k) => k.namn !== kusk.namn));
     beräknaStreck(fält, spel, lopp);
     uppdatera((s) => {
-      s.kassa -= kusk.arvode;
+      const hemmaB = s.hemmabana && BANOR[s.hemmabana];
+      const resekostnad = hemmaB && lopp.banaNamn !== hemmaB.namn ? 1200 : 0;
+      s.kassa -= kusk.arvode + resekostnad;
+      if (s.inbjudan?.vecka === s.vecka && lopp.id.endsWith("-inbjudan")) s.inbjudan = null;
       s.startadeLopp = [...(s.startadeLopp || []), lopp.id];
     });
     sättKörning({ häst, lopp, kusk, fält });

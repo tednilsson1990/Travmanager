@@ -5,6 +5,57 @@ import { nySäsong, säsongstext } from "./engine-sasong.js";
 import { kr, klamp } from "./engine-util.js";
 import { ARVODE_PER_VECKA } from "./data-agare.js";
 import { Stapel, Rad, Form } from "./ui-delar.js";
+import { träningsråd } from "./engine-forstaman.js";
+import { BANOR } from "./data-namnpaket.js";
+
+function Förstamankort({ spel, uppdatera }) {
+  const fm = spel.förstaman;
+  if (!fm) return null;
+  const råd = spel.stall.map((h) => ({ häst: h, ...träningsråd(fm, h) }));
+  const avviker = råd.filter((r) => r.häst.träning !== r.träning);
+  return html`
+    <div class="kort">
+      <div class="meta">Förstaman · ${fm.profil}</div>
+      <div class="namn">${fm.namn}</div>
+      ${avviker.length === 0
+        ? html`<div class="logg">»Träningen ligger som jag vill ha den. Bra vecka.«</div>`
+        : html`
+          ${avviker.slice(0, 3).map((r) => html`
+            <div class="logg" key=${r.häst.id ?? r.häst.namn}>
+              »<b>${r.häst.namn}</b>: ${r.motiv}«
+            </div>`)}
+          <button class="btn liten" onClick=${() => uppdatera((s) => {
+            s.stall.forEach((h) => { h.träning = träningsråd(s.förstaman, h).träning; });
+          })}>Låt ${fm.namn.split(" ")[0]} lägga träningen</button>`}
+    </div>`;
+}
+
+function Banflytt({ spel, uppdatera }) {
+  const e = spel.banerbjudande;
+  if (!e) return null;
+  const bana = BANOR[e.banaId];
+  const hemma = BANOR[spel.hemmabana];
+  return html`
+    <div class="kort">
+      <div class="meta">Erbjudande från ${bana.namn}</div>
+      <div class="namn">Flytta stallet?</div>
+      <div class="logg">${bana.karaktär}</div>
+      <div class="logg">Större bana, större lopp på hemmaplan — och hemmapubliken följer med.
+        Flyttkostnad <b>${kr(e.kostnad)} kr</b>. ${hemma ? `Ni lämnar ${hemma.namn}.` : ""}</div>
+      <div class="rad-knappar">
+        <button class="btn liten" disabled=${spel.kassa < e.kostnad} onClick=${() => uppdatera((s) => {
+          s.kassa -= s.banerbjudande.kostnad;
+          s.hemmabana = s.banerbjudande.banaId;
+          s.renommé = klamp(s.renommé + 4);
+          s.logg.unshift(`Stallet flyttar till <b>${BANOR[s.hemmabana].namn}</b>. Ett nytt kapitel.`);
+          s.banerbjudande = null;
+        })}>Flytta (${kr(e.kostnad)} kr)</button>
+        <button class="btn liten sekundär" onClick=${() => uppdatera((s) => { s.banerbjudande = null; })}>
+          Vi trivs där vi är
+        </button>
+      </div>
+    </div>`;
+}
 
 function Erbjudande({ spel, uppdatera }) {
   const h = spel.erbjudande;
@@ -101,7 +152,9 @@ export default function StallVy({ spel, uppdatera, nystart }) {
     return html`<${Säsongsavslut} spel=${spel} uppdatera=${uppdatera} />`;
   }
   return html`
+    <${Banflytt} spel=${spel} uppdatera=${uppdatera} />
     <${Erbjudande} spel=${spel} uppdatera=${uppdatera} />
+    <${Förstamankort} spel=${spel} uppdatera=${uppdatera} />
     <h2>Veckans jobb</h2>
     ${spel.stall.map((h) => html`<${Hästkort} key=${h.id} häst=${h} uppdatera=${uppdatera} />`)}
     <button class="btn" disabled=${slut} onClick=${() => {

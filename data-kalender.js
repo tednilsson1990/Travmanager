@@ -128,6 +128,30 @@ function byggLopp(r, { id, namn, banaId, dist, start, klass, extra = {} }) {
 }
 
 /** Veckans lopp. Fyra till sex vardagslopp, plus V85-avdelning var fjärde vecka. */
+/**
+ * Ett inbjudningslopp: arrangören har sett stallets framgångar och bjuder
+ * in. Högre klass än vardagsloppen, rejäla pengar, och fältet byggs av
+ * nivån — motståndet är på riktigt. Deterministiskt av (vecka, frö2) så
+ * samma inbjudan ger samma lopp.
+ */
+export function inbjudningslopp(vecka) {
+  const r = frö(vecka * 7919 + 31);
+  const klass = KLASSER[KLASSER.length - 1];
+  const banaId = välj(r, Object.keys(BANOR).filter((b) => BANOR[b].storlek >= 2));
+  return byggLopp(r, {
+    id: `v${vecka}-inbjudan`,
+    namn: "Arrangörens inbjudningslopp",
+    banaId, dist: välj(r, DISTANSER), start: "bil", klass,
+    extra: { nivå: (klass.nivå ?? 3) + 1, prestige: (klass.prestige ?? 2) + 1 },
+  });
+}
+
+/* Prispengarna boostas efter bygget — arrangören betalar för att locka. */
+export function medInbjudningspengar(lopp) {
+  return { ...lopp, pris: lopp.pris.map((p) => Math.round(p * 1.6 / 500) * 500),
+           garanterad: Math.round((lopp.garanterad || 0) * 1.6 / 500) * 500 };
+}
+
 export function veckansLopp(vecka) {
   const r = frö(vecka);
   const lopp = [];

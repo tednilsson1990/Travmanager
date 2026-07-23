@@ -32,6 +32,8 @@ ladda upp i ett svep från en telefon. Prefixet i filnamnet är mappen.
 ```
 index.html              importmap + manifest, enda HTML-filen
 sw.js                   service worker — spelet fungerar utan nät
+ui-startvy.js           spelstarten: namn, dräkt, hemmabana
+engine-forstaman.js     förstamannen: träningsråd och loppmatchning
 manifest.webmanifest    hemskärmsapp
 styles.css
 main.js                 monterar appen
@@ -441,6 +443,31 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Karriärbågen (v50)
+
+Spelet börjar med tre val: stallnamn, dräkt och hemmabana. Bara de små
+banorna (storlek 1 i `BANOR`) har plats för en okänd tränare — de stora
+får man förtjäna. Hemmabanan är ekonomi på riktigt: bortalopp kostar
+1 200 kr i resa, hemmalopp ger hemmapubliken (1 000 kr + 8 % av bruttot).
+
+**Förstamannen** anställs vid uppstarten (äldre sparfiler får en med en
+pressnotis första veckan). Profilen — fostrare, pådrivare eller taktiker —
+färgar råden. Hen föreslår träning per häst med motivering och en knapp
+som lägger hela veckans träning, och pekar i anmälan ut veckans lämpligaste
+lopp för vald häst. Råden är regelstyrda och deterministiska; poängen är
+att lära ut hur man tänker, inte att spela åt spelaren.
+
+**Uppstigningen.** Vinst i ett lopp med minst 40 000 i förstapris kan ge
+en inbjudan till arrangörens lopp två veckor senare: högre klass, fältet
+byggs av nivån, prispengarna växlas upp 1,6×. Vid renommé 40/6 segrar
+respektive 62/16 hör en större bana av med ett flytterbjudande (60 000
+respektive 140 000 kr) — flytten byter hemmabana och därmed var storloppen
+ligger nära. Erbjudandet ligger kvar tills spelaren väljer.
+
+Nästa etapp av bågen, i fallande ordning: egen hästgård med utbyggbara
+träningsmöjligheter (rakbana, backe, vattenband), fler anställda med egna
+profiler, och förstamansrepliker efter lopp — hen såg samma lopp som du.
+
 ## Nästa steg
 
 - Rygg ledaren vinner för ofta (13,1 % mot mål 7) och andra utvändigt för
@@ -448,4 +475,6 @@ ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
   loppen; stigtaktsklampen är prövad och avfärdad, nästa angrepp är VAR
   utflyttningarna sker (de byggs långt bak i fältet)
 Klart och struket: tävlingskalendern med propositioner, tränarligan,
-uppbokade kuskar (v45), service workern (v44) och kuskkännedomen (v46).
+uppbokade kuskar (v45), service workern (v44), kuskkännedomen (v46),
+ledarförsvaret (v47), radensfixen (v49) och karriärbågen med spelstart,
+förstaman och uppstigning (v50).
