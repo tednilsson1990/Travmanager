@@ -46,6 +46,46 @@ for (const f of js) {
   }
 }
 
+/* MODULLADDNINGEN. Importgrafen ovan är statisk text — den ser inte fel
+   som uppstår när modulkroppen KÖRS: TDZ i importcirklar, anrop av något
+   som inte finns, syntaxfel htm sväljer. Därför importeras varje modul
+   på riktigt, med preact/htm utbytta mot stubbar (spelet självt kör dem
+   via importmap som node inte läser). Registerläxan i v62 — TDZ-kraschen
+   som fem provsviter missade — är skälet till att det här steget finns. */
+{
+  const os = await import("node:os");
+  const path = await import("node:path");
+  const stub = fs.mkdtempSync(path.join(os.tmpdir(), "tm-verif-"));
+  const nm = path.join(stub, "node_modules");
+  fs.mkdirSync(path.join(nm, "preact/hooks"), { recursive: true });
+  fs.mkdirSync(path.join(nm, "htm/preact"), { recursive: true });
+  fs.writeFileSync(path.join(nm, "preact/package.json"),
+    JSON.stringify({ name: "preact", exports: { ".": "./index.mjs", "./hooks": "./hooks/index.mjs" } }));
+  fs.writeFileSync(path.join(nm, "preact/index.mjs"),
+    "export const h=()=>{};export const render=()=>{};export const Component=class{};export const Fragment=()=>{};");
+  fs.writeFileSync(path.join(nm, "preact/hooks/index.mjs"),
+    "export const useState=(v)=>[typeof v==='function'?v():v,()=>{}];export const useEffect=()=>{};" +
+    "export const useMemo=(f)=>f();export const useRef=()=>({current:null});" +
+    "export const useCallback=(f)=>f;export const useReducer=(r,v)=>[v,()=>{}];");
+  fs.writeFileSync(path.join(nm, "htm/package.json"),
+    JSON.stringify({ name: "htm", exports: { ".": "./index.mjs", "./preact": "./preact/index.mjs" } }));
+  fs.writeFileSync(path.join(nm, "htm/preact/index.mjs"), "export const html=()=>null;");
+  for (const f of js) fs.copyFileSync(f, path.join(stub, f));
+  /* main.js monterar appen och kräver ett fönster — en global stub
+     räcker, det är modulLADDNINGEN som provas, inte renderingen. */
+  globalThis.window ??= { addEventListener: () => {}, storage: undefined,
+    location: { reload: () => {} }, scrollTo: () => {} };
+  globalThis.document ??= { getElementById: () => null, addEventListener: () => {},
+    createElement: () => ({ style: {} }), body: {} };
+  globalThis.navigator ??= {};
+  globalThis.localStorage ??= { getItem: () => null, setItem: () => {}, removeItem: () => {} };
+  for (const f of js) {
+    try { await import(path.join(stub, f)); }
+    catch (e) { console.log(`${f}: laddar inte — ${String(e.message).split("\n")[0]}`); fel++; }
+  }
+  fs.rmSync(stub, { recursive: true, force: true });
+}
+
 const vHtml = (html.match(/\?v=(\d+)/) || [])[1];
 const vAlla = new Set([...html.matchAll(/\?v=(\d+)/g)].map((m) => m[1]));
 const vSw = (sw.match(/const VERSION = (\d+)/) || [])[1];

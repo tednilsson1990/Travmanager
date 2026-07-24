@@ -13,6 +13,7 @@ import { registreraHändelse, hästmilstolpar, säsongsHändelser, loppfakta,
 import "./engine-lyssnare.js";
 import { körStorloppsbåge } from "./engine-storlopp.js";
 import { uppdateraAmbition, prövaAvgång, gamlaBekanta, ägarrelation } from "./engine-personal.js";
+import { uppdateraRekordEfterLopp, skrivSäsongskrönika } from "./engine-rekord.js";
 import { köScen } from "./engine-scener.js";
 import { JOURNALISTER, BANOR } from "./data-namnpaket.js";
 
@@ -234,6 +235,10 @@ export function körVecka(spel) {
     }
     const rad = avslutaSäsong(spel);
     spel.säsongAvslutad = rad;
+    /* Krönikörens bokslut skrivs NU, medan säsongens händelser ligger
+       färska i krönikan — och sparas på historikraden så att texten går
+       att läsa år senare i Stalljournalen. */
+    skrivSäsongskrönika(spel, rad);
     skrivPress(spel, `Säsongen är slut — Björkhaga ${rad.plats}:a`, säsongstext(rad),
       rad.plats <= 3 ? "bra" : rad.plats > rad.avStall * 0.7 ? "dålig" : "neutral");
     spel.logg.push(`<b>Säsong ${rad.säsong} avslutad.</b> ${säsongstext(rad)}`);
@@ -304,6 +309,9 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   if (!min.ur) uppdateraRivalitet(spel, häst, fakta);
   /* Stod en exförstamans häst i fältet? Pressen bevakar gamla bekanta. */
   gamlaBekanta(spel, sim?.resultat, häst, min.ur ? null : min.plats);
+  /* Rekordtavlan: föll en notering? skrivPress följer med som argument
+     så att rekordmodulen slipper importera veckomotorn tillbaka. */
+  uppdateraRekordEfterLopp(spel, { häst, lopp, min, brutto, fakta, skrivPress });
   /* Ägaren minns vad hens häst gör hos dig. */
   if (häst.ägare) ägarrelation(spel, häst.ägare,
     min.ur ? -3 : vann ? 8 : pall ? 4 : -1);

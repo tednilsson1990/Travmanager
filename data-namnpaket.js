@@ -62,6 +62,8 @@ export const DRÄKTER = [
  * formkurvorna, nyhetsjägaren skvallret och skrällarna. Att RÖSTERNA
  * återkommer är poängen — en tidning utan bekanta bylines är bara text.
  */
+export const TIDNINGSNAMN = "Travbladet";
+
 export const JOURNALISTER = {
   krönikör: "Cecilia Ramnek",
   siffror: "Janne Fyhr",

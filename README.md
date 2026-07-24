@@ -38,11 +38,12 @@ ui-prolog.js            prologens scener: mentorkort, övertagande, rekrytering
 engine-prolog.js        säsong 0: mentorn, introhästarna, gårdshistorien
 engine-handelser.js     händelsemotorn — spelets strukturerade minne och buss
 engine-lyssnare.js      reaktionerna: press, mentor, ägare, förstaman, troféer
-ui-journalvy.js         Stalljournalen: krönika, troférum, rivaliteter
+ui-journalvy.js         Stalljournalen: krönika, säsonger, rekord, troféer
 engine-storlopp.js      storloppsbågen: kval, uppladdning, världens favorit
 engine-scener.js        helskärmsscenerna och deras val
 ui-scenvy.js            scenens yta: kvällsmörker, bild, rubrik, val
 engine-personal.js      personalens karriärer, ägarrelationer, banflytten
+engine-rekord.js        rekordtavlan, hall of fame, säsongskrönikan
 ui-grafik.js            bildspråket: hästsilhuetter, dräkter, gårdskartan
 ui-hemvy.js             Hem — dagens redaktionella uppslag
 engine-forstaman.js     förstamannen: träningsråd och loppmatchning
@@ -317,6 +318,7 @@ node prov-handelser.mjs        händelsebussen: utlöses varje reaktion?
 node prov-storlopp.mjs         bågen, avelshagen och arvet
 node prov-scener.mjs           scenkön, valen och deras effekter
 node prov-personal.mjs         förstamansbågen, gamla bekanta, ägarna
+node prov-rekord.mjs           rekordtavlan, hall of fame, krönikan
 ```
 
 `verifiera.mjs` föddes ur ett tyst fel: en textersättning som missade
@@ -466,6 +468,72 @@ Prövat och avfärdat, i tur och ordning:
 Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållningen,
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
+
+## Tidningssidan och prologens rum (v64)
+
+**Travbladet som helsida.** Nyhetsscenerna (storloppsseger, arvet,
+avskedet, gårdsrekordet, elevens seger) renderas nu som en hel sida ur
+travtidningen: tidningshuvudet med dubbellinjer och prisrad, avdelning i
+tegel, jetterubrik i tryckstil, serifingress med anfang, faktaspalten
+mellan linjer, citatet som utdrag, "Text: {signatur}" — och knappen
+heter Vänd sida. Segerintervjuns val ligger under en tredubbel linje som
+tidningens egen fråga. Tidningsnamnet bor i `data-namnpaket.js`
+(namnregeln); stilen väljs per scen med `stil: "tidning"`.
+
+Tumregeln som styr valet av stil: KVÄLLEN är upplevelsen (stallkontoret,
+telefonen som ringer, avgångssamtalet), TIDNINGEN är eftermälet. Det som
+är en nyhet ser ut som en nyhet.
+
+**Prologen fick rum.** Spelstarten är inte längre en rullande blankett
+utan fem helskärmssteg: pressuppslaget, ANKOMSTEN (regnet, mötet med
+mentorn, gårdens siffror — bara berättelse, inget att fylla i), namnet,
+dräkten och hemmabanan — ett beslut per skärm med storyn runt beslutet.
+Stegen är LJUSA helskärmar (.helscen.ljus): prologen utspelas en regnig
+förmiddag; kvällsmörkret sparas till loppen. När stallet öppnas trycks
+generationsskiftet som Travbladets förstasida — spelarens första
+tidningssida av många, byggd av spelets egna namn och siffror.
+
+**Verifieraren laddar nu modulerna på riktigt.** Importgrafen är statisk
+text — den ser inte fel som uppstår när modulkroppen KÖRS: TDZ i
+importcirklar (registerläxan i v62, som fem provsviter missade),
+syntaxfel, anrop av något som inte finns. Verifieraren bygger numera
+preact/htm-stubbar i en temporär katalog och importerar varenda modul,
+med fönsterglobaler stubbade för main.js. Det är den svarta skärmens
+sista gömställe som stängs.
+
+## Rekorden och säsongskrönikan (v63)
+
+**Rekordtavlan** (spel.rekord) hänger i stallgången bredvid mentorns
+gamla segerrekord: snabbaste segertid, största segermarginal, största
+prispeng. Jämförelserna är ÄRLIGA eller inte alls: km-tid räknas enbart
+vid seger och bilstart (voltens tillägg gör tiderna ojämförbara), och en
+tvåas tid i ett uppdrivet lopp är ingen notering. Första noteringen
+någonsin sätts tyst — allt är rekord när tavlan är tom; först när ett
+riktigt rekord FALLER blir det händelse och press, signerad sifferjägaren.
+
+**Hall of fame** (spel.hallOfFame): de tio största hästarna genom
+tiderna, invalda vid pensionen på merit — insprunget väger tyngst,
+segrar och storlopp därtill (storloppsbonusen är äran; prispengen ligger
+redan i insprunget). Tio platser, inte ett arkiv: att en gammal stjärna
+petas när en större går i pension är poängen. Väggen ska vara svår.
+
+**Säsongskrönikan** skrivs av krönikören i samma sekund som säsongen
+avslutas — medan händelserna ligger färska — och sparas PÅ historikraden,
+så att säsong 3:s text kan läsas i säsong 9. Texten byggs av det som
+hände, inte av en mall med luckor: årets ögonblick (största händelsen,
+med egen formulering per typ — arvet, dödensresan, elevens seger),
+säsongens häst, noteringarna som föll, avskeden, och en utgång färgad av
+tabelläget. Ett tomt år ger en kort krönika; tomrummet är också en
+berättelse. Krönikan visas i säsongsavslutet och för alltid under
+Journal → säsonger; rekordtavlan och hall of fame under Journal → rekord.
+
+**Två skavanker åtgärdade i samma veva:** alert()-rutan med pensionerade
+hästar vid säsongsstart är borta (trotjänarna får riktiga scener, resten
+står i krönikan), och ett faktafel som funnits sedan v50: "säsongens
+häst"-siffran är hästens KARRIÄRTOTAL, inte årets intjänat — texten sa
+"under året" och ljög så fort hästen tjänat mer än stallets årsresultat.
+Upptäckt när en genomkörningskrönika påstod 2,4 mkr "under året" i ett
+stall som sprang in 1,6. Texterna säger nu "i karriären".
 
 ## Personalen och relationerna (v62)
 
@@ -801,9 +869,8 @@ bästa tränare via tränarligan).
   sällan (6,1 % mot 9,6) — raden siktar rätt men ligger ändå bakom i halva
   loppen; stigtaktsklampen är prövad och avfärdad, nästa angrepp är VAR
   utflyttningarna sker (de byggs långt bak i fältet)
-- Historiska rekord och stallhistoria som vy (fas 5) — grunddata finns
-  i krönikan och troférummet
 - Mentorns bortgång som sen, varsam berättelse (långt fram)
+- Gårdens visuella utveckling kopplad till troférummet och hall of fame
 Klart och struket: tävlingskalendern med propositioner, tränarligan,
 uppbokade kuskar (v45), service workern (v44), kuskkännedomen (v46),
 ledarförsvaret (v47), radensfixen (v49) och karriärbågen med spelstart,
@@ -812,4 +879,6 @@ förstaman och uppstigning (v50) gården med byggen och personal (v51), prologen
 händelsebussen med lyssnare, rivaliteter, stalljournal, träningsdagbok
 och pensioneringar (v59) samt storloppsbågen, avelshagen och arvet (v60) och helskärmsscenerna
 med val (v61) samt personalens karriärer, ägarrelationerna och
-journalisternas signaturer (v62).
+journalisternas signaturer (v62) och rekordtavlan, hall of fame och
+säsongskrönikorna (v63) samt tidningssidan och prologens
+helskärmsberättelse (v64).

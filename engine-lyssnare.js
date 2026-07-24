@@ -18,7 +18,7 @@ import { påHändelse } from "./engine-handelser.js";
 import { skrivPress } from "./engine-vecka.js";
 import { klamp, kr } from "./engine-util.js";
 import { köScen } from "./engine-scener.js";
-import { JOURNALISTER } from "./data-namnpaket.js";
+import { JOURNALISTER, TIDNINGSNAMN } from "./data-namnpaket.js";
 
 /* ------------------------------------------------------------------ */
 /* Hjälpare                                                            */
@@ -138,11 +138,12 @@ påHändelse("storloppsseger", (spel, h) => {
   /* Helskärmsscenen — med segerintervjun som val. Samma text som
      uppslaget: en källa, två visningar. */
   köScen(spel, {
-    betydelse: h.betydelse, bild: "seger",
+    betydelse: h.betydelse, bild: "seger", stil: "tidning",
+    signatur: JOURNALISTER.krönikör,
     etikett: spel.huvudnyhet.etikett, rubrik: spel.huvudnyhet.rubrik,
     ingress: spel.huvudnyhet.ingress, fakta: spel.huvudnyhet.fakta,
     citat: spel.huvudnyhet.citat, citatVem: spel.huvudnyhet.citatVem,
-    fråga: "Travmedia sträcker fram mikrofonen. Vad säger du?",
+    fråga: `${TIDNINGSNAMN} sträcker fram mikrofonen. Vad säger du?`,
     data: { hästId: h.aktörer?.hästId, kuskNamn: h.aktörer?.kuskNamn },
     val: [
       { id: "upp", effekt: "intervju_tala_upp",
@@ -183,7 +184,8 @@ påHändelse("gårdsrekord", (spel, h) => {
      med mentorns ord som citat. Inga val: vissa ögonblick ska bara få
      vara. */
   köScen(spel, {
-    betydelse: h.betydelse, bild: "gard-hero",
+    betydelse: h.betydelse, bild: "gard-hero", stil: "tidning",
+    signatur: JOURNALISTER.siffror,
     etikett: "GÅRDENS HISTORIA",
     rubrik: "REKORDET FALLER",
     ingress: h.data?.text ?? "Ett gårdsrekord har fallit.",
@@ -250,7 +252,8 @@ påHändelse("pensionering", (spel, h) => {
       ? Math.round((80000 + (d.segrar ?? 0) * 25000 + (d.intjänat ?? 0) * 0.1) / 5000) * 5000
       : 0;
     köScen(spel, {
-      betydelse: h.betydelse, bild: "gard-hero",
+      betydelse: h.betydelse, bild: "gard-hero", stil: "tidning",
+      signatur: JOURNALISTER.krönikör,
       etikett: "AVSKED",
       rubrik: `${namn.toUpperCase()} SLUTAR`,
       ingress: `${d.starter ?? 0} starter, ${d.segrar ?? 0} segrar och ${kr(d.intjänat ?? 0)} kr insprunget.`,
@@ -337,10 +340,15 @@ påHändelse("arvet", (spel, h) => {
   spel.renommé = klamp(spel.renommé + 5);
 
   köScen(spel, {
-    betydelse: h.betydelse, bild: "seger",
+    betydelse: h.betydelse, bild: "seger", stil: "tidning",
+    signatur: JOURNALISTER.krönikör,
     etikett: spel.huvudnyhet.etikett, rubrik: spel.huvudnyhet.rubrik,
     ingress: spel.huvudnyhet.ingress, fakta: spel.huvudnyhet.fakta,
     citat: spel.huvudnyhet.citat, citatVem: spel.huvudnyhet.citatVem,
+    brödtext: [
+      `Det var på ${d.bana ?? "banan"} modern en gång gjorde det. I går kväll gjorde dottern om det — samma lopp, samma gård, en generation senare.`,
+      `På läktaren stod gårdens gamle tränare. Efteråt sa hen bara ett ord: tack.`,
+    ],
   });
 });
 
@@ -372,7 +380,8 @@ påHändelse("eleven_slog_mästaren", (spel, h) => {
     citatVem: d.tränare,
   });
   köScen(spel, {
-    betydelse: h.betydelse, bild: "bana-kvall",
+    betydelse: h.betydelse, bild: "bana-kvall", stil: "tidning",
+    signatur: JOURNALISTER.nyheter,
     etikett: "GAMLA BEKANTA",
     rubrik: "ELEVEN SLOG MÄSTAREN",
     ingress: `${d.tränare} vann med ${d.häst} — före sitt gamla stall. Ni skildes som vänner. Ni möts som konkurrenter.`,

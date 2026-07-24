@@ -14,6 +14,8 @@ import { useState } from "preact/hooks";
 import { kr } from "./engine-util.js";
 import { Tom } from "./ui-delar.js";
 
+const kmt = (v) => v?.toFixed?.(1).replace(".", ",") ?? v;
+
 /* Hur en händelsetyp skrivs för ett mänskligt öga. Okända typer visas med
    sitt eget namn i stället för att döljas — då syns det när något nytt
    registreras utan att ha fått en text. */
@@ -72,7 +74,7 @@ export default function JournalVy({ spel }) {
 
   return html`
     <div class="flikar">
-      ${["krönika", "troférum", "rivaler"].map((f) => html`
+      ${["krönika", "säsonger", "rekord", "troférum", "rivaler"].map((f) => html`
         <button key=${f} class="flik" aria-selected=${flik === f}
           onClick=${() => sättFlik(f)}>${f}</button>`)}
     </div>
@@ -93,6 +95,63 @@ export default function JournalVy({ spel }) {
                 <div class="jr-text">
                   <b>${typtext(h.typ)}</b>
                   <div>${radtext(h)}</div>
+                </div>
+              </div>`)}
+          </div>`}`}
+
+    ${flik === "säsonger" && html`
+      <div class="hint">Krönikörens bokslut, år för år. Texterna skrevs när det hände.</div>
+      ${(spel.historik ?? []).length === 0
+        ? html`<${Tom}>Första säsongen pågår. Krönikan skrivs när den är slut.<//>`
+        : (spel.historik ?? []).map((rad) => html`
+            <details key=${rad.säsong} class="kort sasongsrad">
+              <summary>
+                <span class="sasongsnr">Säsong ${rad.säsong}</span>
+                <span class="meta">${rad.plats}:a av ${rad.avStall} · ${rad.segrar} segrar · ${kr(rad.intjänat)} kr</span>
+              </summary>
+              ${rad.krönika
+                ? html`
+                  ${rad.krönika.stycken.map((st, i) => html`<p key=${i} class="kronika-stycke">${st}</p>`)}
+                  <div class="byline">Text: ${rad.krönika.signatur}</div>`
+                : html`<div class="logg">Säsongen är förd till protokollet${rad.bästaHäst ? `. Årets häst: ${rad.bästaHäst}` : ""}. Krönikor skrivs från och med i år.</div>`}
+            </details>`)}`}
+
+    ${flik === "rekord" && html`
+      <div class="hint">Tavlan i stallgången — noteringarna genom tiderna.</div>
+      ${(() => {
+        const r = spel.rekord ?? {};
+        const rader = [
+          spel.gårdshistoria?.rekordSegrarSäsong != null &&
+            { etikett: "Segrar på en säsong", värde: String(spel.gårdshistoria.rekordSegrarSäsong),
+              vem: spel.gårdshistoria.rekordÅr ? `${spel.gårdshistoria.mentor ?? "gårdens arv"}, ${spel.gårdshistoria.rekordÅr}` : spel.stallnamn },
+          r.snabbasteSeger && { etikett: "Snabbaste segertid", värde: `${kmt(r.snabbasteSeger.värde)}/km`,
+            vem: `${r.snabbasteSeger.häst}, ${r.snabbasteSeger.lopp}, säsong ${r.snabbasteSeger.säsong}` },
+          r.störstaMarginal && { etikett: "Största segermarginal", värde: `${kmt(r.störstaMarginal.värde)} längder`,
+            vem: `${r.störstaMarginal.häst}, säsong ${r.störstaMarginal.säsong}` },
+          r.störstaPrispeng && { etikett: "Största prispeng", värde: `${kr(r.störstaPrispeng.värde)} kr`,
+            vem: `${r.störstaPrispeng.häst}, ${r.störstaPrispeng.lopp}` },
+        ].filter(Boolean);
+        return rader.length === 0
+          ? html`<${Tom}>Tavlan är tom. Vinn lopp så fylls den.<//>`
+          : html`<div class="kort">
+              ${rader.map((x, i) => html`
+                <div key=${i} class="rekordrad">
+                  <div><b>${x.etikett}</b><div class="meta">${x.vem}</div></div>
+                  <div class="rekordvärde">${x.värde}</div>
+                </div>`)}
+            </div>`;
+      })()}
+
+      <div class="hint" style=${{ marginTop: "14px" }}>Hall of fame — de tio största genom tiderna. Att väggen är svår är poängen.</div>
+      ${(spel.hallOfFame ?? []).length === 0
+        ? html`<${Tom}>Väggen väntar på sin första häst. Den väljs vid pensionen.<//>`
+        : html`<div class="kort">
+            ${spel.hallOfFame.map((p, i) => html`
+              <div key=${p.hästId} class="hof-rad">
+                <span class="hof-nr">${i + 1}</span>
+                <div>
+                  <div class="relnamn">${p.namn}</div>
+                  <div class="meta">${p.segrar} segrar på ${p.starter} starter · ${kr(p.intjänat)} kr${p.storlopp ? ` · ${p.storlopp} storlopp` : ""}${p.mor ? ` · u. ${p.mor}` : ""}</div>
                 </div>
               </div>`)}
           </div>`}`}

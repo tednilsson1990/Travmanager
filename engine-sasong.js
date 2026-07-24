@@ -3,6 +3,7 @@ import { nyHäst } from "./engine-hast.js";
 import { nyttNamn } from "./data-namn.js";
 import { tränarliga } from "./engine-varld.js";
 import { registreraHändelse } from "./engine-handelser.js";
+import { invalIHallOfFame } from "./engine-rekord.js";
 
 /**
  * SÄSONGEN
@@ -149,6 +150,11 @@ export function nySäsong(spel) {
   if (spel.förstaman) spel.förstaman.säsongerHosDig = (spel.förstaman.säsongerHosDig ?? 0) + 1;
   spel.avelsston = spel.avelsston.filter((m) => m.ålder <= 20).slice(-6);
 
+  /* Väggen i stallgången: de största går in i hall of fame vid pensionen.
+     Tio platser, meriten avgör — att någon petas är poängen. */
+  pensionerade.forEach((h) => {
+    if ((h.segrar || 0) > 0 || (h.intjänat || 0) > 100000) invalIHallOfFame(spel, h);
+  });
   pensionerade.forEach((h) => {
     const betydelse = Math.min(95, 25
       + (h.segrar || 0) * 6

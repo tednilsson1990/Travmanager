@@ -476,3 +476,104 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 
 /* ---- Journalisternas signaturer (v62) ---- */
 .signatur{font-style:italic;color:var(--dis)}
+
+/* ---- Säsongskrönikan och rekordtavlan (v63) ---- */
+.kronika-stycke{font-family:'Lora',Georgia,serif;font-size:14px;line-height:1.6;
+  margin:0 0 10px;color:#2E3742}
+.kronika-stycke:first-of-type::first-letter{font-family:'Big Shoulders Display',sans-serif;
+  font-weight:900;font-size:34px;line-height:.9;float:left;padding:2px 6px 0 0;color:var(--tegel)}
+.sasongsrad summary{display:flex;justify-content:space-between;align-items:baseline;
+  gap:10px;cursor:pointer;list-style:none}
+.sasongsrad summary::-webkit-details-marker{display:none}
+.sasongsnr{font-family:'Big Shoulders Display',sans-serif;font-weight:900;
+  text-transform:uppercase;font-size:17px}
+.sasongsrad[open] summary{border-bottom:1px dotted var(--linje-mörk);
+  padding-bottom:8px;margin-bottom:10px}
+.rekordrad{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:9px 0;border-bottom:1px dotted var(--linje-mörk)}
+.rekordrad:last-child{border-bottom:0}
+.rekordvärde{font-family:'Roboto Mono',monospace;font-weight:700;font-size:15px;
+  color:var(--marin);white-space:nowrap}
+.hof-rad{display:flex;gap:12px;align-items:center;padding:8px 0;
+  border-bottom:1px dotted var(--linje-mörk)}
+.hof-rad:last-child{border-bottom:0}
+.hof-nr{font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:22px;
+  color:var(--guld);min-width:26px;text-align:center}
+
+/* ============================================================
+   TIDNINGSSIDAN (v64)
+
+   Nyheten som en helsida ur Travbladet. Papper i stället för
+   kvällsmörker: tidningshuvudet med dubbellinjer, jätterubrik i
+   tryckstil, serifingress med anfang, faktaspalten, utdraget.
+   Kvällen är upplevelsen — tidningen är eftermälet.
+   ============================================================ */
+.helscen.tidning{background:var(--papper,#F4F0E6);color:#1A1A1A}
+.tidning-huvud{border-bottom:3px double #1A1A1A;padding-bottom:6px;margin-bottom:4px}
+.tidning-namn{font-family:'Big Shoulders Display',sans-serif;font-weight:900;
+  font-size:40px;letter-spacing:.05em;text-transform:uppercase;text-align:center;
+  line-height:1;color:#1A1A1A}
+.tidning-datum{display:flex;justify-content:space-between;margin-top:5px;
+  font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.08em;
+  text-transform:uppercase;color:#555}
+.tidning-avdelning{font-family:'Roboto Mono',monospace;font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--tegel);
+  border-bottom:1px solid #1A1A1A;padding:8px 0 3px;margin-bottom:8px}
+.tidning-rubrik{font-family:'Big Shoulders Display',sans-serif;font-weight:900;
+  font-size:44px;line-height:.93;text-transform:uppercase;letter-spacing:.005em;
+  margin:4px 0 12px;color:#111;text-wrap:balance}
+.tidning-bild{margin:0 0 12px;border:1px solid #1A1A1A}
+.tidning-bild img{width:100%;max-height:230px;object-fit:cover;display:block;
+  filter:saturate(.7) contrast(1.05)}
+.tidning-ingress{font-family:'Lora',Georgia,serif;font-size:16px;line-height:1.55;
+  font-weight:600;color:#222;margin-bottom:12px}
+.tidning-ingress::first-letter{font-family:'Big Shoulders Display',sans-serif;
+  font-weight:900;font-size:52px;line-height:.82;float:left;padding:4px 8px 0 0;
+  color:var(--tegel)}
+.tidning-text{font-family:'Lora',Georgia,serif;font-size:14px;line-height:1.6;
+  color:#2A2A2A;margin:0 0 10px}
+.tidning-fakta{border-top:2px solid #1A1A1A;border-bottom:1px solid #1A1A1A;
+  padding:8px 0;margin:12px 0;column-gap:16px}
+.tidning-fakta-rubrik{font-family:'Roboto Mono',monospace;font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;color:#111}
+.tidning-fakta > div:not(.tidning-fakta-rubrik){display:flex;justify-content:space-between;
+  font-family:'Roboto Mono',monospace;font-size:12px;padding:3px 0;
+  border-bottom:1px dotted #999}
+.tidning-fakta > div:last-child{border-bottom:0}
+.tidning-fakta span{color:#666;text-transform:uppercase;font-size:10px;letter-spacing:.06em}
+.tidning-citat{font-family:'Lora',Georgia,serif;font-style:italic;font-size:19px;
+  line-height:1.4;color:#111;border-top:2px solid var(--tegel);
+  border-bottom:2px solid var(--tegel);padding:12px 4px;margin:14px 0;text-align:center}
+.tidning-citat .citat-vem{display:block;font-family:'Roboto Mono',monospace;
+  font-style:normal;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:#666;margin-top:8px}
+.tidning-signatur{font-family:'Roboto Mono',monospace;font-size:11px;color:#555;
+  font-style:italic;margin-bottom:14px}
+.tidning-fråga{font-family:'Lora',Georgia,serif;font-weight:700;font-size:15px;
+  margin:16px 0 10px;padding-top:10px;border-top:3px double #1A1A1A}
+.btn.tidningsval{display:block;width:100%;text-align:left;background:#FDFBF5;
+  border:1px solid #1A1A1A;color:#111;border-radius:0;padding:12px 14px;
+  font:inherit;cursor:pointer;box-shadow:3px 3px 0 rgba(26,26,26,.15)}
+.btn.tidningsval:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(26,26,26,.15)}
+.btn.tidningsval .scenval-följd{color:#666}
+.btn.tidning-vänd{display:block;width:100%;margin-top:16px;background:#1A1A1A;
+  color:#F4F0E6;border:0;border-radius:0;padding:13px;font:inherit;font-weight:800;
+  text-transform:uppercase;letter-spacing:.08em;cursor:pointer}
+.helscen-fler.mörk{color:#777}
+
+/* ---- Prologens ljusa helskärmssteg (v64) ---- */
+.helscen.ljus{background:linear-gradient(180deg,#EFEBE1 0%,var(--papper,#F4F0E6) 40%);
+  color:var(--bläck,#1E2732)}
+.helscen-rubrik.mörk{color:var(--marin,#1E3A5F)}
+.helscen-ingress.mörk{color:#3A444F}
+.berättelse p{font-family:'Lora',Georgia,serif;font-size:15px;line-height:1.65;
+  color:#2E3742;margin:0 0 12px}
+.berättelse p:first-child::first-letter{font-family:'Big Shoulders Display',sans-serif;
+  font-weight:900;font-size:44px;line-height:.85;float:left;padding:3px 7px 0 0;
+  color:var(--tegel)}
+.btn.steg-vidare{display:block;width:100%;margin-top:20px;background:var(--marin,#1E3A5F);
+  color:#F4F0E6;border:0;border-radius:10px;padding:14px;font:inherit;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
+.btn.steg-vidare:disabled{opacity:.4;cursor:default}
+.startfält.stor{font-size:22px;padding:14px;font-weight:700;width:100%;box-sizing:border-box}
+.draktrad.stor{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0}

@@ -300,7 +300,7 @@ function Säsongsavslut({ spel, uppdatera }) {
             ${bästa && html`<${Häst} namn=${bästa.namn} dräkt=${spel.dräkt} storlek=${64} />`}
             <div>
               <div class="namn" style=${{ fontSize: "20px" }}>${rad.bästaHäst}</div>
-              <div class="meta">${kr(rad.bästaHästIntjänat)} kr insprunget i år</div>
+              <div class="meta">${kr(rad.bästaHästIntjänat)} kr i karriären</div>
             </div>
           </div>
         </div>`}
@@ -313,16 +313,21 @@ function Säsongsavslut({ spel, uppdatera }) {
           <div class="logg">Ett år utan rubriker. De kommer.</div>`}
       </div>
 
+      ${rad.krönika && html`
+        <div class="kort" style=${{ textAlign: "left" }}>
+          <div class="meta">Krönikan · ${rad.krönika.signatur}</div>
+          ${rad.krönika.stycken.map((st, i) => html`<p key=${i} class="kronika-stycke">${st}</p>`)}
+        </div>`}
+
       ${fmOrd && html`<div class="samtal" style=${{ textAlign: "left" }}>
         <div class="samtal-vem">Förstamannen har ordet · ${fm.namn}</div>
         <div class="samtal-text">${fmOrd}</div>
       </div>`}
       <button class="btn" onClick=${() => {
-        let resultat;
-        uppdatera((s) => { resultat = nySäsong(s); s.säsongAvslutad = null; });
-        if (resultat && resultat.pensionerade.length) {
-          alert("Pensionerade: " + resultat.pensionerade.map((h) => h.namn).join(", "));
-        }
+        /* Pensioneringarna behöver ingen alert-ruta längre: de trotjänare
+           som förtjänar det får sina helskärmsscener direkt efter, och
+           resten står i loggen och krönikan. */
+        uppdatera((s) => { nySäsong(s); s.säsongAvslutad = null; });
         window.scrollTo({ top: 0 });
       }}>Starta säsong ${rad.säsong + 1}</button>
     </div>`;

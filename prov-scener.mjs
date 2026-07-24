@@ -40,6 +40,8 @@ console.log("\nPROV 1 — storloppsseger ger scen med intervjuval, i synk med up
   prov("tre intervjuval", (scen?.val ?? []).length === 3);
   prov("scenen är serialiserbar (inga funktioner)",
     JSON.parse(JSON.stringify(spel.scener))[0].val[0].effekt === "intervju_tala_upp");
+  prov("nyheten sätts som tidningssida med signatur",
+    scen.stil === "tidning" && !!scen.signatur);
 
   const hypeFöre = spel.stall[0].hype;
   görVal(spel, 0, "upp");
