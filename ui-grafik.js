@@ -136,3 +136,86 @@ export function Gårdskarta({ spel }) {
         stroke="#3B4A59" stroke-width="1.5" />
     </svg>`;
 }
+
+
+/* ==================== Bildsystemet ====================
+   Skissernas foton kan inte genereras av spelet — men platserna finns.
+   Lägg egna bilder i bilder/-mappen med rätt filnamn så används de
+   automatiskt; saknas de faller spelet tillbaka på SVG-scenerna nedan.
+   Se bilder/LÄSMIG.md för filnamn och tips. */
+export function Bild({ id, alt = "", klass = "", fallback = null }) {
+  return html`
+    <div class=${"bildram " + klass}>
+      <img src=${`./bilder/${id}.jpg`} alt=${alt} loading="lazy"
+        onError=${(e) => { e.target.style.display = "none";
+          const f = e.target.nextElementSibling; if (f) f.style.display = "block"; }} />
+      <div class="bildfall" style=${{ display: "none" }}>${fallback}</div>
+    </div>`;
+}
+
+/** Porträttet: bild om den finns, annars initialer på dräktfärg. */
+export function Porträtt({ id, namn, färg = "#1E3A5F", storlek = 44 }) {
+  const initialer = String(namn ?? "?").split(" ").map((d) => d[0]).slice(0, 2).join("");
+  return html`
+    <span class="portratt" style=${{ width: storlek + "px", height: storlek + "px" }}>
+      <img src=${`./bilder/${id}.jpg`} alt="" loading="lazy"
+        onError=${(e) => { e.target.style.display = "none"; }} />
+      <span class="portratt-init" style=${{ background: färg }}>${initialer}</span>
+    </span>`;
+}
+
+/**
+ * Gården i regndis — öppningsscenens SVG-reserv. Grå morgon, våt
+ * gårdsplan, stallängor i dimma och den blekta skylten. Byts mot
+ * bilder/gard-hero.jpg om den finns.
+ */
+export function GårdIRegn({ namn = "" }) {
+  return html`
+    <svg viewBox="0 0 360 170" class="scenbild" role="img" aria-label="Gården i morgonregn">
+      <defs>
+        <linearGradient id="gr-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#5A646E" /><stop offset="0.7" stop-color="#7A828A" />
+          <stop offset="1" stop-color="#8C9298" />
+        </linearGradient>
+        <linearGradient id="gr-mark" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#4A4640" /><stop offset="1" stop-color="#38352F" />
+        </linearGradient>
+      </defs>
+      <rect width="360" height="170" fill="url(#gr-sky)" />
+      <!-- dimbank och träd -->
+      <ellipse cx="60" cy="96" rx="90" ry="26" fill="#8C9298" opacity="0.7" />
+      <ellipse cx="310" cy="92" rx="80" ry="22" fill="#8C9298" opacity="0.6" />
+      <path d="M20 96 q6 -20 12 0 z M300 90 q7 -24 14 0 z M330 94 q6 -18 12 0 z" fill="#5A5F58" opacity="0.7" />
+      <!-- bortre längan i dis -->
+      <g opacity="0.55">
+        <rect x="230" y="74" width="100" height="28" fill="#5C534A" />
+        <path d="M226 74 L280 56 L334 74 Z" fill="#6B6158" />
+      </g>
+      <!-- huvudlängan -->
+      <rect x="34" y="66" width="150" height="44" fill="#6E5B48" />
+      <path d="M28 66 L109 40 L190 66 Z" fill="#7E6952" />
+      <rect x="52" y="82" width="18" height="28" fill="#2E2823" />
+      <rect x="86" y="86" width="12" height="24" fill="#2E2823" />
+      <rect x="118" y="86" width="12" height="24" fill="#2E2823" />
+      <rect x="150" y="86" width="12" height="24" fill="#2E2823" />
+      <!-- blekta skylten -->
+      <rect x="74" y="56" width="70" height="14" rx="2" fill="#D8D2C4" opacity="0.85" />
+      <text x="109" y="66" text-anchor="middle" style="font:700 8px 'Big Shoulders Display',sans-serif;letter-spacing:.1em" fill="#5A544A">${namn.toUpperCase()}</text>
+      <!-- våt gårdsplan med spegling -->
+      <rect y="110" width="360" height="60" fill="url(#gr-mark)" />
+      <ellipse cx="120" cy="132" rx="52" ry="6" fill="#6B7178" opacity="0.35" />
+      <ellipse cx="250" cy="148" rx="70" ry="7" fill="#6B7178" opacity="0.3" />
+      <!-- tränaren vid stalldörren -->
+      <g fill="#22201D">
+        <path d="M62 88 q0 -6 4 -6 q4 0 4 6 l1 20 l-3 0 l-1 -12 l-2 0 l-1 12 l-3 0 z" />
+        <circle cx="66" cy="79" r="3.4" />
+        <path d="M61 78 l10 0 l-1 -2 l-8 0 z" fill="#33302B" />
+      </g>
+      <!-- regnet -->
+      <g stroke="#B9BEC3" stroke-width="0.8" opacity="0.5">
+        ${Array.from({ length: 22 }, (_, i) => html`
+          <line key=${i} x1=${(i * 17 + 5) % 360} y1=${(i * 31) % 150}
+            x2=${(i * 17 + 2) % 360} y2=${(i * 31) % 150 + 9} />`)}
+      </g>
+    </svg>`;
+}

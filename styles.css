@@ -326,3 +326,40 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .prisrad:last-child{border-bottom:0}
 .besked{font-size:13px;color:#454F5B;background:#F7F4EC;border:1px solid var(--linje);
   border-radius:8px;padding:9px 11px;margin-top:8px}
+
+/* ATG-startlistan */
+.startlista.atg{gap:0}
+.atg-rad{display:flex;align-items:flex-start;gap:9px;padding:8px 4px;
+  border-bottom:1px solid var(--linje)}
+.atg-rad:last-child{border-bottom:0}
+.atg-rad.din{background:rgba(30,58,95,.06);border-radius:6px}
+.atg-mitt{flex:1;min-width:0}
+.atg-namn{font-weight:700;font-size:14px;color:var(--bläck);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.atg-kön{font-family:'Roboto Mono',monospace;font-size:9px;color:var(--dis);
+  font-weight:400;margin-left:5px;text-transform:uppercase}
+.atg-data{font-family:'Roboto Mono',monospace;font-size:10px;color:var(--dis);margin-top:1px}
+.atg-rad .streck{font-family:'Roboto Mono',monospace;font-size:13px;color:var(--bläck);
+  margin-left:auto;padding-top:2px}
+.atg-rad.favorit .streck{color:var(--tegel);font-weight:700}
+
+/* Scenbilder och porträtt */
+.bildram{margin:0 -18px 12px;overflow:hidden}
+.scen > .bildram:first-child{margin-top:-22px;border-radius:4px 4px 0 0}
+.bildram img{width:100%;display:block;max-height:200px;object-fit:cover}
+.scenbild{width:100%;height:auto;display:block}
+.portratt{position:relative;display:inline-grid;place-items:center;border-radius:99px;
+  overflow:hidden;flex:0 0 auto;vertical-align:middle}
+.portratt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.portratt-init{width:100%;height:100%;display:grid;place-items:center;color:#FCFBF7;
+  font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:0.9em;letter-spacing:.05em}
+.portrad{display:flex;align-items:center;gap:10px}
+
+/* Hästsidan med flikar */
+.flikar{display:flex;gap:4px;margin:10px 0;border-bottom:2px solid var(--bläck);padding-bottom:0}
+.flik{background:none;border:0;padding:8px 12px;cursor:pointer;color:var(--dis);
+  font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:15px;
+  letter-spacing:.05em;text-transform:uppercase;border-radius:6px 6px 0 0}
+.flik[aria-selected="true"]{color:var(--bläck);background:rgba(30,58,95,.08)}
+.tillbaka{background:none;border:0;color:var(--marin);font:600 13px 'Inter',sans-serif;
+  cursor:pointer;padding:10px 0 0;display:block}

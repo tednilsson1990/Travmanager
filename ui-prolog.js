@@ -13,6 +13,7 @@ import { mentorOmVeckan, mentorOmTräning, avskedstext, ROLLTEXT } from "./engin
 import { förstamanskandidater } from "./engine-forstaman.js";
 import { registreraHändelse } from "./engine-handelser.js";
 import { Rad } from "./ui-delar.js";
+import { Porträtt } from "./ui-grafik.js";
 
 /** Mentorns kort i stallet under säsong 0. */
 export function Mentorkort({ spel }) {
@@ -22,7 +23,10 @@ export function Mentorkort({ spel }) {
   const träningsrepliker = spel.stall.map((h) => mentorOmTräning(spel, h)).filter(Boolean);
   return html`
     <div class="kort mentor">
-      <div class="meta">${m.namn}, ${m.ålder} · ${m.filosofitext} · går i pension efter säsongen</div>
+      <div class="portrad">
+        <${Porträtt} id="mentor" namn=${m.namn} färg="#6B4E1D" storlek=${48} />
+        <div class="meta">${m.namn}, ${m.ålder} · ${m.filosofitext} · går i pension efter säsongen</div>
+      </div>
       <div class="meta">Största seger: ${m.störstaSeger} med ${m.stjärnhäst}</div>
       ${vecko && html`<div class="logg">${vecko}</div>`}
       ${träningsrepliker.slice(0, 2).map((t, i) => html`<div class="logg" key=${i}>${t}</div>`)}
@@ -111,7 +115,10 @@ export function FörstamansvalVy({ spel, uppdatera }) {
       ${kandidater.map((k) => html`
         <button key=${k.profil} class=${"banval" + (vald === k.profil ? " vald" : "")}
           onClick=${() => sättVald(k.profil)}>
-          <div class="namn">${k.namn}, ${k.ålder}</div>
+          <div class="portrad">
+            <${Porträtt} id=${"kandidat-" + k.profil} namn=${k.namn} färg="#1E3A5F" storlek=${44} />
+            <div class="namn" style=${{ fontSize: "19px" }}>${k.namn}, ${k.ålder}</div>
+          </div>
           <div class="meta">${k.profil} — ${k.profiltext} · ${kr(k.lön)} kr/vecka</div>
           <div class="meta">${k.pitch}</div>
         </button>`)}

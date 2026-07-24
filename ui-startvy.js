@@ -11,7 +11,7 @@ import { html } from "htm/preact";
 import { slump } from "./engine-util.js";
 import { BANOR, DRÄKTER } from "./data-namnpaket.js";
 import { skrivPress } from "./engine-vecka.js";
-import { Dräkt } from "./ui-grafik.js";
+import { Dräkt, Bild, GårdIRegn, Porträtt } from "./ui-grafik.js";
 
 const NAMNFÖRSLAG = [
   "Björkhaga", "Stall Norrsken", "Ekbackens Trav", "Stall Framåt",
@@ -27,11 +27,16 @@ export default function StartVy({ spel, uppdatera }) {
   if (!anlänt) {
     return html`
       <div class="scen" style=${{ marginTop: "16px" }}>
+        <${Bild} id="gard-hero" alt="Gården i morgonregn"
+          fallback=${html`<${GårdIRegn} namn=${spel?.stallnamn ?? ""} />`} />
         <div class="scen-etikett">Säsong 0 · vecka 18</div>
         <div class="scen-rubrik">En gård väntar på sin arvtagare</div>
         <div class="ingress">Efter mer än trettio år lämnar ${m?.namn ?? "gårdens tränare"} sporten.
           Under säsongens sista veckor ska du arbeta vid ${m?.namn?.includes("hild") || m?.namn?.includes("erit") ? "hennes" : "hans"} sida —
           innan ansvaret blir ditt.</div>
+        <div class="portrad" style=${{ margin: "10px 0 2px" }}>
+          <${Porträtt} id="mentor" namn=${m?.namn} färg="#6B4E1D" storlek=${52} />
+        </div>
         <div class="citat">»Jag trodde länge att allt skulle behöva säljas.«
           <span class="citat-vem">${m?.namn}, ${m?.ålder} · ${m?.filosofitext}</span></div>
         <div class="meta">${spel?.stallnamn}, grundat ${spel?.gårdshistoria?.grundad} ·

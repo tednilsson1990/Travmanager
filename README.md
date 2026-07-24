@@ -457,6 +457,22 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Skissernas paneler (v56)
+
+Designskissernas layouter, byggda på riktigt: ATG-startlistan (spår, häst
+med ålder och kön, kusk, starter/segrar/insprunget i tkr, streck och
+formrad för egen häst), hästsidan med flikar (Översikt med förstamannens
+rapport och träningsval, Karriär med siffror och loppfacit, Berättelse
+med tidslinjen ur händelsemotorn — öppnas genom tryck på hästkortet) och
+porträtt på mentorn och förstamanskandidaterna.
+
+Fotona ur skisserna kan spelet inte generera — men platserna finns.
+`bilder/`-mappen tar emot JPG-filer med bestämda namn (se
+`bilder/LÄSMIG.md` med motivlista och prompttips); finns bilden används
+den, annars tar SVG-reserverna över: gården i regndis som öppningsscen
+och initialporträtt i stallets färger. Spelet är alltså komplett utan en
+enda bildfil, och blir skisserna med dem.
+
 ## Travpressens designsystem (v55)
 
 Tesen, ur designdokumentet: sportpress när spelet berättar, tävlingsprogram

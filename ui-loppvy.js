@@ -133,19 +133,38 @@ function Anmälan({ spel, onStart }) {
 
 /* ==================== Startlista ==================== */
 
+/**
+ * Startlistan i tävlingsprogrammets språk: spår, häst med ålder och kön,
+ * kusk, meriter och streck. Varje rad bär den data motståndaranalysen
+ * behöver — som ATG:s listor, anpassade för en tränares öga.
+ */
 function Startlista({ fält, favorit, visaStreck }) {
   return html`
     <div class="kort">
       <div class="meta" style="margin-bottom:6px">
         Startlista${visaStreck ? " och streckprocent" : ""}
       </div>
-      <div class="startlista">
+      <div class="startlista atg">
         ${[...fält].sort((a, b) => a.spår - b.spår).map((h) => html`
-          <div key=${h.spår} class=${"sl-rad" + (h.egen ? " din" : "") + (h === favorit ? " favorit" : "")}>
-            <${Täcke} nr=${h.spår} /> ${h.namn} — ${h.kusk.ryktbarhet >= 78 ? "★ " : ""}${h.kusk.namn}
+          <div key=${h.spår} class=${"atg-rad" + (h.egen ? " din" : "") + (h === favorit ? " favorit" : "")}>
+            <${Täcke} nr=${h.spår} />
+            <div class="atg-mitt">
+              <div class="atg-namn">${h.namn}
+                <span class="atg-kön">${h.ålder} år · ${(h.kön ?? "h")[0]}</span></div>
+              <div class="atg-data">${h.kusk.ryktbarhet >= 78 ? "★ " : ""}${h.kusk.namn}
+                · ${h.starter ?? 0} st ${h.segrar ?? 0} seg
+                · ${Math.round((h.intjänat ?? 0) / 1000)} tkr</div>
+              ${h.egen && (h.resultat ?? []).length > 0 && html`
+                <span class="formrad">
+                  ${h.resultat.slice(0, 5).map((r, i) => html`
+                    <span key=${i} class=${"fp " + (r.plats === 1 ? "seger" : r.plats && r.plats <= 3 ? "pall" : r.plats ? "" : "ur")}>${r.plats ?? "d"}</span>`)}
+                </span>`}
+            </div>
             ${visaStreck && html`<span class="streck">${h.streck.toFixed(1)} %</span>`}
           </div>`)}
       </div>
+      ${favorit && visaStreck && html`<div class="meta" style="margin-top:8px">
+        Favorit: ${favorit.spår} ${favorit.namn} (${favorit.streck.toFixed(0)} %)</div>`}
     </div>`;
 }
 
