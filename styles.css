@@ -388,3 +388,42 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .faktaruta > div:last-child{border-bottom:0}
 .faktaruta span{font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--dis);min-width:88px;padding-top:2px}
+
+/* ============================================================
+   STALLJOURNALEN (v59)
+
+   Krönikan är ett flöde, inte en tabell: tidsstämpeln som mono
+   i vänsterspalt, texten som notis. Betydelsen syns i tyngden —
+   får allt samma vikt betyder inget något.
+   ============================================================ */
+.journalrad{display:grid;grid-template-columns:58px 1fr;gap:10px;padding:9px 0;
+  border-bottom:1px dotted var(--linje-mörk)}
+.journalrad:last-child{border-bottom:0}
+.jr-när{font-family:'Roboto Mono',monospace;font-size:10px;color:var(--dis);
+  letter-spacing:.04em;padding-top:2px}
+.jr-text b{font-family:'Big Shoulders Display',sans-serif;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;font-size:13px;color:var(--marin);
+  display:block;line-height:1.2}
+.jr-text > div{font-size:13px;color:#3A444F;margin-top:2px}
+.journalrad.hög{border-left:3px solid var(--tegel);padding-left:9px;
+  margin-left:-12px;background:linear-gradient(90deg,rgba(163,46,42,.05),transparent 60%)}
+.journalrad.hög .jr-text b{color:var(--tegel);font-size:15px}
+.journalrad.mellan{border-left:3px solid var(--guld);padding-left:9px;margin-left:-12px}
+.journalrad.låg .jr-text b{color:var(--dis);font-size:11px}
+
+/* ---- Troférummet ---- */
+.trofe{display:flex;gap:12px;align-items:flex-start;padding:11px 0;
+  border-bottom:1px dotted var(--linje-mörk)}
+.trofe:last-child{border-bottom:0}
+.trofe-rubrik{font-family:'Big Shoulders Display',sans-serif;font-weight:900;
+  text-transform:uppercase;font-size:17px;letter-spacing:.02em;line-height:1.1}
+.trofe-ikon{flex:0 0 34px;height:34px;border-radius:50%;margin-top:2px;
+  background:radial-gradient(circle at 35% 30%,#E8C56A,var(--guld) 70%);
+  border:1px solid rgba(0,0,0,.15);box-shadow:inset 0 -3px 6px rgba(0,0,0,.18)}
+.trofe-ikon.miljonen{background:radial-gradient(circle at 35% 30%,#EFEFEF,#9AA3AC 70%)}
+.trofe-ikon.veteran{background:radial-gradient(circle at 35% 30%,#B9CBB0,var(--form) 75%)}
+.trofe-ikon.rekord{background:radial-gradient(circle at 35% 30%,#9FBEE0,var(--marin) 75%)}
+
+/* ---- Träningsdagbokens formdelta ---- */
+.upp{color:var(--form);font-family:'Roboto Mono',monospace;font-size:10px}
+.ner{color:var(--tegel);font-family:'Roboto Mono',monospace;font-size:10px}

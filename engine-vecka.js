@@ -6,7 +6,11 @@ import { körVärldensVecka, skötVärlden, handelIVärlden } from "./engine-var
 import { avslutaSäsong, säsongstext } from "./engine-sasong.js";
 import { säkraFörstaman } from "./engine-forstaman.js";
 import { säkraAnläggning, gårdseffekt, gåraugifter, läkning, boxplats } from "./engine-gard.js";
-import { registreraHändelse, hästmilstolpar, säsongsHändelser } from "./engine-handelser.js";
+import { registreraHändelse, hästmilstolpar, säsongsHändelser, loppfakta,
+         uppdateraRivalitet } from "./engine-handelser.js";
+/* Sidoeffektsimport: att importera lyssnarna kopplar in dem på bussen.
+   Måste ske innan något lopp körs — därför här, i veckomotorn. */
+import "./engine-lyssnare.js";
 import { BANOR } from "./data-namnpaket.js";
 
 const DRIFT_PER_HÄST = 3200;
@@ -76,6 +80,13 @@ export function körVecka(spel) {
     h.form = klamp(h.form + t.form + g.form + (h.energi < 25 ? -6 : 0));
     h.start = klamp(h.start + t.start + g.start);
     if (g.styrka) h.styrka = klamp(h.styrka + g.styrka);
+    /* TRÄNINGSDAGBOKEN. Veckans pass, och vad hästen svarade. Utan den är
+       träningen ett val utan historia — man ser bara var man står, aldrig
+       vad som förde en hit. Tjugo veckor räcker: en säsong bakåt. */
+    h.dagbok = [{
+      säsong: spel.säsong ?? 1, vecka: spel.vecka, träning: h.träning,
+      energi: Math.round(h.energi), form: Math.round(h.form),
+    }, ...(h.dagbok || [])].slice(0, 40);
     const risk = t.risk * g.riskfaktor * (h.energi < 30 ? 2.2 : 1) * (h.ålder > 8 ? 1.4 : 1);
     if (slump() < risk) {
       h.skada = läkning(spel, int(1, 3));
@@ -208,7 +219,7 @@ export function körVecka(spel) {
  * Efter ett lopp: pengar, form, och hela sfärens reaktion.
  * Returnerar en sammanfattning som UI:t kan visa.
  */
-export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang, förväntan = 0 }) {
+export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang, förväntan = 0, sim = null }) {
   /* Dold dagsform. En häst som inte var bra den dagen presterar under sin
      kapacitet — och då är ett dåligt resultat inte ett misslyckande utan
      en upplysning. Pressen och ägarna dömer mildare, men hästen kan
@@ -247,8 +258,15 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   spel.kassa += netto;
   spel.intjänat += netto;
   if (vann) spel.segrarTotalt = (spel.segrarTotalt ?? 0) + 1;
+  /* Loppets berättande fakta plockas ut EN gång och följer med in i
+     händelsen — så att pressen, ägaren, förstamannen och krönikan läser
+     samma siffror i stället för att räkna om dem var för sig. */
+  const fakta = loppfakta(sim, { ...min, kusk }, lopp, häst);
+  fakta.vannMot = vann;
   /* Hästens biografi och karriärens krönika skrivs av det som händer. */
-  hästmilstolpar(spel, häst, lopp, min, brutto);
+  hästmilstolpar(spel, häst, lopp, min, brutto, fakta);
+  /* Rivaliteter upptäcks ur data: samma motståndare, gång på gång. */
+  if (!min.ur) uppdateraRivalitet(spel, häst, fakta);
   if ((spel.säsong ?? 1) === 0 && spel.prolog)
     spel.prolog.sistaResultat = { häst: häst.namn, plats: min.ur ? null : min.plats, ur: !!min.ur };
   /* Hemmapubliken. På hemmabanan går folk och man får del av entrén —

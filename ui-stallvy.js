@@ -7,6 +7,7 @@ import { kr, klamp } from "./engine-util.js";
 import { ARVODE_PER_VECKA } from "./data-agare.js";
 import { Stapel, Rad, Form } from "./ui-delar.js";
 import { träningsråd } from "./engine-forstaman.js";
+import { rivalerFör } from "./engine-handelser.js";
 import { Mentorkort } from "./ui-prolog.js";
 import { säsongsHändelser } from "./engine-handelser.js";
 import { Häst } from "./ui-grafik.js";
@@ -128,7 +129,7 @@ function HästSida({ häst, spel, uppdatera, tillbaka }) {
         </div>
       </div>
       <div class="flikar">
-        ${["översikt", "karriär", "berättelse"].map((f) => html`
+        ${["översikt", "karriär", "berättelse", "dagbok"].map((f) => html`
           <button key=${f} class="flik" aria-selected=${flik === f}
             onClick=${() => sättFlik(f)}>${f}</button>`)}
       </div>
@@ -178,7 +179,33 @@ function HästSida({ häst, spel, uppdatera, tillbaka }) {
                 <div class="tl-rad" key=${i}>
                   <span class="tl-när">Säsong ${m.säsong} · vecka ${m.vecka}</span>${m.text}
                 </div>`)}
-            </div>`}`}
+            </div>`}
+        ${rivalerFör(spel, häst).length > 0 && html`
+          <div class="hint" style=${{ marginTop: "10px" }}>Motståndare ni möter om och om igen</div>
+          ${rivalerFör(spel, häst).slice(0, 4).map((r) => html`
+            <div key=${r.rivalId} class="prisrad">
+              <span>${r.rivalNamn}${r.utropad ? " · rival" : ""}</span>
+              <span class="pris">${r.dinaSegrar}–${r.hansSegrar} på ${r.möten} möten</span>
+            </div>`)}`}`}
+
+      ${flik === "dagbok" && html`
+        <div class="hint">Veckans pass och vad hästen svarade. Nyast först.</div>
+        ${(häst.dagbok ?? []).length === 0
+          ? html`<div class="tom">Dagboken börjar nästa vecka du tränar.</div>`
+          : html`<table>
+              <thead><tr><th>S·V</th><th>Pass</th><th>Energi</th><th>Form</th></tr></thead>
+              <tbody>${häst.dagbok.slice(0, 20).map((d, i) => {
+                const före = häst.dagbok[i + 1];
+                const Δ = före ? d.form - före.form : 0;
+                return html`
+                  <tr key=${i}>
+                    <td>${d.säsong}·${d.vecka}</td>
+                    <td>${TRÄNING[d.träning]?.namn ?? d.träning}</td>
+                    <td>${d.energi}</td>
+                    <td>${d.form}${före ? html` <span class=${Δ >= 0 ? "upp" : "ner"}>${Δ >= 0 ? "+" : ""}${Δ}</span>` : ""}</td>
+                  </tr>`;
+              })}</tbody>
+            </table>`}`}
     </div>`;
 }
 

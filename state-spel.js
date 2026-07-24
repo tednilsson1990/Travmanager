@@ -3,6 +3,7 @@ import { nyMentor, nyGårdshistoria, prologhästar } from "./engine-prolog.js";
 import { useEffect, useRef, useState, useCallback } from "preact/hooks";
 import { nyHäst, sättIdRäknare, idRäknare } from "./engine-hast.js";
 import { byggVärld } from "./engine-varld.js";
+import { sättHändelseRäknare, händelseRäknare } from "./engine-handelser.js";
 
 const NYCKEL = "travmanager.sparfil.v1";
 /* Höj VERSION när sparfilens FORM ändras. Migreringen i ladda() ska då
@@ -21,7 +22,7 @@ export function nyttSpel() {
     vecka: 18, veckor: 20,
     prolog: { aktiv: true, klar: false, övertagen: false, mentor, sistaResultat: null },
     gårdshistoria: nyGårdshistoria(mentor),
-    krönika: [],
+    krönika: [], troférum: [], rivaliteter: {}, huvudnyhet: null,
     kassa: 180000, intjänat: 0,
     renommé: 25, spelförtroende: 40,
     stallform: 50, marknadsbild: 0, resultathistorik: [],
@@ -35,12 +36,14 @@ export function nyttSpel() {
     logg: [], press: [], föl: [],
     erbjudande: null,
     nästaId: idRäknare(),
+    nästaHändelseId: 1,
   };
 }
 
 export function spara(spel) {
   try {
     spel.nästaId = idRäknare();
+    spel.nästaHändelseId = händelseRäknare();
     localStorage.setItem(NYCKEL, JSON.stringify(spel));
     return true;
   } catch { return false; }
@@ -58,6 +61,17 @@ export function ladda() {
     spel.stall.forEach((h) => { h.ålder ??= 5; });
     spel.version = VERSION;
     sättIdRäknare(spel.nästaId || 1000);
+    /* Händelse-id:n måste fortsätta där sparfilen slutade — annars får två
+       olika händelser samma id och krönikan kan inte skilja dem åt. */
+    sättHändelseRäknare(spel.nästaHändelseId || ((spel.krönika?.length ?? 0) + 1));
+    /* v59: händelsebussens nya lager. Äldre karriärer får dem tomma —
+       krönikan de redan har fortsätter fungera, aktörerna normaliseras
+       vid nästa registrering. */
+    spel.krönika ??= [];
+    spel.troférum ??= [];
+    spel.rivaliteter ??= {};
+    spel.huvudnyhet ??= null;
+    spel.stall.forEach((h) => { h.dagbok ??= []; });
     // Fält som tillkommit efter att sparfilen skapades
     spel.stallform ??= 50;
     spel.marknadsbild ??= 0;

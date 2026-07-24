@@ -468,6 +468,9 @@ export default function LoppVy({ spel, uppdatera }) {
       bokför(s.värld, lopp, sim.resultat, s.vecka);
       sammanfattning = efterLopp(s, {
         häst: h, kusk, lopp, min,
+        /* Simuleringen följer med: händelsemotorn läser position vid
+           1 000 m, meter utan rygg och marginal direkt ur loppet. */
+        sim: körning.sim,
         varFavorit: favorit === häst,
         streckRang,
         förväntan: pressval ? pressval.förväntan : 0,

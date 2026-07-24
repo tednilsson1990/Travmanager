@@ -14,6 +14,13 @@ import { gåraugifter, boxplats } from "./engine-gard.js";
 import { ARVODE_PER_VECKA } from "./data-agare.js";
 
 export default function HemVy({ spel, gåTill }) {
+  /* Huvudnyheten. Är veckans stora händelse registrerad i händelsemotorn
+     (storloppsseger, avsked) bär den uppslaget med faktaruta och citat —
+     annars faller vi tillbaka på senaste pressnotisen. En källa, ett
+     uppslag: vyn hittar inte på något eget. */
+  const stor = spel.huvudnyhet;
+  const storFärsk = stor && stor.säsong === (spel.säsong ?? 1)
+    && spel.vecka - stor.vecka <= 1;
   const huvudnyhet = spel.press?.[0];
   const startklara = spel.stall.filter((h) => h.skada === 0 && h.senasteStartVecka !== spel.vecka).length;
   const skadade = spel.stall.filter((h) => h.skada > 0).length;
@@ -43,12 +50,27 @@ export default function HemVy({ spel, gåTill }) {
   ].filter(Boolean);
 
   return html`
-    ${huvudnyhet && html`
-      <div class="scen" style=${{ marginTop: "12px" }}>
-        <div class="scen-etikett">Säsong ${spel.säsong} · vecka ${Math.min(spel.vecka, spel.veckor)}${spel.hemmabana ? ` · ${BANOR[spel.hemmabana]?.namn}` : ""}</div>
-        <div class=${"scen-rubrik" + (huvudnyhet.ton === "dålig" ? " tegel" : "")}>${huvudnyhet.rubrik}</div>
-        <div class="ingress">${huvudnyhet.byline}</div>
-      </div>`}
+    ${storFärsk
+      ? html`
+        <div class="scen" style=${{ marginTop: "12px" }}>
+          <div class="scen-etikett">${stor.etikett}</div>
+          <div class="scen-rubrik">${stor.rubrik}</div>
+          <div class="ingress">${stor.ingress}</div>
+          ${(stor.fakta ?? []).length > 0 && html`
+            <div class="faktaruta">
+              ${stor.fakta.map((f, i) => html`
+                <div key=${i}><span>${f.etikett}</span>${f.värde}</div>`)}
+            </div>`}
+          ${stor.citat && html`
+            <div class="citat">»${stor.citat}«
+              <span class="citat-vem">${stor.citatVem}</span></div>`}
+        </div>`
+      : huvudnyhet && html`
+        <div class="scen" style=${{ marginTop: "12px" }}>
+          <div class="scen-etikett">Säsong ${spel.säsong} · vecka ${Math.min(spel.vecka, spel.veckor)}${spel.hemmabana ? ` · ${BANOR[spel.hemmabana]?.namn}` : ""}</div>
+          <div class=${"scen-rubrik" + (huvudnyhet.ton === "dålig" ? " tegel" : "")}>${huvudnyhet.rubrik}</div>
+          <div class="ingress">${huvudnyhet.byline}</div>
+        </div>`}
 
     <h2>I dag</h2>
     <div class="kort">

@@ -36,7 +36,9 @@ ui-startvy.js           spelstarten: namn, dräkt, hemmabana
 ui-gardvy.js            gården: byggen, boxar, personal
 ui-prolog.js            prologens scener: mentorkort, övertagande, rekrytering
 engine-prolog.js        säsong 0: mentorn, introhästarna, gårdshistorien
-engine-handelser.js     händelsemotorn — spelets strukturerade minne
+engine-handelser.js     händelsemotorn — spelets strukturerade minne och buss
+engine-lyssnare.js      reaktionerna: press, mentor, ägare, förstaman, troféer
+ui-journalvy.js         Stalljournalen: krönika, troférum, rivaliteter
 ui-grafik.js            bildspråket: hästsilhuetter, dräkter, gårdskartan
 ui-hemvy.js             Hem — dagens redaktionella uppslag
 engine-forstaman.js     förstamannen: träningsråd och loppmatchning
@@ -307,6 +309,7 @@ node kalibrering.mjs 18472     bara den seeden
 node diagnos-ledarbyte.mjs     ledarbyten: håller 1000-metersledaren?
 node diagnos-ytterrad.mjs      ytterraden: vem täcker rygg ledaren?
 node diagnos-radenergi.mjs     raden bakåt: energi eller beteende?
+node prov-handelser.mjs        händelsebussen: utlöses varje reaktion?
 ```
 
 `verifiera.mjs` föddes ur ett tyst fel: en textersättning som missade
@@ -457,6 +460,66 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Händelsebussen (v59)
+
+Designdokumentets bärande princip: **en registrering, flera reaktioner.**
+En storloppsseger ska ge huvudartikel på Hem, notis i Sfären, replik från
+förstamannen, samtal från mentorn, reaktion från ägaren, milstolpe i
+hästens tidslinje, trofé i gården, post i säsongskrönikan och ökat
+renommé — allt ur samma händelse. Fram till v58 var motorn byggd för det
+men fan-outen var det inte: mentorns repliker låg hårdkodade inne i
+`registreraHändelse`, och allt annat skrevs på egen hand i den vy som
+råkade behöva det. Samma seger beskrevs på fem ställen med fem sanningar.
+
+**Bussen.** `påHändelse(typ, hanterare)` registrerar en reaktion; `"*"`
+lyssnar på allt. `registreraHändelse` sänder till alla som anmält sig.
+Motorn känner inte längre till vad press, mentor eller troféer är —
+reaktionerna bor i `engine-lyssnare.js`, som importeras för sin
+sidoeffekt av `engine-vecka.js`. En ny berättelse är därmed en lyssnare
+till, inte en ändring mitt i motorn.
+
+Ett fel i en lyssnare fångas och hamnar i `spel.logg` i stället för att
+fälla de andra. En trasig pressrubrik ska aldrig kunna bli svart skärm.
+
+**Aktörer är id:n.** `aktörer: { hästId, kuskNamn, ägare, förstamanId }`.
+Namn duger till text men inte till minne: en häst byter stall, en kusk
+byter tröja, och fas 4–5 (rivaliteter, avkommor, återkommande personer)
+kräver att aktören går att slå upp år senare. `slåUppHäst(spel, id)` letar
+i stallet och sedan i världen. Visningsnamnet följer med som `hästNamn`,
+och gamla anrop med `{ häst: "Namnet" }` normaliseras automatiskt — äldre
+sparfilers krönikor fortsätter fungera.
+
+**Loppfakta plockas ut en gång.** `loppfakta(sim, min, lopp, häst)` läser
+favoritskap, position vid 1 000 meter, meter utan rygg, marginal, segertid
+och motståndare direkt ur simuleringen och lägger dem i händelsens data.
+Positionen tas ur bildrutan närmast 1 000 meter kvar — källans mått, samma
+som kalibreringen. Funktionen drar aldrig slump och rör aldrig motorn:
+kalibreringen är identisk till decimalen efter ombyggnaden.
+
+**Rivaliteter upptäcks ur data.** Varje lopp räknas alla motståndare som
+slutade inom två placeringar som ett möte. Vid femte mötet utropas
+rivaliteten — en gång, och bara den hårdaste per lopp. Att räkna bara den
+allra närmaste hästen prövades först och gav 51 par på 62 lopp utan att en
+enda rivalitet uppstod: motståndaren närmast i mål är sällan densamma två
+gånger. Med det bredare måttet föds fyra till sex rivaliteter på fyra
+säsonger, vilket är ungefär vad en karriär tål.
+
+**Stalljournalen** (`ui-journalvy.js`, under Mer) är den vy krönikan
+saknade: hela minnet i omvänd kronologi med betydelsen synlig i tyngden,
+troférummet, och rivaliteterna med ställning. Vyn hittar aldrig på text —
+allt som visas är registrerade händelser. Ser något fel ut där är felet i
+registreringen.
+
+**Träningsdagboken** ligger på hästsidan som fjärde flik: veckans pass och
+vad hästen svarade, med formens förändring per vecka. Utan den är
+träningen ett val utan historia — man ser var man står, aldrig vad som
+förde en dit.
+
+**Pensioneringen** är karriärens sista rubrik, inte en tyst radering ur
+en lista. Betydelsen följer vad hästen betydde: segrar, insprunget och
+eventuell storloppsseger avgör om det blir ett uppslag på Hem med
+faktaruta och plats i troférummet, eller en notis i flödet.
+
 ## Skissernas sista paneler (v57)
 
 Träningsplanen (panel 6) i ärlig veckoform: rutnät över hela stallet med
@@ -568,11 +631,11 @@ säsongens tre största händelser.
 säsongssegerrekord — som spelaren kan slå, med press och mentorreplik.
 Resan går från att förvalta någon annans historia till att skriva sin egen.
 
-Kvarvarande faser ur storyplanen, i prioritetsordning: (2) hästbiografier
-i gränssnittet + efterloppsanalys med flera röster, (3) permanenta ägare
-och återkommande journalister, (4) berättelsetrådar och rivaliteter som
-upptäcks ur data, (5) generationer — avkommor efter gamla stjärnor,
-troférum, personal som blir konkurrenter.
+Kvarvarande faser ur storyplanen, i prioritetsordning: (3) permanenta
+ägare och återkommande journalister, (5) generationer — avkommor efter
+gamla stjärnor, personal som blir konkurrenter. Klart i v59: (2)
+hästbiografier i gränssnittet och efterloppsanalys med flera röster, (4)
+rivaliteter som upptäcks ur data, samt troférummets grund.
 
 ## Karriärbågen (v50)
 
@@ -618,8 +681,15 @@ bästa tränare via tränarligan).
   sällan (6,1 % mot 9,6) — raden siktar rätt men ligger ändå bakom i halva
   loppen; stigtaktsklampen är prövad och avfärdad, nästa angrepp är VAR
   utflyttningarna sker (de byggs långt bak i fältet)
+- Storloppsbågar: ett storlopp bör kasta skugga före sig — kvalificering,
+  uppladdning och pressens förväntan — inte bara vara ett lopp med större
+  prischeck den vecka det råkar ligga
+- Avkommor efter gamla stjärnor (fas 5). Grunden finns: aktörerna är id:n
+  och krönikan överlever säsonger, så en dotter kan slå upp sin mor
 Klart och struket: tävlingskalendern med propositioner, tränarligan,
 uppbokade kuskar (v45), service workern (v44), kuskkännedomen (v46),
 ledarförsvaret (v47), radensfixen (v49) och karriärbågen med spelstart,
-förstaman och uppstigning (v50) gården med byggen och personal (v51) samt prologen med mentor,
-övertagande, förstamansrekrytering och händelsemotorn (v52).
+förstaman och uppstigning (v50) gården med byggen och personal (v51), prologen med mentor,
+övertagande, förstamansrekrytering och händelsemotorn (v52) samt
+händelsebussen med lyssnare, rivaliteter, stalljournal, träningsdagbok
+och pensioneringar (v59).

@@ -2,6 +2,7 @@ import { rnd, int, klamp, plock, kr, slump as slumpTal } from "./engine-util.js"
 import { nyHäst } from "./engine-hast.js";
 import { nyttNamn } from "./data-namn.js";
 import { tränarliga } from "./engine-varld.js";
+import { registreraHändelse } from "./engine-handelser.js";
 
 /**
  * SÄSONGEN
@@ -112,6 +113,28 @@ export function nySäsong(spel) {
   spel.stall = spel.stall.filter((h) => {
     if (åldraHäst(h)) { pensionerade.push(h); return false; }
     return true;
+  });
+
+  /* PENSIONERINGEN är karriärens sista rubrik, inte en tyst radering ur
+     en lista. Betydelsen följer vad hästen faktiskt betydde för stallet:
+     en trotjänare med segrar får ett uppslag på Hem och en plats i
+     troférummet, en häst som aldrig kom till sin rätt får en notis.
+     Lyssnarna avgör resten — den här filen skickar bara händelsen. */
+  pensionerade.forEach((h) => {
+    const betydelse = Math.min(95, 25
+      + (h.segrar || 0) * 6
+      + Math.min(30, (h.intjänat || 0) / 40000)
+      + ((h.milstolpar || []).some((m) => m.typ === "storloppsseger") ? 20 : 0));
+    registreraHändelse(spel, {
+      typ: "pensionering",
+      betydelse: Math.round(betydelse),
+      aktörer: { hästId: h.id, hästNamn: h.namn, ägare: h.ägare ?? null },
+      data: {
+        ålder: h.ålder, starter: h.starter || 0, segrar: h.segrar || 0,
+        intjänat: h.intjänat || 0,
+        gårdsveteran: spel.gårdsveteran?.namn === h.namn,
+      },
+    });
   });
 
   const värld = spel.värld;
