@@ -6,6 +6,7 @@ import { körVärldensVecka, skötVärlden, handelIVärlden } from "./engine-var
 import { avslutaSäsong, säsongstext } from "./engine-sasong.js";
 import { säkraFörstaman } from "./engine-forstaman.js";
 import { säkraAnläggning, gårdseffekt, gåraugifter, läkning, boxplats } from "./engine-gard.js";
+import { registreraHändelse, hästmilstolpar, säsongsHändelser } from "./engine-handelser.js";
 import { BANOR } from "./data-namnpaket.js";
 
 const DRIFT_PER_HÄST = 3200;
@@ -64,7 +65,7 @@ export function körVecka(spel) {
       h.skada--;
       h.energi = klamp(h.energi + 18);
       h.form = klamp(h.form - 4);
-      if (h.skada === 0) spel.logg.push(`<b>${h.namn}</b> är friskförklarad.`);
+      if (h.skada === 0) { h.friskVecka = spel.vecka; spel.logg.push(`<b>${h.namn}</b> är friskförklarad.`); }
       return;
     }
     const t = TRÄNING[h.träning];
@@ -178,11 +179,27 @@ export function körVecka(spel) {
   /* Sista veckan avslutar säsongen: resultatet skrivs in i historiken och
      spelaren erbjuds att starta nästa år. */
   if (spel.vecka > spel.veckor && !spel.säsongAvslutad) {
+    /* Säsong 0 är prologen — tre veckor bredvid mentorn. Den slutar inte
+       i en ligatabell utan i övertagandet av gården. */
+    if ((spel.säsong ?? 1) === 0) {
+      spel.prolog.aktiv = false;
+      spel.prolog.klar = true;
+      return spel;
+    }
     const rad = avslutaSäsong(spel);
     spel.säsongAvslutad = rad;
     skrivPress(spel, `Säsongen är slut — Björkhaga ${rad.plats}:a`, säsongstext(rad),
       rad.plats <= 3 ? "bra" : rad.plats > rad.avStall * 0.7 ? "dålig" : "neutral");
     spel.logg.push(`<b>Säsong ${rad.säsong} avslutad.</b> ${säsongstext(rad)}`);
+    /* Gårdens gamla rekord är till för att slås. */
+    const gh = spel.gårdshistoria;
+    if (gh && rad.segrar > gh.rekordSegrarSäsong) {
+      registreraHändelse(spel, { typ: "gårdsrekord", betydelse: 75,
+        data: { text: `Nytt gårdsrekord: ${rad.segrar} segrar på en säsong`, gammaltÅr: gh.rekordÅr } });
+      skrivPress(spel, `Nytt gårdsrekord: ${rad.segrar} segrar på en säsong`,
+        `Den gamla noteringen (${gh.rekordSegrarSäsong}, från ${gh.rekordÅr}) är historia`, "bra");
+      gh.rekordSegrarSäsong = rad.segrar; gh.rekordÅr = null;
+    }
   }
   return spel;
 }
@@ -230,6 +247,10 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   spel.kassa += netto;
   spel.intjänat += netto;
   if (vann) spel.segrarTotalt = (spel.segrarTotalt ?? 0) + 1;
+  /* Hästens biografi och karriärens krönika skrivs av det som händer. */
+  hästmilstolpar(spel, häst, lopp, min, brutto);
+  if ((spel.säsong ?? 1) === 0 && spel.prolog)
+    spel.prolog.sistaResultat = { häst: häst.namn, plats: min.ur ? null : min.plats, ur: !!min.ur };
   /* Hemmapubliken. På hemmabanan går folk och man får del av entrén —
      ekonomiskt skäl att bygga sitt namn där man bor. */
   const hemmabana = spel.hemmabana && BANOR[spel.hemmabana];

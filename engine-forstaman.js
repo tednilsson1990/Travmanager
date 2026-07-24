@@ -14,7 +14,27 @@ import { TRÄNING } from "./engine-hast.js";
 export function nyFörstaman() {
   const namn = FÖRSTAMANSNAMN[Math.floor(slump() * FÖRSTAMANSNAMN.length)];
   const profil = FÖRSTAMANSPROFILER[Math.floor(slump() * FÖRSTAMANSPROFILER.length)];
-  return { namn, profil: profil.id, profiltext: profil.text };
+  return { namn, profil: profil.id, profiltext: profil.text, lön: 0 };
+}
+
+/**
+ * Tre kandidater till förstamansjobbet — karriärens första stora
+ * rekrytering. Olika profiler, åldrar och lönekrav; valet färgar råden
+ * genom hela karriären. Namnen dras utan dubbletter.
+ */
+export function förstamanskandidater() {
+  const namn = [...FÖRSTAMANSNAMN].sort(() => slump() - 0.5);
+  const löner = { fostrare: 900, pådrivare: 1200, taktiker: 1500 };
+  const pitch = {
+    fostrare: "»Hästar går sönder av otålighet, inte av vila. Jag bygger långsamt och rätt.«",
+    pådrivare: "»Form väntar man inte fram, den byggs. Ge mig ansvaret så levererar jag.«",
+    taktiker: "»Rätt häst i rätt lopp slår bättre häst i fel lopp. Varje vecka.«",
+  };
+  return FÖRSTAMANSPROFILER.map((p, i) => ({
+    namn: namn[i], ålder: 24 + Math.floor(slump() * 30),
+    profil: p.id, profiltext: p.text, lön: löner[p.id] ?? 1000,
+    pitch: pitch[p.id] ?? "",
+  }));
 }
 
 /**

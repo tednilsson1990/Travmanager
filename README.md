@@ -34,6 +34,9 @@ index.html              importmap + manifest, enda HTML-filen
 sw.js                   service worker — spelet fungerar utan nät
 ui-startvy.js           spelstarten: namn, dräkt, hemmabana
 ui-gardvy.js            gården: byggen, boxar, personal
+ui-prolog.js            prologens scener: mentorkort, övertagande, rekrytering
+engine-prolog.js        säsong 0: mentorn, introhästarna, gårdshistorien
+engine-handelser.js     händelsemotorn — spelets strukturerade minne
 engine-forstaman.js     förstamannen: träningsråd och loppmatchning
 engine-gard.js          anläggningens effekter på veckan
 manifest.webmanifest    hemskärmsapp
@@ -445,6 +448,47 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Prologen och minnet (v52)
+
+**Karriären börjar i säsong 0, vecka 18.** Spelaren är förstaman hos en
+äldre tränare som ska gå i pension — tre veckor sida vid sida, sedan
+nyckelknippan. Mentorn är en person med namn, ålder, filosofi (försiktig,
+offensiv eller unghästmänniska), en gammal stjärnhäst och en största seger.
+Hen kommenterar veckan, reagerar på spelarens träningsval från vecka 19
+(»kom ihåg att orken bara är 38«) och tar avsked med en text som skrivs av
+det som faktiskt hände i sista loppet — seger, förlust eller galopp.
+
+**Introhästarna** har roller, inte kloner: trotjänaren (gammal, travsäker,
+mentorns hjärta), den osäkra unghästen (talang med galopp i benen),
+vardagshästen (brödföda) och arvtagaren (den möjliga första profilen).
+Egenskaperna varierar mellan karriärer inom rollens spann.
+
+**Övertagandet** är prologens final med val som följer med: gårdens namn
+(förvalta arvet, döpa om, kombinera), trotjänarens öde (en säsong till
+eller pension på gården — hen blir då `spel.gårdsveteran`), och ekonomin
+(sälja vardagshästen för startkapital). Säsong 1 öppnar sedan med
+karriärens första stora rekrytering: tre förstamanskandidater med profil,
+ålder, lönekrav och pitch.
+
+**Händelsemotorn** (`engine-handelser.js`) är storysystemets grund:
+`registreraHändelse` sparar typ, betydelse (0–100), aktörer och data i
+`spel.krönika`, som överlever veckorna. En registrering, flera reaktioner:
+pressen skriver, mentorn ringer efter första segern och gratulerar
+storloppssegrar, gårdsrekordet uppdateras. Hästarna får biografier
+(`häst.milstolpar`): första start, första prispeng, första seger,
+storloppsseger, miljonen, comeback efter skada. Säsongskrönikan visar
+säsongens tre största händelser.
+
+**Gårdshistorien**: grundår, bästa häst, största seger och ett
+säsongssegerrekord — som spelaren kan slå, med press och mentorreplik.
+Resan går från att förvalta någon annans historia till att skriva sin egen.
+
+Kvarvarande faser ur storyplanen, i prioritetsordning: (2) hästbiografier
+i gränssnittet + efterloppsanalys med flera röster, (3) permanenta ägare
+och återkommande journalister, (4) berättelsetrådar och rivaliteter som
+upptäcks ur data, (5) generationer — avkommor efter gamla stjärnor,
+troférum, personal som blir konkurrenter.
+
 ## Karriärbågen (v50)
 
 Spelet börjar med tre val: stallnamn, dräkt och hemmabana. Bara de små
@@ -492,4 +536,5 @@ bästa tränare via tränarligan).
 Klart och struket: tävlingskalendern med propositioner, tränarligan,
 uppbokade kuskar (v45), service workern (v44), kuskkännedomen (v46),
 ledarförsvaret (v47), radensfixen (v49) och karriärbågen med spelstart,
-förstaman och uppstigning (v50) samt gården med byggen och personal (v51).
+förstaman och uppstigning (v50) gården med byggen och personal (v51) samt prologen med mentor,
+övertagande, förstamansrekrytering och händelsemotorn (v52).

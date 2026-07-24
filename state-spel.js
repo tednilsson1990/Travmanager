@@ -1,4 +1,5 @@
 import { nyAnläggning } from "./engine-gard.js";
+import { nyMentor, nyGårdshistoria, prologhästar } from "./engine-prolog.js";
 import { useEffect, useRef, useState, useCallback } from "preact/hooks";
 import { nyHäst, sättIdRäknare, idRäknare } from "./engine-hast.js";
 import { byggVärld } from "./engine-varld.js";
@@ -11,18 +12,22 @@ const VERSION = 2;
 
 export function nyttSpel() {
   sättIdRäknare(1);
+  const mentor = nyMentor();
   return {
     version: VERSION,
-    säsong: 1,
+    säsong: 0,
     historik: [],
     stallnamn: "Björkhaga",
-    vecka: 1, veckor: 20,
+    vecka: 18, veckor: 20,
+    prolog: { aktiv: true, klar: false, övertagen: false, mentor, sistaResultat: null },
+    gårdshistoria: nyGårdshistoria(mentor),
+    krönika: [],
     kassa: 180000, intjänat: 0,
     renommé: 25, spelförtroende: 40,
     stallform: 50, marknadsbild: 0, resultathistorik: [],
     värld: byggVärld(),
     startadeLopp: [],
-    stall: [nyHäst({ ålder: 5 }), nyHäst({ ålder: 4 }), nyHäst({ ålder: 7 })],
+    stall: prologhästar(),
     kuskrelation: {},
     dräkt: null, hemmabana: null, uppstartKlar: false,
     förstaman: null, banerbjudande: null, inbjudan: null, segrarTotalt: 0,

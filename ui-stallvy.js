@@ -6,6 +6,8 @@ import { kr, klamp } from "./engine-util.js";
 import { ARVODE_PER_VECKA } from "./data-agare.js";
 import { Stapel, Rad, Form } from "./ui-delar.js";
 import { träningsråd } from "./engine-forstaman.js";
+import { Mentorkort } from "./ui-prolog.js";
+import { säsongsHändelser } from "./engine-handelser.js";
 import { BANOR } from "./data-namnpaket.js";
 
 function Förstamankort({ spel, uppdatera }) {
@@ -135,6 +137,9 @@ function Säsongsavslut({ spel, uppdatera }) {
       <div class="logg">${kr(rad.intjänat)} kr insprunget · ${rad.segrar} segrar på ${rad.starter} starter</div>
       ${rad.bästaHäst && html`<div class="logg">Stallets bästa: <b>${rad.bästaHäst}</b>,
         ${kr(rad.bästaHästIntjänat)} kr</div>`}
+      ${säsongsHändelser(spel, rad.säsong).slice(0, 3).map((h) => html`
+        <div class="logg" key=${h.id}>· ${h.data?.text ?? h.typ.replaceAll("_", " ")}
+          ${h.aktörer?.häst ? ` — ${h.aktörer.häst}` : ""} (v${h.vecka})</div>`)}
       <button class="btn" onClick=${() => {
         let resultat;
         uppdatera((s) => { resultat = nySäsong(s); s.säsongAvslutad = null; });
@@ -152,6 +157,7 @@ export default function StallVy({ spel, uppdatera, nystart }) {
     return html`<${Säsongsavslut} spel=${spel} uppdatera=${uppdatera} />`;
   }
   return html`
+    <${Mentorkort} spel=${spel} />
     <${Banflytt} spel=${spel} uppdatera=${uppdatera} />
     <${Erbjudande} spel=${spel} uppdatera=${uppdatera} />
     <${Förstamankort} spel=${spel} uppdatera=${uppdatera} />

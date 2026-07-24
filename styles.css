@@ -274,3 +274,5 @@ table.liga td:nth-child(4){text-align:right}
   vertical-align: -2px;
 }
 .kort.inbjudan { border-color: #e8c766; }
+
+.kort.mentor { border-left: 3px solid #e8c766; }

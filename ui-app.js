@@ -9,6 +9,7 @@ import AvelVy from "./ui-avelvy.js";
 import MarknadVy from "./ui-marknadvy.js";
 import StartVy from "./ui-startvy.js";
 import GårdVy from "./ui-gardvy.js";
+import { ÖvertagandeVy, FörstamansvalVy } from "./ui-prolog.js";
 
 const FLIKAR = [
   { id: "stall", namn: "Stall" },
@@ -27,8 +28,19 @@ export default function App() {
      släpps rakt in — deras val är redan gjorda av historien. */
   if (spel.uppstartKlar === false) {
     return html`
-      <header><div class="brand">Stallet<span>·</span>nytt kapitel</div></header>
-      <div class="wrap"><${StartVy} uppdatera=${uppdatera} /></div>`;
+      <header><div class="brand">Stallet<span>·</span>säsong 0</div></header>
+      <div class="wrap"><${StartVy} spel=${spel} uppdatera=${uppdatera} /></div>`;
+  }
+  /* Prologens final och säsong 1:s första beslut har egna scener. */
+  if (spel.prolog?.klar && !spel.prolog.övertagen) {
+    return html`
+      <header><div class="brand">Stallet<span>·</span>${spel.stallnamn}</div></header>
+      <div class="wrap"><${ÖvertagandeVy} spel=${spel} uppdatera=${uppdatera} /></div>`;
+  }
+  if (spel.prolog?.övertagen && !spel.förstaman) {
+    return html`
+      <header><div class="brand">Stallet<span>·</span>${spel.stallnamn}</div></header>
+      <div class="wrap"><${FörstamansvalVy} spel=${spel} uppdatera=${uppdatera} /></div>`;
   }
 
   return html`

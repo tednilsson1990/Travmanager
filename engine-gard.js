@@ -53,6 +53,7 @@ export function gåraugifter(spel) {
   let summa = 0;
   for (const [id, b] of Object.entries(BYGGEN)) if (a[id] && b.drift) summa += b.drift;
   for (const [id, p] of Object.entries(ANSTÄLLDA)) if (a[id]) summa += p.lön;
+  summa += spel.förstaman?.lön ?? 0;
   return summa;
 }
 

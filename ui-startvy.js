@@ -10,7 +10,6 @@ import { useState } from "preact/hooks";
 import { html } from "htm/preact";
 import { slump } from "./engine-util.js";
 import { BANOR, DRÄKTER } from "./data-namnpaket.js";
-import { nyFörstaman, hälsning } from "./engine-forstaman.js";
 import { skrivPress } from "./engine-vecka.js";
 
 const NAMNFÖRSLAG = [
@@ -19,7 +18,8 @@ const NAMNFÖRSLAG = [
   "Månskensstallet", "Stall Rimfrost",
 ];
 
-export default function StartVy({ uppdatera }) {
+export default function StartVy({ spel, uppdatera }) {
+  const m = spel?.prolog?.mentor;
   const [namn, sättNamn] = useState("Björkhaga");
   const [dräkt, sättDräkt] = useState(DRÄKTER[0].id);
   const [bana, sättBana] = useState(null);
@@ -29,17 +29,27 @@ export default function StartVy({ uppdatera }) {
     s.stallnamn = namn.trim() || "Björkhaga";
     s.dräkt = DRÄKTER.find((d) => d.id === dräkt) ?? DRÄKTER[0];
     s.hemmabana = bana;
-    s.förstaman = nyFörstaman();
     s.uppstartKlar = true;
-    skrivPress(s, `${s.stallnamn} ny tränaradress på ${BANOR[bana].namn}`,
-      "Travbladet följer nykomlingen", "neutral");
-    s.logg.unshift(`<b>${s.förstaman.namn}</b>, ${s.förstaman.profiltext}, börjar som förstaman. »${hälsning(s.förstaman, bana)}«`);
+    skrivPress(s, `${s.prolog.mentor.namn} går i pension — förstamannen tar över ${s.stallnamn}`,
+      "Travbladet om generationsskiftet vid " + BANOR[bana].namn, "neutral");
   });
 
   return html`
     <div class="startvy">
+      ${m && html`
+        <div class="kort mentor">
+          <div class="logg">Regnet ligger tunt över gårdsplanen när du svänger in mellan de
+            gamla stallbyggnaderna. Ovanför kontoret sitter en blekt skylt: <b>${spel.stallnamn}</b>,
+            grundat ${spel.gårdshistoria?.grundad}. En äldre tränare står vid stalldörren.</div>
+          <div class="logg">»Du hittade hit«, säger <b>${m.namn}</b>. »Jag har bestämt mig — det här blir
+            min sista säsong. Jag trodde gården skulle behöva säljas. Jag är glad att det blev du i stället.
+            Tre veckor går du bredvid mig. Sedan är nyckelknippan din.«</div>
+          <div class="meta">Bästa häst genom åren: ${spel.gårdshistoria?.bästaHäst} ·
+            största seger: ${spel.gårdshistoria?.störstaSeger} ·
+            säsongsrekord: ${spel.gårdshistoria?.rekordSegrarSäsong} segrar (${spel.gårdshistoria?.rekordÅr})</div>
+        </div>`}
       <div class="kort">
-        <div class="meta">Ett stall att bygga</div>
+        <div class="meta">Ditt framtida stallnamn — gården heter vad den heter tills du tar över</div>
         <div class="namn">Vad ska det heta?</div>
         <input class="startfält" value=${namn} maxlength="24"
           onInput=${(e) => sättNamn(e.target.value)} />
