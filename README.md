@@ -299,12 +299,19 @@ Math.random; i kalibrering sätts en seedad generator med
 `sättRng(seedad(frö))`. Samma seed ger exakt samma lopp.
 
 ```
+node verifiera.mjs             FÖRE VARJE PAKETERING: importmap, sw, versioner
 node kalibrering.mjs           tolv fasta seeds à 120 lopp
 node kalibrering.mjs 18472     bara den seeden
 node diagnos-ledarbyte.mjs     ledarbyten: håller 1000-metersledaren?
 node diagnos-ytterrad.mjs      ytterraden: vem täcker rygg ledaren?
 node diagnos-radenergi.mjs     raden bakåt: energi eller beteende?
 ```
+
+`verifiera.mjs` föddes ur ett tyst fel: en textersättning som missade
+sitt ankare no-opade utan besked, tre filer hamnade aldrig i importmappen
+och en uppdatering gav svart skärm. Sidan har numera också en vakthund:
+är sidan tom efter sex sekunder provhämtas varje fil ur importmappen och
+de som saknas listas på skärmen — en svart skärm ska aldrig mer vara stum.
 
 Regeln bakom `diagnos-ledarbyte.mjs` gäller alla framtida trimningar: bygg
 ett mätskript som testar hypotesen INNAN motorn röres, och spara skriptet i
