@@ -475,6 +475,27 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Hästhuvudena och extrabildernas platser (v70)
+
+**Riktiga hästhuvuden.** Hästarna genereras i tusental så en bild per
+häst är omöjlig — men pälsen härleds redan deterministiskt ur namnet
+(pälsFör), så SEX huvudfoton (hast-brun/morkbrun/fux/svart/skimmel/
+ljusbrun.jpg, 800×800) täcker varenda häst som någonsin föds, med
+valfria -2-varianter som delar hästarna i två halvor via samma hash.
+PÄLSNAMN-listan i ui-grafik.js står i SAMMA ordning som PÄLSAR —
+indexet är kontraktet; ändras ordningen byter varenda häst utseende i
+sparade karriärer. Stallvyerna visar foto-först (HästEllerFoto) med den
+tecknade travhästen som reserv; loppvyn behåller SVG:n — banan är
+rörelse, stallet är individ.
+
+**Fler platser:** banbilder per bana (bana-{nyckel}.jpg i prologens
+banval och banflyttscenen, reserv bana-kvall), journalisternas
+bylinebilder på tidningssidorna (journalist-{namn}.jpg, initialer som
+reserv), avelshagens topp (hage.jpg) och säsongsavslutets topp
+(sasong-slut.jpg). Allt valfritt, allt med reservkedja — bildmappen
+kan växa i egen takt. Fullständig lista med storlekar och motiv i
+bilder/LÄSMIG.md.
+
 ## Rätt ansikte och klippet på Hem (v69)
 
 Två fynd från spel i mobilen. **Berit visades med bild på en karl:**
@@ -1019,4 +1040,4 @@ säsongskrönikorna (v63) samt tidningssidan och prologens
 helskärmsberättelse (v64) och mentorns sista båge med minnesloppet och
 gårdens synliga historia (v65) samt motgången som berättelse (v66) och världens röst med
 variationsbredden (v67) samt bildlagrets reservkedja (v68) och rätt ansikte med klippet på
-Hem (v69).
+Hem (v69) samt hästhuvudena och extrabildernas platser (v70).

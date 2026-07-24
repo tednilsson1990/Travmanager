@@ -10,7 +10,7 @@ import { träningsråd } from "./engine-forstaman.js";
 import { rivalerFör } from "./engine-handelser.js";
 import { Mentorkort } from "./ui-prolog.js";
 import { säsongsHändelser } from "./engine-handelser.js";
-import { Häst } from "./ui-grafik.js";
+import { Bild, HästEllerFoto, Häst } from "./ui-grafik.js";
 import { BANOR } from "./data-namnpaket.js";
 
 /**
@@ -30,7 +30,7 @@ function Träningsplan({ spel, uppdatera }) {
       <div class="tplan">
         ${rader.map(({ häst, råd }) => html`
           <div class="tplan-rad" key=${häst.id}>
-            <${Häst} namn=${häst.namn} dräkt=${spel.dräkt} storlek=${40} />
+            <${HästEllerFoto} namn=${häst.namn} dräkt=${spel.dräkt} storlek=${40} />
             <div class="tplan-mitt">
               <div class="tplan-namn">${häst.namn}</div>
               <div class="tplan-mini">E ${Math.round(häst.energi)} · F ${Math.round(häst.form)}</div>
@@ -121,7 +121,7 @@ function HästSida({ häst, spel, uppdatera, tillbaka }) {
     <button class="tillbaka" onClick=${tillbaka}>‹ Stallet</button>
     <div class="kort">
       <div class="horse-topp">
-        <${Häst} namn=${häst.namn} dräkt=${spel.dräkt} storlek=${92} />
+        <${HästEllerFoto} namn=${häst.namn} dräkt=${spel.dräkt} storlek=${92} />
         <div>
           <div class="namn">${häst.namn}</div>
           <div class="meta">${häst.ålder} år · ${häst.kön} · ${status}</div>
@@ -215,7 +215,7 @@ function Hästkort({ häst, uppdatera, dräkt, öppna }) {
     <div class="horse">
       <button class="horse-topp" style=${{ background: "none", border: 0, padding: 0, width: "100%", cursor: "pointer", textAlign: "left", font: "inherit", color: "inherit" }}
         onClick=${öppna}>
-        <${Häst} namn=${häst.namn} dräkt=${dräkt} storlek=${76} />
+        <${HästEllerFoto} namn=${häst.namn} dräkt=${dräkt} storlek=${76} />
         <div style=${{ flex: 1 }}>
           <div class="namn">${häst.namn}</div>
           <div class="meta">Öppna hästsidan ›</div>
@@ -288,6 +288,7 @@ function Säsongsavslut({ spel, uppdatera }) {
       : `»Hästarna gick helare genom året än de flesta stall kan säga. Det är så man bygger något som håller.«`;
   return html`
     <div class="sasong">
+      <${Bild} id="sasong-slut" reserv="bana-kvall" alt="" klass="vytopp" fallback=${null} />
       <div class="scen-etikett">Säsong ${rad.säsong} · krönika</div>
       <div class="scen-rubrik" style=${{ fontSize: "31px" }}>${rubrik}</div>
       <div class="sasong-plats">${rad.plats}:a<span> av ${rad.avStall} stall i tränarligan</span></div>
@@ -297,7 +298,7 @@ function Säsongsavslut({ spel, uppdatera }) {
         <div class="kort" style=${{ textAlign: "left", marginTop: "12px" }}>
           <div class="meta">Säsongens häst</div>
           <div class="portrad">
-            ${bästa && html`<${Häst} namn=${bästa.namn} dräkt=${spel.dräkt} storlek=${64} />`}
+            ${bästa && html`<${HästEllerFoto} namn=${bästa.namn} dräkt=${spel.dräkt} storlek=${64} />`}
             <div>
               <div class="namn" style=${{ fontSize: "20px" }}>${rad.bästaHäst}</div>
               <div class="meta">${kr(rad.bästaHästIntjänat)} kr i karriären</div>

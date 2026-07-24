@@ -26,6 +26,11 @@ const PÄLSAR = [
 ];
 export const pälsFör = (namn) => PÄLSAR[Math.floor(hash01(namn ?? "") * PÄLSAR.length)];
 
+/* Pälsarnas filnamn, i SAMMA ordning som PÄLSAR — indexet är kontraktet.
+   Ändras ordningen byter varenda häst utseende i sparade karriärer. */
+const PÄLSNAMN = ["brun", "morkbrun", "fux", "svart", "skimmel", "ljusbrun"];
+export const pälsnamnFör = (namn) => PÄLSNAMN[Math.floor(hash01(namn ?? "") * PÄLSNAMN.length)];
+
 /**
  * Travhäst i flygande trav med sulky och kusk, sidoprofil åt höger.
  * Stiliserad silhuett — läsbar i 40 px, värdig i 120.
@@ -62,6 +67,58 @@ export function Häst({ namn, dräkt, storlek = 64 }) {
       <path d="M100 70 l-2 20 l-5 0 l0 -19z" fill=${p.man} />
       <path d="M137 26 l6 8 l-3 2 l-6 -7z" fill=${p.kropp} />
     </svg>`;
+}
+
+/**
+ * HÄSTBILD — riktigt hästhuvud när fotot finns, SVG-hästen annars.
+ *
+ * Hästarna genereras proceduellt i tusental, så en bild per häst är
+ * omöjlig — men PÄLSEN härleds redan deterministiskt ur namnet, och sex
+ * huvudfoton (ett per päls) täcker därmed varenda häst som någonsin
+ * föds. En valfri andra variant per päls (hast-brun-2.jpg) delar
+ * hästarna i två halvor via samma hash, så att två bruna hästar i samma
+ * stall inte ser identiska ut. Kedjan:
+ *   hast-{päls}{-2?}.jpg → hast-{päls}.jpg → SVG-hästen
+ * Samma häst får ALLTID samma bild — hashen är minnet.
+ */
+export function Hästbild({ namn, dräkt, storlek = 64 }) {
+  const päls = pälsnamnFör(namn);
+  const variant = hash01((namn ?? "") + "•variant") < 0.5 ? "" : "-2";
+  const kedja = [
+    `./bilder/hast-${päls}${variant}.jpg`, `./hast-${päls}${variant}.jpg`,
+    ...(variant ? [`./bilder/hast-${päls}.jpg`, `./hast-${päls}.jpg`] : []),
+  ];
+  return html`
+    <span class="hastbild" style=${{ width: storlek + "px", height: storlek + "px" }}>
+      <img src=${kedja[0]} alt="" loading="lazy"
+        onError=${(e) => {
+          const img = e.target;
+          const steg = (Number(img.dataset.steg) || 0) + 1;
+          if (steg < kedja.length) { img.dataset.steg = String(steg); img.src = kedja[steg]; return; }
+          /* Fotot saknas helt: dölj även ramen (annars står en tom ruta
+             kvar i hästens storlek) och släpp fram SVG-hästen bredvid. */
+          const ram = img.parentElement;
+          if (ram) ram.style.display = "none";
+          const f = ram?.nextElementSibling;
+          if (f) f.style.display = "";
+        }} />
+    </span>
+    `;
+}
+
+/**
+ * HÄST MED FOTO FÖRST. Visar hästbilden om fotot finns, annars den
+ * tecknade travhästen. Ihopslagningen bor här så att vyerna slipper
+ * veta vilka filer som råkar ligga i bildmappen.
+ */
+export function HästEllerFoto({ namn, dräkt, storlek = 64 }) {
+  return html`
+    <span class="hast-kombo">
+      <${Hästbild} namn=${namn} storlek=${Math.round(storlek * 0.9)} />
+      <span style=${{ display: "none" }}>
+        <${Häst} namn=${namn} dräkt=${dräkt} storlek=${storlek} />
+      </span>
+    </span>`;
 }
 
 /** Tävlingströjan — dräkten som plagg med ärmar, bröstrand och hjälm. */

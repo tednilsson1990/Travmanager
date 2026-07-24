@@ -194,6 +194,7 @@ export default function StartVy({ spel, uppdatera }) {
       ${små.map(([id, b]) => html`
         <button key=${id} class=${"banval" + (bana === id ? " vald" : "")}
           onClick=${() => sättBana(id)}>
+          <${Bild} id=${"bana-" + id} reserv="bana-kvall" alt="" klass="banval-bild" fallback=${null} />
           <div class="namn">${b.namn}</div>
           <div class="meta">${b.karaktär}</div>
           <div class="meta">Upplopp ${b.upplopp} m${b.openStretch ? " · öppet innerspår" : ""}</div>

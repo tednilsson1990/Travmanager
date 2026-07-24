@@ -82,7 +82,7 @@ export function körVecka(spel) {
          stallvyn. Kortet ligger kvar som reserv: räcker inte kassan i
          scenen väntar erbjudandet där tills spelaren bestämt sig. */
       köScen(spel, {
-        slag: "banflytt", betydelse: 66, bild: "bana-kvall",
+        slag: "banflytt", betydelse: 66, bild: `bana-${id}`, bildreserv: "bana-kvall",
         etikett: "TELEFONEN RINGER",
         rubrik: `${bana.namn.toUpperCase()} VILL HA ER`,
         ingress: `${bana.karaktär ?? "En större bana."} Större lopp på hemmaplan — och hemmapubliken följer med. Flyttkostnad ${Math.round(krav.kostnad / 1000)} tkr.`,

@@ -5,6 +5,7 @@ import { nyttNamn } from "./data-namn.js";
 import { skrivPress } from "./engine-vecka.js";
 import { kr, klamp, rnd, slump } from "./engine-util.js";
 import { Tom } from "./ui-delar.js";
+import { Bild } from "./ui-grafik.js";
 
 const ärv = (a, b) => klamp(Math.round((a + b) / 2 + rnd(-13, 17)));
 
@@ -47,6 +48,7 @@ export default function AvelVy({ spel, uppdatera }) {
   });
 
   return html`
+    <${Bild} id="hage" reserv="gard-hero" alt="" klass="vytopp" fallback=${null} />
     <h2>Betäckning</h2>
     ${ston.length === 0
       ? html`<${Tom}>Inget eget sto i rätt ålder.<//>`

@@ -18,7 +18,13 @@
 import { html } from "htm/preact";
 import { Bild } from "./ui-grafik.js";
 import { görVal, stängScen } from "./engine-scener.js";
-import { TIDNINGSNAMN } from "./data-namnpaket.js";
+import { TIDNINGSNAMN, JOURNALISTER } from "./data-namnpaket.js";
+import { Porträtt } from "./ui-grafik.js";
+
+/* Journalistens bylinebild — id ur namnet, så att bildmappen kan fyllas
+   per person: journalist-cecilia-ramnek.jpg osv. Saknas den: initialer. */
+const journalistId = (namn) => "journalist-" + String(namn || "").toLowerCase()
+  .replace(/[åä]/g, "a").replace(/ö/g, "o").replace(/[^a-z]+/g, "-");
 
 function Val({ spel, scen, uppdatera, klassKnapp, klassVidare, vidareText }) {
   return (scen.val ?? []).length > 0
@@ -68,7 +74,12 @@ export default function ScenVy({ spel, uppdatera }) {
           ${scen.citat && html`
             <div class="tidning-citat">»${scen.citat}«
               <span class="citat-vem">${scen.citatVem}</span></div>`}
-          ${scen.signatur && html`<div class="tidning-signatur">Text: ${scen.signatur}</div>`}
+          ${scen.signatur && html`
+            <div class="tidning-signatur med-bild">
+              <${Porträtt} id=${journalistId(scen.signatur)} namn=${scen.signatur}
+                färg="#3A444F" storlek=${26} />
+              <span>Text: ${scen.signatur}</span>
+            </div>`}
 
           ${scen.fråga && html`<div class="tidning-fråga">${scen.fråga}</div>`}
           <${Val} spel=${spel} scen=${scen} uppdatera=${uppdatera}
