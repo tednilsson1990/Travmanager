@@ -37,6 +37,7 @@ ui-gardvy.js            gården: byggen, boxar, personal
 ui-prolog.js            prologens scener: mentorkort, övertagande, rekrytering
 engine-prolog.js        säsong 0: mentorn, introhästarna, gårdshistorien
 engine-handelser.js     händelsemotorn — spelets strukturerade minne
+ui-grafik.js            bildspråket: hästsilhuetter, dräkter, gårdskartan
 engine-forstaman.js     förstamannen: träningsråd och loppmatchning
 engine-gard.js          anläggningens effekter på veckan
 manifest.webmanifest    hemskärmsapp
@@ -454,6 +455,24 @@ Prövat och avfärdat, i tur och ordning:
 Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållningen,
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
+
+## Bildspråket (v54)
+
+All grafik är egen SVG i `ui-grafik.js` — inga bildfiler, inga
+nätberoenden, skarpt i alla storlekar och fungerar offline. Travhästen
+med sulky ritas i sidoprofil i flygande trav; pälsfärgen härleds
+deterministiskt ur hästens namn (samma häst, samma päls, varje gång) och
+kusken bär stallets dräkt. Dräkten är ett plagg med ärmar, bröstrand och
+hjälm — inte en färgruta. Gårdskartan är signaturen: en kvällsscen där
+varje bygge syns när det är byggt — stallängan visar exakt gårdens antal
+boxdörrar, rakbanan läggs bakom stallet, backen reser sig till höger,
+vattenbandet får sitt hus, och gårdsveteranen står vid staketet om
+trotjänaren pensionerades dit. Framgång ska synas från gårdsplanen.
+
+Ytpoleringen behåller nattravsidentiteten (strålkastargult över mörk
+oval, Big Shoulders + mono) men med mjukare kort, pillernavigering med
+frostat glas, levande staplar och tryckrespons på knappar. Respekterar
+prefers-reduced-motion och har synligt tangentbordsfokus.
 
 ## Prologen och minnet (v52)
 

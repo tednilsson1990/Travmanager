@@ -11,6 +11,7 @@ import { html } from "htm/preact";
 import { slump } from "./engine-util.js";
 import { BANOR, DRÄKTER } from "./data-namnpaket.js";
 import { skrivPress } from "./engine-vecka.js";
+import { Dräkt } from "./ui-grafik.js";
 
 const NAMNFÖRSLAG = [
   "Björkhaga", "Stall Norrsken", "Ekbackens Trav", "Stall Framåt",
@@ -63,9 +64,8 @@ export default function StartVy({ spel, uppdatera }) {
         <div class="draktrad">
           ${DRÄKTER.map((d) => html`
             <button key=${d.id} class=${"drakt" + (dräkt === d.id ? " vald" : "")}
-              style=${{ background: d.bg, color: d.fg }}
               aria-label=${d.namn} title=${d.namn}
-              onClick=${() => sättDräkt(d.id)}>▮▮</button>`)}
+              onClick=${() => sättDräkt(d.id)}><${Dräkt} dräkt=${d} storlek=${38} /></button>`)}
         </div>
         <div class="meta">${DRÄKTER.find((d) => d.id === dräkt)?.namn}</div>
       </div>

@@ -8,6 +8,7 @@ import { Stapel, Rad, Form } from "./ui-delar.js";
 import { träningsråd } from "./engine-forstaman.js";
 import { Mentorkort } from "./ui-prolog.js";
 import { säsongsHändelser } from "./engine-handelser.js";
+import { Häst } from "./ui-grafik.js";
 import { BANOR } from "./data-namnpaket.js";
 
 function Förstamankort({ spel, uppdatera }) {
@@ -85,11 +86,14 @@ function Erbjudande({ spel, uppdatera }) {
     </div>`;
 }
 
-function Hästkort({ häst, uppdatera }) {
+function Hästkort({ häst, uppdatera, dräkt }) {
   const kvar = häst.krav ? häst.krav.antal - häst.kravStarter : null;
   return html`
     <div class="horse">
-      <div class="namn">${häst.namn}</div>
+      <div class="horse-topp">
+        <${Häst} namn=${häst.namn} dräkt=${dräkt} storlek=${76} />
+        <div class="namn">${häst.namn}</div>
+      </div>
       <div class="meta">
         ${häst.ålder} år · ${häst.kön} · ${häst.starter} st · ${häst.segrar} seg · ${kr(häst.intjänat)} kr
       </div>
@@ -162,7 +166,7 @@ export default function StallVy({ spel, uppdatera, nystart }) {
     <${Erbjudande} spel=${spel} uppdatera=${uppdatera} />
     <${Förstamankort} spel=${spel} uppdatera=${uppdatera} />
     <h2>Veckans jobb</h2>
-    ${spel.stall.map((h) => html`<${Hästkort} key=${h.id} häst=${h} uppdatera=${uppdatera} />`)}
+    ${spel.stall.map((h) => html`<${Hästkort} key=${h.id} häst=${h} uppdatera=${uppdatera} dräkt=${spel.dräkt} />`)}
     <button class="btn" disabled=${slut} onClick=${() => {
       uppdatera((s) => { körVecka(s); });
       window.scrollTo({ top: 0, behavior: "smooth" });

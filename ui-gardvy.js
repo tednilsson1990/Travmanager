@@ -10,6 +10,7 @@ import { html } from "htm/preact";
 import { kr } from "./engine-util.js";
 import { BYGGEN, ANSTÄLLDA, bygg, anställ, sägUpp, gåraugifter, boxplats } from "./engine-gard.js";
 import { Tom } from "./ui-delar.js";
+import { Gårdskarta } from "./ui-grafik.js";
 
 export default function GårdVy({ spel, uppdatera }) {
   const a = spel.anläggning;
@@ -19,6 +20,7 @@ export default function GårdVy({ spel, uppdatera }) {
 
   return html`
     <h2>Gården</h2>
+    <${Gårdskarta} spel=${spel} />
     <div class="kort">
       <div class="meta">Kapacitet</div>
       <div class="namn">${a.boxar} boxar · ${spel.stall.length} hästar</div>

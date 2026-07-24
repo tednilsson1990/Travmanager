@@ -10,6 +10,7 @@ import MarknadVy from "./ui-marknadvy.js";
 import StartVy from "./ui-startvy.js";
 import GårdVy from "./ui-gardvy.js";
 import { ÖvertagandeVy, FörstamansvalVy } from "./ui-prolog.js";
+import { Dräkt } from "./ui-grafik.js";
 
 const FLIKAR = [
   { id: "stall", namn: "Stall" },
@@ -46,7 +47,7 @@ export default function App() {
   return html`
     <header>
       <div class="brand">
-        ${spel.dräkt && html`<span class="draktprick" style=${{ background: spel.dräkt.bg, color: spel.dräkt.fg }}>▮</span>`}
+        ${spel.dräkt && html`<${Dräkt} dräkt=${spel.dräkt} storlek=${30} />`}
         Stallet<span>·</span>${spel.stallnamn}</div>
       <div class="status">
         <div>Säsong<b>${spel.säsong ?? 1}</b></div>
