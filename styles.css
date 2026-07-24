@@ -1,341 +1,328 @@
-:root{--natt:#0E141B;--natt-2:#151E28;--panel:#1B2733;--linje:#2C3A48;--strålkastare:#F2B134;
---rail:#E9E6DF;--dis:#8FA0B0;--oxblod:#9B2D2D;--form:#4FA372;--kall:#5B8FC7;--lila:#A06BC0}
+/* ============================================================
+   TRAVPRESSENS DESIGNSYSTEM (v55)
+
+   Tesen: sportpress när spelet berättar, tävlingsprogram när
+   spelaren analyserar, stallkontor när spelaren planerar.
+   Dagsljus och papper i vardagen — men själva loppet körs i
+   kvällsmörker under strålkastare. Kontrasten är signaturen.
+   ============================================================ */
+:root{
+  /* dagen: papper och trycksvärta */
+  --papper:#F3F0E9; --ark:#FCFBF7; --bläck:#1B2530; --marin:#1E3A5F;
+  --tegel:#A32E2A; --guld:#8F6B2A; --form:#2E7D51; --kall:#3D6EA6;
+  --lila:#6B4C99; --dis:#68727E; --linje:#DCD7CC; --linje-mörk:#C8C2B4;
+  /* kvällen: banan under strålkastare */
+  --natt:#0E141B; --natt-2:#151E28; --panel:#1B2733; --nattlinje:#2C3A48;
+  --strålkastare:#F2B134; --rail:#E9E6DF; --nattdis:#8FA0B0; --oxblod:#C24141;
+}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
-body{background:var(--natt);color:var(--rail);font-family:'Inter',system-ui,sans-serif;font-size:15px;
-line-height:1.45;padding-bottom:env(safe-area-inset-bottom)}
+body{background:var(--papper);color:var(--bläck);font-family:'Inter',system-ui,sans-serif;
+  font-size:15px;line-height:1.5;padding-bottom:env(safe-area-inset-bottom)}
 .wrap{max-width:520px;margin:0 auto;padding:0 14px 100px}
-header{position:sticky;top:0;z-index:20;background:var(--natt);box-shadow:0 6px 12px -6px rgba(0,0,0,.9);
-padding:12px 14px 14px;max-width:520px;margin:0 auto}
-.brand{font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:29px;line-height:1;
-letter-spacing:.02em;text-transform:uppercase;display:flex;align-items:baseline;gap:8px}
-.brand span{color:var(--strålkastare)}
-.status{display:flex;gap:11px;margin-top:8px;font-family:'Roboto Mono',monospace;font-size:10px;color:var(--dis)}
-.status b{color:var(--rail);font-weight:700;display:block;font-size:14px}
-nav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--natt-2);border-top:1px solid var(--linje);
-display:flex;padding-bottom:env(safe-area-inset-bottom)}
-nav button{flex:1;background:none;border:0;color:var(--dis);font-family:'Big Shoulders Display',sans-serif;
-font-weight:700;font-size:16px;letter-spacing:.05em;text-transform:uppercase;padding:14px 2px 15px;
-cursor:pointer;border-top:2px solid transparent;margin-top:-1px}
-nav button[aria-selected="true"]{color:var(--strålkastare);border-top-color:var(--strålkastare)}
-h2{font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:13px;letter-spacing:.16em;
-text-transform:uppercase;color:var(--dis);margin:22px 0 10px}
-.horse,.kort{background:var(--panel);border:1px solid var(--linje);border-radius:3px;padding:12px;margin-bottom:10px}
-.namn{font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:23px;line-height:1;text-transform:uppercase}
+
+/* ---- Tidningshuvudet ---- */
+header{position:sticky;top:0;z-index:20;background:rgba(243,240,233,.92);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-bottom:2px solid var(--bläck);
+  padding:calc(10px + env(safe-area-inset-top)) 14px 10px;max-width:520px;margin:0 auto}
+.brand{font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:27px;line-height:1;
+  letter-spacing:.02em;text-transform:uppercase;display:flex;align-items:center;gap:8px;color:var(--bläck)}
+.brand span{color:var(--tegel)}
+.brand svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.status{display:flex;gap:12px;margin-top:7px;font-family:'Roboto Mono',monospace;font-size:9px;
+  color:var(--dis);text-transform:uppercase;letter-spacing:.06em}
+.status b{color:var(--bläck);font-weight:700;display:block;font-size:13px;letter-spacing:0}
+
+/* ---- Navigationen: fem sektioner, tidningens flikar ---- */
+nav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:rgba(252,251,247,.94);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-top:1px solid var(--linje-mörk);display:flex;
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+nav button{flex:1;background:none;border:0;color:var(--dis);
+  font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:15px;
+  letter-spacing:.05em;text-transform:uppercase;padding:10px 2px;cursor:pointer;
+  border-radius:9px;margin:0 2px;transition:background .15s,color .15s}
+nav button[aria-selected="true"]{color:var(--marin);background:rgba(30,58,95,.1)}
+
+h2{font-family:'Roboto Mono',monospace;font-weight:500;font-size:10px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--dis);margin:24px 0 10px;
+  display:flex;align-items:center;gap:10px}
+h2::after{content:"";flex:1;height:1px;background:var(--linje-mörk)}
+
+/* ---- Pressmallarna: tre storlekar, tydlig hierarki ---- */
+.scen{background:var(--ark);border:1px solid var(--linje);border-top:4px solid var(--tegel);
+  border-radius:4px;padding:22px 18px;margin:14px 0;
+  box-shadow:0 12px 30px -18px rgba(27,37,48,.35)}
+.scen-etikett{font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--dis)}
+.scen-rubrik{font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:40px;
+  line-height:.95;text-transform:uppercase;color:var(--bläck);margin:8px 0 10px}
+.scen-rubrik.tegel{color:var(--tegel)}
+.ingress{font-size:16px;line-height:1.55;color:var(--bläck);font-weight:500}
+.citat{border-left:3px solid var(--guld);padding:4px 0 4px 14px;margin:14px 0;
+  font-size:16px;font-style:italic;color:#3A4450}
+.citat-vem{display:block;font-style:normal;font-family:'Roboto Mono',monospace;
+  font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dis);margin-top:6px}
+.artikel{background:var(--ark);border:1px solid var(--linje);border-left:4px solid var(--marin);
+  border-radius:4px;padding:13px 15px;margin-bottom:10px}
+.artikel.bra{border-left-color:var(--form)}
+.artikel.dålig{border-left-color:var(--tegel)}
+.artikel-rubrik{font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:22px;
+  line-height:1;text-transform:uppercase}
+.notis{font-size:13px;color:var(--dis);padding:5px 0;border-bottom:1px dotted var(--linje-mörk)}
+.notis b{color:var(--bläck)}
+
+/* ---- Stallkontoret: kort och arbetsytor ---- */
+.horse,.kort{background:var(--ark);border:1px solid var(--linje);border-radius:12px;
+  padding:14px;margin-bottom:10px;box-shadow:0 6px 18px -14px rgba(27,37,48,.3)}
+.horse-topp{display:flex;align-items:center;gap:12px;margin:-2px 0 4px}
+.horse-topp .namn{flex:1}
+.hast-figur{flex:0 0 auto;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}
+.namn{font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:23px;
+  line-height:1;text-transform:uppercase;color:var(--bläck)}
 .meta{font-family:'Roboto Mono',monospace;font-size:11px;color:var(--dis);margin-top:3px}
+.logg{font-size:13px;color:#454F5B;margin:4px 0}
+.logg b{color:var(--bläck)}
+.pris{font-family:'Roboto Mono',monospace;color:var(--guld);font-size:13px;font-weight:600}
+.hint{font-size:12px;color:var(--dis);margin:-4px 0 12px}
+.skada{color:var(--tegel);font-weight:600;font-size:12px;margin-top:8px}
+.tom{color:var(--dis);font-size:14px;padding:18px 0;text-align:center;
+  border:1px dashed var(--linje-mörk);border-radius:10px}
+
 .bars{margin-top:10px;display:grid;gap:6px}
 .bar-row{display:grid;grid-template-columns:80px 1fr 34px;align-items:center;gap:8px;
-font-family:'Roboto Mono',monospace;font-size:10px;color:var(--dis)}
-.bar{height:6px;background:#0C1219;border-radius:1px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--strålkastare)}
-.bar.form i{background:var(--form)}.bar.energi i{background:var(--kall)}
-.bar.lynne i{background:var(--lila)}.bar.hype i{background:#D9714B}
-.val{color:var(--rail);text-align:right}
-.skada{color:var(--oxblod);font-weight:600;font-size:12px;margin-top:8px}
-.chips{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
-.chip{background:#0F1720;border:1px solid var(--linje);color:var(--dis);border-radius:2px;padding:7px 10px;font-size:12px;cursor:pointer}
-.chip[aria-pressed="true"]{background:var(--strålkastare);border-color:var(--strålkastare);color:#10161D;font-weight:600}
-.btn{width:100%;background:var(--strålkastare);color:#10161D;border:0;border-radius:2px;
-font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:21px;letter-spacing:.08em;
-text-transform:uppercase;padding:14px;cursor:pointer;margin-top:14px}
-.btn.sekundär{background:transparent;color:var(--rail);border:1px solid var(--linje)}
-.btn.liten{font-size:15px;padding:9px 16px;margin-top:8px;width:auto}
-.btn:disabled{opacity:.35;cursor:default}
-.rad-knappar{display:flex;gap:8px}
-.tacke{width:23px;height:23px;flex:0 0 23px;border-radius:2px;display:grid;place-items:center;
-font-family:'Roboto Mono',monospace;font-weight:700;font-size:12px;border:1px solid rgba(0,0,0,.4)}
+  font-family:'Roboto Mono',monospace;font-size:10px;color:var(--dis)}
+.bar{height:8px;background:#E5E1D6;border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#8F6B2A,#B08A3C);
+  transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.bar.form i{background:linear-gradient(90deg,#256844,#2E7D51)}
+.bar.energi i{background:linear-gradient(90deg,#33598A,#3D6EA6)}
+.bar.lynne i{background:linear-gradient(90deg,#59407F,#6B4C99)}
+.bar.hype i{background:linear-gradient(90deg,#A2542F,#C26A3F)}
+.bar-row .val{color:var(--bläck);text-align:right;background:none;border:0;padding:0;width:auto;margin:0}
 
-/* ---- Banvyn ---- */
-.banvy{background:#0B1017;border:1px solid #24313D;border-radius:3px;padding:8px;margin-top:12px}
-.banvy svg{width:100%;height:auto;display:block}
-.bv-topp{display:flex;justify-content:space-between;align-items:baseline;
-font-family:'Roboto Mono',monospace;font-size:11px;color:var(--strålkastare);letter-spacing:.05em;padding:2px 4px 6px}
-.bv-topp .stor{font-family:'Big Shoulders Display',sans-serif;font-size:26px;font-weight:900}
-.bv-knappar{display:flex;gap:6px;justify-content:flex-end;padding:6px 2px 0}
-.bv-knapp{background:#131C25;border:1px solid var(--linje);color:var(--dis);border-radius:2px;
-padding:5px 10px;font-family:'Roboto Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:.05em}
-.bv-knapp[aria-pressed="true"]{border-color:var(--strålkastare);color:var(--strålkastare)}
-.track{background:#0B1017;border:1px solid #24313D;border-radius:3px;padding:10px;margin-top:10px}
-.tr-bana{height:4px;background:#131C25;border-radius:2px;overflow:hidden;margin-bottom:9px}
-.tr-bana i{display:block;height:100%;background:var(--strålkastare)}
-.tr-rad{display:grid;grid-template-columns:23px 1fr 40px 52px 30px;gap:6px;align-items:center;
-padding:3px 4px;border-radius:2px;font-family:'Roboto Mono',monospace;font-size:11px}
-.tr-rad.din{background:rgba(242,177,52,.14);outline:1px solid rgba(242,177,52,.35)}
-.tr-rad.ur{opacity:.35}
-.tr-namn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--rail)}
-.tr-lage{font-size:9px;color:var(--dis);letter-spacing:.05em}
-.tr-lage.utv{color:#D9714B}.tr-lage.instangd{color:var(--oxblod)}
-.tr-avst{text-align:right;color:var(--dis)}
-.tr-fart{text-align:right;color:var(--kall)}
-.tr-kraft{height:4px;background:#000;border-radius:1px;overflow:hidden}
-.tr-kraft i{display:block;height:100%;background:var(--form)}
-.tr-kraft i.låg{background:var(--oxblod)}
-.kommentar{margin-top:12px;display:grid;gap:6px}
-.k-rad{font-size:13px;color:var(--dis);border-left:2px solid var(--linje);padding:2px 0 2px 9px}
-.k-rad b{color:var(--rail)}
-.k-rad.hot{border-left-color:var(--strålkastare);color:var(--rail)}
-.k-rad.illa{border-left-color:var(--oxblod);color:#E5B4B4}
-table{width:100%;border-collapse:collapse;margin-top:12px;font-family:'Roboto Mono',monospace;font-size:11px}
-th{text-align:left;color:var(--dis);font-weight:500;font-size:9px;letter-spacing:.08em;text-transform:uppercase;
-padding:6px 2px;border-bottom:1px solid var(--linje)}
-td{padding:7px 2px;border-bottom:1px solid #1E2A36}
-tr.din td{color:var(--strålkastare)}
-td.ur{color:var(--oxblod)}
-.tom{color:var(--dis);font-size:14px;padding:18px 0;text-align:center;border:1px dashed var(--linje);border-radius:3px}
-.logg{font-size:13px;color:var(--dis);margin:4px 0}
-.logg b{color:var(--rail)}
-label.fält{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dis);margin-bottom:5px}
-select{width:100%;background:#0F1720;color:var(--rail);border:1px solid var(--linje);border-radius:2px;
-padding:11px;font-family:'Inter',sans-serif;font-size:14px;margin-bottom:10px}
-option:disabled{color:#4A5A69}
-.pris{font-family:'Roboto Mono',monospace;color:var(--strålkastare);font-size:13px}
-.hint{font-size:12px;color:var(--dis);margin:-4px 0 12px}
+.chips{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.chip{background:#EDEAE0;border:1px solid var(--linje-mörk);color:#454F5B;border-radius:99px;
+  padding:8px 14px;font-size:12px;cursor:pointer;transition:transform .12s,background .12s}
+.chip:active{transform:scale(.96)}
+.chip[aria-pressed="true"]{background:var(--marin);border-color:var(--marin);color:#FCFBF7;font-weight:600}
+
+.btn{width:100%;background:var(--marin);color:#FCFBF7;border:0;border-radius:12px;
+  font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:21px;
+  letter-spacing:.08em;text-transform:uppercase;padding:14px;cursor:pointer;margin-top:14px;
+  box-shadow:0 8px 20px -8px rgba(30,58,95,.5);transition:transform .12s,box-shadow .12s}
+.btn:active:not(:disabled){transform:translateY(1px) scale(.995)}
+.btn.sekundär{background:transparent;color:var(--marin);border:1px solid var(--linje-mörk);box-shadow:none}
+.btn.liten{font-size:15px;padding:9px 16px;margin-top:8px;width:auto;border-radius:9px}
+.btn:disabled{opacity:.4;cursor:default}
+.rad-knappar{display:flex;gap:8px}
+
+label.fält{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dis);margin-bottom:5px;font-family:'Roboto Mono',monospace}
+select{width:100%;background:#FFF;color:var(--bläck);border:1px solid var(--linje-mörk);
+  border-radius:9px;padding:11px;font-family:'Inter',sans-serif;font-size:14px;margin-bottom:10px}
+option:disabled{color:#A8AEB6}
+.startfält{width:100%;padding:11px 12px;margin:6px 0 8px;background:#FFF;color:var(--bläck);
+  border:1px solid var(--linje-mörk);border-radius:10px;font:inherit;font-size:1.05rem}
+
+.tacke{width:23px;height:23px;flex:0 0 23px;border-radius:6px;display:grid;place-items:center;
+  font-family:'Roboto Mono',monospace;font-weight:700;font-size:12px;border:1px solid rgba(0,0,0,.35)}
+
+/* Tävlingsprogrammet: tabeller och startlistor i mono */
+table{width:100%;border-collapse:collapse;margin-top:12px;
+  font-family:'Roboto Mono',monospace;font-size:11px;color:var(--bläck)}
+th{text-align:left;color:var(--dis);font-weight:500;font-size:9px;letter-spacing:.08em;
+  text-transform:uppercase;padding:6px 2px;border-bottom:2px solid var(--bläck)}
+td{padding:7px 2px;border-bottom:1px solid var(--linje)}
+tr.din td{color:var(--marin);font-weight:700;background:rgba(30,58,95,.06)}
+td.ur{color:var(--tegel)}
+table.liga td{vertical-align:top}
+table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
+.ligamini{font-size:9px;color:var(--dis)}
+.karriar td:nth-child(n+3){text-align:right}
 .startlista{display:grid;gap:4px;margin-top:4px}
-.sl-rad{display:flex;align-items:center;gap:8px;font-family:'Roboto Mono',monospace;font-size:11px;color:var(--dis)}
-.sl-rad.din{color:var(--strålkastare)}
-.sl-rad .streck{margin-left:auto;color:var(--rail)}
-.sl-rad.favorit .streck{color:var(--strålkastare);font-weight:700}
-.relrad{display:grid;grid-template-columns:1fr 56px 46px;align-items:center;gap:8px;padding:8px 0;
-border-bottom:1px solid #1E2A36;font-size:13px}
+.sl-rad{display:flex;align-items:center;gap:8px;font-family:'Roboto Mono',monospace;
+  font-size:11px;color:var(--dis)}
+.sl-rad.din{color:var(--marin);font-weight:700}
+.sl-rad .streck{margin-left:auto;color:var(--bläck)}
+.sl-rad.favorit .streck{color:var(--tegel);font-weight:700}
+.formrad{display:inline-flex;gap:3px}
+.formrad.tom{border:0;padding:0;font-size:11px}
+.fp{width:16px;height:16px;display:grid;place-items:center;border-radius:4px;
+  font-family:'Roboto Mono',monospace;font-size:10px;background:#E5E1D6;color:#454F5B}
+.fp.seger{background:var(--form);color:#fff}
+.fp.pall{background:#BFD8CB;color:#1E4A34}
+.fp.ur{background:#EBC7C5;color:var(--tegel)}
+.taggar{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tagg{font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  border:1px solid var(--linje-mörk);border-radius:4px;padding:2px 6px;color:var(--dis)}
+.tagg.ext{border-color:var(--lila);color:var(--lila)}
+.tagg.varning{border-color:var(--tegel);color:var(--tegel)}
+.relrad{display:grid;grid-template-columns:1fr 56px 46px;align-items:center;gap:8px;
+  padding:8px 0;border-bottom:1px solid var(--linje);font-size:13px}
 .relrad:last-child{border-bottom:0}
 .relnamn{font-weight:500}
 .relmini{font-family:'Roboto Mono',monospace;font-size:10px;color:var(--dis)}
-.relbar{height:5px;background:#0C1219;border-radius:1px;overflow:hidden}
+.relbar{height:5px;background:#E5E1D6;border-radius:99px;overflow:hidden}
 .relbar i{display:block;height:100%;background:var(--form)}
-.relbar i.kall{background:var(--oxblod)}
+.relbar i.kall{background:var(--tegel)}
 .svar{font-family:'Roboto Mono',monospace;font-size:10px;text-align:right}
-.svar.ja{color:var(--form)}.svar.nej{color:var(--oxblod)}.svar.kanske{color:var(--strålkastare)}
-.klipp{border-left:2px solid var(--linje);padding:4px 0 6px 10px;margin-bottom:8px}
-.klipp .rubrik{font-family:'Big Shoulders Display',sans-serif;font-size:19px;font-weight:700;text-transform:uppercase;line-height:1.05}
+.svar.ja{color:var(--form)}.svar.nej{color:var(--tegel)}.svar.kanske{color:var(--guld)}
+
+.klipp{border-left:3px solid var(--marin);padding:4px 0 6px 10px;margin-bottom:8px}
+.klipp .rubrik{font-family:'Big Shoulders Display',sans-serif;font-size:19px;font-weight:800;
+  text-transform:uppercase;line-height:1.05;color:var(--bläck)}
 .klipp .byline{font-family:'Roboto Mono',monospace;font-size:10px;color:var(--dis);margin-top:2px}
-.klipp.bra{border-left-color:var(--form)}.klipp.dålig{border-left-color:var(--oxblod)}
-.taggar{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.tagg{font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
-border:1px solid var(--linje);border-radius:2px;padding:2px 6px;color:var(--dis)}
-.tagg.ext{border-color:var(--lila);color:var(--lila)}
-.tagg.varning{border-color:var(--oxblod);color:#E5B4B4}
-.förvänt{background:#141C26;border:1px solid var(--linje);border-left:3px solid var(--strålkastare);
-padding:10px;border-radius:2px;margin-bottom:10px;font-size:13px;color:var(--dis)}
-.förvänt b{color:var(--rail)}
+.klipp.bra{border-left-color:var(--form)}.klipp.dålig{border-left-color:var(--tegel)}
 
-/* Närbilden under ovalen — fältet från sidan, som en tv-bild */
-.nb-rubrik{
-  display:flex;justify-content:space-between;
-  font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.12em;
-  text-transform:uppercase;color:rgba(233,230,223,.45);
-  padding:10px 4px 4px;
-}
-.narbild{width:100%;height:auto;display:block;border-radius:2px}
-
-/* iOS ritar appen under statusfältet i helskärmsläge — håll undan för det */
-header{ padding-top: calc(12px + env(safe-area-inset-top)); }
-
-/* Ekipagen glider mellan bildrutorna i stället för att stega.
-   Uppspelningen ritar om var 110:e ms; utan detta hoppar allt. */
-.puck{ transition: transform 150ms linear, opacity 200ms linear; }
-.nb-puck{ transition: transform 220ms cubic-bezier(.4,0,.2,1), opacity 200ms linear; }
-@media (prefers-reduced-motion: reduce){
-  .puck, .nb-puck{ transition: none; }
-}
-
-/* Loppfakta i anmälan — proposition, bana och distanspassning */
-.loppfakta{
-  background:#141C26;border:1px solid var(--linje);border-radius:2px;
-  padding:9px 11px;margin:-4px 0 10px;font-size:13px;color:var(--dis);
-}
+.förvänt{background:#F7F4EC;border:1px solid var(--linje);border-left:3px solid var(--guld);
+  padding:10px;border-radius:6px;margin-bottom:10px;font-size:13px;color:#454F5B}
+.förvänt b{color:var(--bläck)}
+.loppfakta{background:#F7F4EC;border:1px solid var(--linje);border-radius:8px;
+  padding:9px 11px;margin:-4px 0 10px;font-size:13px;color:#454F5B}
 .loppfakta > div{display:flex;gap:8px;padding:2px 0}
-.loppfakta span{
-  font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.12em;
-  text-transform:uppercase;color:rgba(233,230,223,.4);min-width:78px;padding-top:2px;
-}
+.loppfakta span{font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--dis);min-width:78px;padding-top:2px}
 .loppfakta .bra{color:var(--form)}
-.loppfakta .dålig{color:#E5B4B4}
-.loppfakta .v85{color:var(--strålkastare)}
-
-/* ---- Tävlingsdagen: samtal och val ---- */
-.samtal{
-  background:#141C26;border:1px solid var(--linje);border-left:3px solid var(--kall);
-  border-radius:2px;padding:11px 13px;margin-bottom:12px;
-}
-.samtal-vem{
-  font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--kall);margin-bottom:5px;
-}
-.samtal-text{font-size:14px;color:var(--rail);line-height:1.5}
-
-.val{
-  display:block;width:100%;text-align:left;background:var(--panel);
-  border:1px solid var(--linje);border-radius:3px;padding:12px;margin-bottom:9px;
-  cursor:pointer;color:var(--rail);font-family:inherit;
-}
-.val:active{background:#22303D}
-.val.rek{border-color:var(--strålkastare)}
-.val-rubrik{
-  font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:19px;
-  text-transform:uppercase;line-height:1.1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-}
-.rek-marke{
-  font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--strålkastare);
-  border:1px solid var(--strålkastare);border-radius:2px;padding:1px 5px;
-}
-.val-citat{font-size:13px;color:var(--rail);margin-top:6px;font-style:italic;opacity:.9}
+.loppfakta .dålig{color:var(--tegel)}
+.loppfakta .v85{color:var(--guld);font-weight:600}
+.samtal{background:#F7F4EC;border:1px solid var(--linje);border-left:3px solid var(--kall);
+  border-radius:8px;padding:11px 13px;margin-bottom:12px}
+.samtal-vem{font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--kall);margin-bottom:5px}
+.samtal-text{font-size:14px;color:var(--bläck);line-height:1.5}
+.val{display:block;width:100%;text-align:left;background:var(--ark);
+  border:1px solid var(--linje-mörk);border-radius:10px;padding:12px;margin-bottom:9px;
+  cursor:pointer;color:var(--bläck);font-family:inherit}
+.val:active{background:#EFEBE1}
+.val.rek{border-color:var(--guld);box-shadow:0 0 0 1px rgba(143,107,42,.3)}
+.val-rubrik{font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:19px;
+  text-transform:uppercase;line-height:1.1;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rek-marke{font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--guld);border:1px solid var(--guld);border-radius:4px;padding:1px 5px}
+.val-citat{font-size:13px;margin-top:6px;font-style:italic;color:#3A4450}
 .val-följd{font-size:12px;color:var(--dis);margin-top:6px}
 
-/* ---- Spårlottningen ---- */
-.lottning{
-  background:linear-gradient(180deg,#1A1208,#241708);border:1px solid #3A2716;
-  border-radius:3px;padding:20px;text-align:center;margin-bottom:12px;
-}
-.lott-etikett{
-  font-family:'Roboto Mono',monospace;font-size:10px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--dis);
-}
-.lott-spår{display:flex;justify-content:center;margin:12px 0 8px;transform:scale(2.1)}
-.lott-text{
-  font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:22px;
-  text-transform:uppercase;color:var(--strålkastare);margin-top:14px;
-}
-
-/* Tränarligan */
-table.liga td{vertical-align:top}
-table.liga td:nth-child(3){text-align:right}
-table.liga td:nth-child(4){text-align:right}
-.ligamini{font-size:9px;color:rgba(233,230,223,.4)}
-
-/* Säsongsavslut */
-.sasong{
-  background:linear-gradient(180deg,#1A1208,#241708);border:1px solid #3A2716;
-  border-radius:3px;padding:22px 16px;text-align:center;margin:14px 0;
-}
-.sasong-rubrik{
-  font-family:'Roboto Mono',monospace;font-size:10px;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--dis);
-}
-.sasong-plats{
-  font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:64px;
-  line-height:1;color:var(--strålkastare);margin:8px 0 12px;
-}
-.sasong-plats span{font-size:16px;color:var(--dis);display:block;font-weight:700;margin-top:6px}
-.karriar td:nth-child(n+3){text-align:right}
-
-/* Felruta i stället för svart skärm */
-.felruta{
-  max-width:520px;margin:40px auto;padding:18px;
-  background:var(--panel);border:1px solid var(--oxblod);border-radius:3px;
-  font-family:'Inter',system-ui,sans-serif;color:var(--rail);
-}
-.fel-rubrik{
-  font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:26px;
-  text-transform:uppercase;color:var(--oxblod);margin-bottom:10px;
-}
-.fel-text{
-  font-family:'Roboto Mono',monospace;font-size:12px;color:var(--rail);
-  background:#0F1720;border-radius:2px;padding:10px;margin-bottom:12px;word-break:break-word;
-}
-.fel-hjalp{font-size:13px;color:var(--dis);line-height:1.5}
-
-/* Formraden — senaste starterna, nyast först */
-.formrad{display:inline-flex;gap:3px;align-items:center;margin-top:3px}
-.formrad.tom{color:rgba(233,230,223,.3);font-style:italic}
-.formrad .fp{
-  display:inline-flex;align-items:center;justify-content:center;
-  min-width:17px;height:17px;padding:0 3px;border-radius:2px;
-  font-family:'Roboto Mono',monospace;font-size:10px;font-weight:700;
-  background:#1B242E;color:var(--dis);border:1px solid var(--linje);
-}
-.formrad .fp.seger{background:var(--strålkastare);color:#10161D;border-color:var(--strålkastare)}
-.formrad .fp.pall{background:#2C4636;color:#CFE8D8;border-color:#3D6249}
-.formrad .fp.ur{background:#2E1A1A;color:#E5B4B4;border-color:#4A2626}
-
-/* ==================== Spelstarten ==================== */
-.startvy { display: flex; flex-direction: column; gap: 14px; max-width: 480px; margin: 0 auto; }
-.startfält {
-  width: 100%; padding: 10px 12px; margin: 6px 0 8px;
-  background: var(--yta, #1c1c22); color: inherit;
-  border: 1px solid var(--kant, #34343e); border-radius: 8px;
-  font: inherit; font-size: 1.05rem;
-}
-.draktrad { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
-.drakt {
-  width: 44px; height: 34px; border-radius: 6px; border: 2px solid transparent;
-  font-size: 0.9rem; letter-spacing: 2px; cursor: pointer;
-}
-.drakt.vald { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,0.25); }
-.banval {
-  display: block; width: 100%; text-align: left; margin: 6px 0; padding: 10px 12px;
-  background: var(--yta, #1c1c22); color: inherit;
-  border: 1px solid var(--kant, #34343e); border-radius: 8px; cursor: pointer;
-}
-.banval.vald { border-color: #e8c766; box-shadow: 0 0 0 1px #e8c766; }
-.draktprick {
-  display: inline-block; width: 16px; height: 16px; border-radius: 4px;
-  margin-right: 6px; text-align: center; line-height: 16px; font-size: 10px;
-  vertical-align: -2px;
-}
-.kort.inbjudan { border-color: #e8c766; }
-
-.kort.mentor { border-left: 3px solid #e8c766; }
-
-/* ==================== Modernisering (v54) ====================
-   Samma nattravsidentitet — strålkastare över mörk oval — men med mjukare
-   ytor, djup och rörelse. Grafiken (ui-grafik.js) bär bildspråket. */
-
-.horse,.kort{border-radius:14px;border:1px solid rgba(255,255,255,.06);
-  background:linear-gradient(180deg,#1E2B38 0%,#182430 100%);
-  box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 10px 24px -14px rgba(0,0,0,.7);
-  padding:14px}
-.horse-topp{display:flex;align-items:center;gap:12px;margin:-2px 0 4px}
-.horse-topp .namn{flex:1}
-.hast-figur{flex:0 0 auto;filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))}
-
-.bar{height:8px;border-radius:99px;background:#0B1119}
-.bar i{border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
-.bar i{background:linear-gradient(90deg,#C98F1F,#F2B134)}
-.bar.form i{background:linear-gradient(90deg,#357B52,#4FA372)}
-.bar.energi i{background:linear-gradient(90deg,#3D6EA6,#5B8FC7)}
-.bar.lynne i{background:linear-gradient(90deg,#7B4C99,#A06BC0)}
-.bar.hype i{background:linear-gradient(90deg,#B04F2E,#D9714B)}
-
-.chip{border-radius:99px;padding:8px 14px;transition:transform .12s,background .12s;
-  background:#101923;border-color:rgba(255,255,255,.08)}
-.chip:active{transform:scale(.96)}
-.chip[aria-pressed="true"]{box-shadow:0 3px 10px -3px rgba(242,177,52,.5)}
-
-.btn{border-radius:12px;box-shadow:0 6px 18px -6px rgba(242,177,52,.45);
-  transition:transform .12s,box-shadow .12s}
-.btn:active:not(:disabled){transform:translateY(1px) scale(.99);box-shadow:0 3px 8px -4px rgba(242,177,52,.4)}
-.btn.liten{border-radius:9px}
-.btn.sekundär{box-shadow:none}
-
-nav{background:rgba(14,20,27,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-  border-top:1px solid rgba(255,255,255,.07);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
-nav button{border-top:0;margin:0 2px;border-radius:10px;padding:10px 2px;transition:background .15s,color .15s}
-nav button[aria-selected="true"]{background:rgba(242,177,52,.13);border-top-color:transparent}
-
-header{background:linear-gradient(180deg,#0E141B 70%,rgba(14,20,27,.92));backdrop-filter:blur(10px)}
-.brand{align-items:center}
-.brand svg{margin-right:2px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
-
-.tacke{border-radius:6px}
-.banval{border-radius:12px;transition:border-color .15s,transform .12s;background:linear-gradient(180deg,#1B2733,#16202B)}
+/* ---- Spelstart, gård, dräkter ---- */
+.startvy{display:flex;flex-direction:column;gap:14px;max-width:480px;margin:0 auto;padding-top:8px}
+.draktrad{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.drakt{width:52px;height:52px;border-radius:12px;border:2px solid var(--linje-mörk);
+  background:#EDEAE0;display:grid;place-items:center;cursor:pointer}
+.drakt.vald{border-color:var(--marin);box-shadow:0 0 0 2px rgba(30,58,95,.25)}
+.banval{display:block;width:100%;text-align:left;margin:6px 0;padding:12px;background:var(--ark);
+  color:var(--bläck);border:1px solid var(--linje-mörk);border-radius:12px;cursor:pointer;
+  transition:transform .12s,border-color .15s}
 .banval:active{transform:scale(.99)}
-.banval.vald{box-shadow:0 0 0 1px #E8C766,0 8px 20px -10px rgba(232,199,102,.35)}
-.drakt{width:52px;height:52px;border-radius:12px;background:#101923;display:grid;place-items:center}
-.drakt.vald{border-color:#F2B134;box-shadow:0 0 0 2px rgba(242,177,52,.35)}
-.startfält{border-radius:10px}
-
+.banval.vald{border-color:var(--guld);box-shadow:0 0 0 1px var(--guld)}
 .gardskarta{width:100%;height:auto;display:block;border-radius:14px;margin-bottom:12px;
-  border:1px solid rgba(255,255,255,.06);box-shadow:0 12px 28px -16px rgba(0,0,0,.8)}
+  border:1px solid var(--nattlinje);box-shadow:0 12px 28px -16px rgba(0,0,0,.55)}
 .gk-etikett{font:600 8px 'Roboto Mono',monospace;fill:#8FA0B0;letter-spacing:.08em;text-anchor:end}
-
-.kort.mentor{border-left:0;position:relative;overflow:hidden}
+.kort.mentor{position:relative;overflow:hidden}
 .kort.mentor::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;
-  background:linear-gradient(180deg,#F2B134,#9B6A14);border-radius:4px 0 0 4px}
-.kort.inbjudan{border-color:rgba(232,199,102,.4);
-  background:linear-gradient(180deg,#242B24 0%,#182430 60%)}
+  background:linear-gradient(180deg,var(--guld),#6B4E1D)}
+.kort.inbjudan{border-color:var(--guld);background:linear-gradient(180deg,#FBF6E8,#FCFBF7)}
 
-:focus-visible{outline:2px solid #F2B134;outline-offset:2px;border-radius:6px}
+/* ---- KVÄLLEN: loppet under strålkastarna. Här gäller natten. ---- */
+.banvy,.track,.lottning,.narbild-hus{color:var(--rail)}
+.banvy{background:#0B1017;border:1px solid #24313D;border-radius:14px;padding:8px;margin-top:12px}
+.banvy svg{width:100%;height:auto;display:block}
+.bv-topp{display:flex;justify-content:space-between;align-items:baseline;
+  font-family:'Roboto Mono',monospace;font-size:11px;color:var(--strålkastare);
+  letter-spacing:.05em;padding:2px 4px 6px}
+.bv-topp .stor{font-family:'Big Shoulders Display',sans-serif;font-size:26px;font-weight:900}
+.bv-knappar{display:flex;gap:6px;justify-content:flex-end;padding:6px 2px 0}
+.bv-knapp{background:#131C25;border:1px solid var(--nattlinje);color:var(--nattdis);border-radius:7px;
+  padding:5px 10px;font-family:'Roboto Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:.05em}
+.bv-knapp[aria-pressed="true"]{border-color:var(--strålkastare);color:var(--strålkastare)}
+.track{background:#0B1017;border:1px solid #24313D;border-radius:14px;padding:10px;margin-top:10px}
+.tr-bana{height:4px;background:#131C25;border-radius:2px;overflow:hidden;margin-bottom:9px}
+.tr-bana i{display:block;height:100%;background:var(--strålkastare)}
+.tr-rad{display:grid;grid-template-columns:23px 1fr 40px 52px 30px;gap:6px;align-items:center;
+  padding:3px 4px;border-radius:4px;font-family:'Roboto Mono',monospace;font-size:11px;color:var(--nattdis)}
+.tr-rad.din{background:rgba(242,177,52,.14);outline:1px solid rgba(242,177,52,.35)}
+.tr-rad.ur{opacity:.35}
+.tr-namn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--rail)}
+.tr-lage{font-size:9px;color:var(--nattdis);letter-spacing:.05em}
+.tr-lage.utv{color:#D9714B}.tr-lage.instangd{color:var(--oxblod)}
+.tr-avst{text-align:right;color:var(--nattdis)}
+.tr-fart{text-align:right;color:#5B8FC7}
+.tr-kraft{height:4px;background:#000;border-radius:1px;overflow:hidden}
+.tr-kraft i{display:block;height:100%;background:#4FA372}
+.tr-kraft i.låg{background:var(--oxblod)}
+.kommentar{margin-top:12px;display:grid;gap:6px}
+.track .kommentar .k-rad,.banvy ~ .kommentar .k-rad{color:var(--nattdis)}
+.k-rad{font-size:13px;color:#454F5B;border-left:2px solid var(--linje-mörk);padding:2px 0 2px 9px}
+.k-rad b{color:inherit;font-weight:700}
+.k-rad.hot{border-left-color:var(--guld);color:var(--bläck)}
+.k-rad.illa{border-left-color:var(--tegel);color:var(--tegel)}
+.track .k-rad{border-left-color:var(--nattlinje);color:var(--nattdis)}
+.track .k-rad.hot{border-left-color:var(--strålkastare);color:var(--rail)}
+.track .k-rad.illa{border-left-color:var(--oxblod);color:#E5B4B4}
+.nb-rubrik{display:flex;justify-content:space-between;font-family:'Roboto Mono',monospace;
+  font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(233,230,223,.45);
+  padding:10px 4px 4px}
+.narbild{width:100%;height:auto;display:block;border-radius:8px}
+.puck{transition:transform 150ms linear,opacity 200ms linear}
+.nb-puck{transition:transform 220ms cubic-bezier(.4,0,.2,1),opacity 200ms linear}
+.lottning{background:linear-gradient(180deg,#141b24,#0E141B);border:1px solid var(--nattlinje);
+  border-radius:14px;padding:20px;text-align:center;margin-bottom:12px}
+.lott-etikett{font-family:'Roboto Mono',monospace;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--nattdis)}
+.lott-spår{display:flex;justify-content:center;margin:12px 0 8px;transform:scale(2.1)}
+.lott-text{font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:22px;
+  text-transform:uppercase;color:var(--strålkastare);margin-top:14px}
+
+/* ---- Säsongsavslut: årskrönikans guldsida ---- */
+.sasong{background:var(--ark);border:1px solid var(--linje);border-top:4px solid var(--guld);
+  border-radius:6px;padding:22px 16px;text-align:center;margin:14px 0;
+  box-shadow:0 12px 30px -18px rgba(27,37,48,.35)}
+.sasong-rubrik{font-family:'Roboto Mono',monospace;font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--dis)}
+.sasong-plats{font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:64px;
+  line-height:1;color:var(--guld);margin:8px 0 12px}
+.sasong-plats span{font-size:16px;color:var(--dis);display:block;font-weight:700;margin-top:6px}
+.sasong .kort,.sasong .banval{text-align:left}
+
+/* ---- Hem: dagens uppslag ---- */
+.idag{display:grid;gap:6px;margin-top:6px}
+.idag-rad{display:flex;align-items:center;gap:10px;padding:9px 2px;
+  border-bottom:1px dotted var(--linje-mörk);font-size:14px}
+.idag-rad:last-child{border-bottom:0}
+.idag-punkt{width:8px;height:8px;border-radius:99px;background:var(--tegel);flex:0 0 8px}
+.idag-punkt.lugn{background:var(--form)}
+.mer-meny{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0 4px}
+.mer-meny button{background:var(--ark);border:1px solid var(--linje-mörk);border-radius:10px;
+  padding:12px 4px;font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:16px;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--dis);cursor:pointer}
+.mer-meny button[aria-pressed="true"]{color:var(--marin);border-color:var(--marin);
+  background:rgba(30,58,95,.07)}
+
+/* ---- Hästens berättelse: tidslinjen ---- */
+.tidslinje{margin-top:8px;border-left:2px solid var(--linje-mörk);padding-left:12px;display:grid;gap:7px}
+.tl-rad{position:relative;font-size:12px;color:#454F5B}
+.tl-rad::before{content:"";position:absolute;left:-16.5px;top:5px;width:7px;height:7px;
+  border-radius:99px;background:var(--guld)}
+.tl-när{font-family:'Roboto Mono',monospace;font-size:9px;color:var(--dis);
+  letter-spacing:.08em;text-transform:uppercase;display:block}
+
+/* ---- Felruta och vakthund ---- */
+.felruta{max-width:520px;margin:40px auto;padding:18px;background:var(--ark);
+  border:1px solid var(--tegel);border-radius:8px;font-family:'Inter',system-ui,sans-serif;color:var(--bläck)}
+.fel-rubrik{font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:26px;
+  text-transform:uppercase;color:var(--tegel);margin-bottom:10px}
+.fel-text{font-size:14px;line-height:1.5;word-break:break-word}
+.fel-hjalp{margin-top:12px;font-size:13px;color:var(--dis)}
+
+:focus-visible{outline:2px solid var(--marin);outline-offset:2px;border-radius:6px}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{transition:none !important;animation:none !important}
+  .puck,.nb-puck{transition:none}
 }
+
+/* Marknadens prisrader och besked */
+.prisrad{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;
+  border-bottom:1px solid var(--linje);font-size:13px}
+.prisrad:last-child{border-bottom:0}
+.besked{font-size:13px;color:#454F5B;background:#F7F4EC;border:1px solid var(--linje);
+  border-radius:8px;padding:9px 11px;margin-top:8px}

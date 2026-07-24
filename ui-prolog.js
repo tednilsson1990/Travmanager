@@ -59,8 +59,9 @@ export function ÖvertagandeVy({ spel, uppdatera }) {
 
   return html`
     <div class="sasong">
-      <div class="sasong-rubrik">Övertagandet</div>
-      <div class="kort mentor"><div class="logg">${avskedstext(spel)}</div></div>
+      <div class="scen-etikett">Säsong 0 är slut</div>
+      <div class="scen-rubrik" style=${{ fontSize: "34px" }}>Ett nytt kapitel</div>
+      <div class="kort mentor" style=${{ textAlign: "left" }}><div class="logg">${avskedstext(spel)}</div></div>
 
       <div class="kort">
         <div class="namn">Gårdens namn</div>
@@ -103,7 +104,8 @@ export function FörstamansvalVy({ spel, uppdatera }) {
   const [vald, sättVald] = useState(null);
   return html`
     <div class="sasong">
-      <div class="sasong-rubrik">Din egen förstaman</div>
+      <div class="scen-etikett">Säsong 1 · vecka 1</div>
+      <div class="scen-rubrik" style=${{ fontSize: "30px" }}>Vem ska bygga stallet med dig?</div>
       <div class="kort"><div class="logg">Gården är din — men ingen driver ett travstall ensam.
         Tre har sökt jobbet. Valet färgar råden genom hela karriären.</div></div>
       ${kandidater.map((k) => html`

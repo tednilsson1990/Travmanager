@@ -38,6 +38,7 @@ ui-prolog.js            prologens scener: mentorkort, övertagande, rekrytering
 engine-prolog.js        säsong 0: mentorn, introhästarna, gårdshistorien
 engine-handelser.js     händelsemotorn — spelets strukturerade minne
 ui-grafik.js            bildspråket: hästsilhuetter, dräkter, gårdskartan
+ui-hemvy.js             Hem — dagens redaktionella uppslag
 engine-forstaman.js     förstamannen: träningsråd och loppmatchning
 engine-gard.js          anläggningens effekter på veckan
 manifest.webmanifest    hemskärmsapp
@@ -455,6 +456,32 @@ Prövat och avfärdat, i tur och ordning:
 Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållningen,
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
+
+## Travpressens designsystem (v55)
+
+Tesen, ur designdokumentet: sportpress när spelet berättar, tävlingsprogram
+när spelaren analyserar, stallkontor när spelaren planerar. Paletten är
+travpressens: benvitt papper, trycksvärta i marinblå, tegelröd för stora
+rubriker, dämpad guld för prestige, grönt för form. Signaturen är
+kontrasten: analys och planering sker i dagsljus på papper — men själva
+loppet körs fortfarande i kvällsmörker under strålkastare (banvyn,
+närbilden, lottningen behåller nattpaletten).
+
+Pressmallar i tre storlekar bär hierarkin: .scen (helskärmsuppslag med
+etikett, rubrik, ingress och citat — används för öppningen, övertagandet
+och rekryteringen), .artikel (mellannyhet med färgad kant) och .notis
+(en rad i flödet). Om allt får en stor rubrik känns ingenting stort.
+
+Navigationen är fem sektioner: Hem, Stall, Lopp, Sfären och Mer (Gård,
+Marknad, Avel). Hem är karriärens dagliga nav: huvudnyheten som uppslag,
+"I dag" med uppgifter härledda ur spelläget (väntande erbjudanden,
+startklara hästar, träningsavvikelser) som länkar till rätt flik,
+förstamannens veckorad, ekonomin och pressflödet.
+
+Spelet öppnar numera som ett pressuppslag — EN GÅRD VÄNTAR PÅ SIN
+ARVTAGARE, med mentorns citat och gårdens historia — innan namnvalet.
+Hästkorten har fått sin berättelse: en tidslinje med milstolparna ur
+händelsemotorn. Det emotionella först, siffrorna efteråt.
 
 ## Bildspråket (v54)
 

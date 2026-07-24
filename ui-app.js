@@ -11,19 +11,25 @@ import StartVy from "./ui-startvy.js";
 import GårdVy from "./ui-gardvy.js";
 import { ÖvertagandeVy, FörstamansvalVy } from "./ui-prolog.js";
 import { Dräkt } from "./ui-grafik.js";
+import HemVy from "./ui-hemvy.js";
 
 const FLIKAR = [
+  { id: "hem", namn: "Hem" },
   { id: "stall", namn: "Stall" },
-  { id: "gård", namn: "Gård" },
   { id: "lopp", namn: "Lopp" },
-  { id: "marknad", namn: "Marknad" },
   { id: "sfar", namn: "Sfären" },
+  { id: "mer", namn: "Mer" },
+];
+const MER = [
+  { id: "gård", namn: "Gård" },
+  { id: "marknad", namn: "Marknad" },
   { id: "avel", namn: "Avel" },
 ];
 
 export default function App() {
   const { spel, uppdatera, nystart } = useSpel();
-  const [flik, sättFlik] = useState("stall");
+  const [flik, sättFlik] = useState("hem");
+  const [merFlik, sättMerFlik] = useState("gård");
 
   /* Nya karriärer går genom uppstarten. Äldre sparfiler (fältet saknas)
      släpps rakt in — deras val är redan gjorda av historien. */
@@ -60,12 +66,18 @@ export default function App() {
     </header>
 
     <div class="wrap">
+      ${flik === "hem" && html`<${HemVy} spel=${spel} gåTill=${(f) => sättFlik(f)} />`}
       ${flik === "stall" && html`<${StallVy} spel=${spel} uppdatera=${uppdatera} nystart=${nystart} />`}
-      ${flik === "gård" && html`<${GårdVy} spel=${spel} uppdatera=${uppdatera} />`}
       ${flik === "lopp" && html`<${LoppVy} spel=${spel} uppdatera=${uppdatera} />`}
-      ${flik === "marknad" && html`<${MarknadVy} spel=${spel} uppdatera=${uppdatera} />`}
       ${flik === "sfar" && html`<${SfarVy} spel=${spel} />`}
-      ${flik === "avel" && html`<${AvelVy} spel=${spel} uppdatera=${uppdatera} />`}
+      ${flik === "mer" && html`
+        <div class="mer-meny">
+          ${MER.map((m) => html`<button key=${m.id} aria-pressed=${merFlik === m.id}
+            onClick=${() => sättMerFlik(m.id)}>${m.namn}</button>`)}
+        </div>
+        ${merFlik === "gård" && html`<${GårdVy} spel=${spel} uppdatera=${uppdatera} />`}
+        ${merFlik === "marknad" && html`<${MarknadVy} spel=${spel} uppdatera=${uppdatera} />`}
+        ${merFlik === "avel" && html`<${AvelVy} spel=${spel} uppdatera=${uppdatera} />`}`}
     </div>
 
     <nav role="tablist">

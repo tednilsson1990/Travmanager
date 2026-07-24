@@ -118,6 +118,13 @@ function Hästkort({ häst, uppdatera, dräkt }) {
         <${Stapel} etikett="Energi" värde=${häst.energi} variant="energi" />
         <${Stapel} etikett="Uppmärksamhet" värde=${häst.hype} variant="hype" />
       </div>
+      ${(häst.milstolpar ?? []).length > 0 && html`
+        <div class="tidslinje">
+          ${häst.milstolpar.slice(-4).map((m, i) => html`
+            <div class="tl-rad" key=${i}>
+              <span class="tl-när">Säsong ${m.säsong} · vecka ${m.vecka}</span>${m.text}
+            </div>`)}
+        </div>`}
       ${häst.skada > 0
         ? html`<div class="skada">Skadad — ${häst.skada} vecka(or) kvar.</div>`
         : html`<div class="chips">

@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="./styles.css?v=54" />
+<link rel="stylesheet" href="./styles.css?v=55" />
 
 <!--
   Inget byggsteg. Beroenden hämtas som ES-moduler.
@@ -55,7 +55,7 @@ setTimeout(async () => {
       fetch(u, { method: "HEAD", cache: "no-store" }).then((r) => [u, r.status]).catch(() => [u, 0])));
     saknade = svar.filter(([, st]) => st !== 200);
   } catch { /* diagnosen får inte själv krascha */ }
-  rot.innerHTML = '<div class="felruta"><div class="fel-rubrik">Spelet kunde inte starta (v54)</div>' +
+  rot.innerHTML = '<div class="felruta"><div class="fel-rubrik">Spelet kunde inte starta (v55)</div>' +
     '<div class="fel-text">' + (saknade.length
       ? 'Följande filer saknas på servern eller gick inte att hämta:<br>' +
         saknade.map(([u, st]) => u + " (" + (st || "nätfel") + ")").join("<br>")
@@ -69,45 +69,46 @@ setTimeout(async () => {
     "preact": "https://esm.sh/preact@10.23.2",
     "preact/hooks": "https://esm.sh/preact@10.23.2/hooks",
     "htm/preact": "https://esm.sh/htm@3.1.1/preact?deps=preact@10.23.2",
-    "./data-agare.js": "./data-agare.js?v=54",
-    "./data-hingstar.js": "./data-hingstar.js?v=54",
-    "./data-kalender.js": "./data-kalender.js?v=54",
-    "./data-kuskar.js": "./data-kuskar.js?v=54",
-    "./data-lopp.js": "./data-lopp.js?v=54",
-    "./data-namn.js": "./data-namn.js?v=54",
-    "./data-namnpaket.js": "./data-namnpaket.js?v=54",
-    "./engine-hast.js": "./engine-hast.js?v=54",
-    "./ui-startvy.js": "./ui-startvy.js?v=54",
-    "./ui-gardvy.js": "./ui-gardvy.js?v=54",
-    "./ui-prolog.js": "./ui-prolog.js?v=54",
-    "./ui-grafik.js": "./ui-grafik.js?v=54",
-    "./engine-forstaman.js": "./engine-forstaman.js?v=54",
-    "./engine-gard.js": "./engine-gard.js?v=54",
-    "./engine-prolog.js": "./engine-prolog.js?v=54",
-    "./engine-handelser.js": "./engine-handelser.js?v=54",
-    "./engine-marknad.js": "./engine-marknad.js?v=54",
-    "./engine-sasong.js": "./engine-sasong.js?v=54",
-    "./engine-simulera.js": "./engine-simulera.js?v=54",
-    "./engine-streck.js": "./engine-streck.js?v=54",
-    "./engine-util.js": "./engine-util.js?v=54",
-    "./engine-varld.js": "./engine-varld.js?v=54",
-    "./engine-vecka.js": "./engine-vecka.js?v=54",
-    "./main.js": "./main.js?v=54",
-    "./state-spel.js": "./state-spel.js?v=54",
-    "./ui-app.js": "./ui-app.js?v=54",
-    "./ui-avelvy.js": "./ui-avelvy.js?v=54",
-    "./ui-banvy.js": "./ui-banvy.js?v=54",
-    "./ui-delar.js": "./ui-delar.js?v=54",
-    "./ui-loppvy.js": "./ui-loppvy.js?v=54",
-    "./ui-marknadvy.js": "./ui-marknadvy.js?v=54",
-    "./ui-sfarvy.js": "./ui-sfarvy.js?v=54",
-    "./ui-stallvy.js": "./ui-stallvy.js?v=54"
+    "./data-agare.js": "./data-agare.js?v=55",
+    "./data-hingstar.js": "./data-hingstar.js?v=55",
+    "./data-kalender.js": "./data-kalender.js?v=55",
+    "./data-kuskar.js": "./data-kuskar.js?v=55",
+    "./data-lopp.js": "./data-lopp.js?v=55",
+    "./data-namn.js": "./data-namn.js?v=55",
+    "./data-namnpaket.js": "./data-namnpaket.js?v=55",
+    "./engine-hast.js": "./engine-hast.js?v=55",
+    "./ui-startvy.js": "./ui-startvy.js?v=55",
+    "./ui-gardvy.js": "./ui-gardvy.js?v=55",
+    "./ui-prolog.js": "./ui-prolog.js?v=55",
+    "./ui-grafik.js": "./ui-grafik.js?v=55",
+    "./ui-hemvy.js": "./ui-hemvy.js?v=55",
+    "./engine-forstaman.js": "./engine-forstaman.js?v=55",
+    "./engine-gard.js": "./engine-gard.js?v=55",
+    "./engine-prolog.js": "./engine-prolog.js?v=55",
+    "./engine-handelser.js": "./engine-handelser.js?v=55",
+    "./engine-marknad.js": "./engine-marknad.js?v=55",
+    "./engine-sasong.js": "./engine-sasong.js?v=55",
+    "./engine-simulera.js": "./engine-simulera.js?v=55",
+    "./engine-streck.js": "./engine-streck.js?v=55",
+    "./engine-util.js": "./engine-util.js?v=55",
+    "./engine-varld.js": "./engine-varld.js?v=55",
+    "./engine-vecka.js": "./engine-vecka.js?v=55",
+    "./main.js": "./main.js?v=55",
+    "./state-spel.js": "./state-spel.js?v=55",
+    "./ui-app.js": "./ui-app.js?v=55",
+    "./ui-avelvy.js": "./ui-avelvy.js?v=55",
+    "./ui-banvy.js": "./ui-banvy.js?v=55",
+    "./ui-delar.js": "./ui-delar.js?v=55",
+    "./ui-loppvy.js": "./ui-loppvy.js?v=55",
+    "./ui-marknadvy.js": "./ui-marknadvy.js?v=55",
+    "./ui-sfarvy.js": "./ui-sfarvy.js?v=55",
+    "./ui-stallvy.js": "./ui-stallvy.js?v=55"
   }
 }
 </script>
 </head>
 <body>
 <div id="root"></div>
-<script type="module" src="./main.js?v=54"></script>
+<script type="module" src="./main.js?v=55"></script>
 </body>
 </html>

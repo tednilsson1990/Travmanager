@@ -21,6 +21,24 @@ const NAMNFÖRSLAG = [
 
 export default function StartVy({ spel, uppdatera }) {
   const m = spel?.prolog?.mentor;
+  const [anlänt, sättAnlänt] = useState(false);
+
+  /* Pressuppslaget — spelet börjar som en berättelse, inte ett formulär. */
+  if (!anlänt) {
+    return html`
+      <div class="scen" style=${{ marginTop: "16px" }}>
+        <div class="scen-etikett">Säsong 0 · vecka 18</div>
+        <div class="scen-rubrik">En gård väntar på sin arvtagare</div>
+        <div class="ingress">Efter mer än trettio år lämnar ${m?.namn ?? "gårdens tränare"} sporten.
+          Under säsongens sista veckor ska du arbeta vid ${m?.namn?.includes("hild") || m?.namn?.includes("erit") ? "hennes" : "hans"} sida —
+          innan ansvaret blir ditt.</div>
+        <div class="citat">»Jag trodde länge att allt skulle behöva säljas.«
+          <span class="citat-vem">${m?.namn}, ${m?.ålder} · ${m?.filosofitext}</span></div>
+        <div class="meta">${spel?.stallnamn}, grundat ${spel?.gårdshistoria?.grundad} ·
+          största seger: ${spel?.gårdshistoria?.störstaSeger} med ${spel?.gårdshistoria?.bästaHäst}</div>
+        <button class="btn" onClick=${() => sättAnlänt(true)}>Anländ till gården</button>
+      </div>`;
+  }
   const [namn, sättNamn] = useState("Björkhaga");
   const [dräkt, sättDräkt] = useState(DRÄKTER[0].id);
   const [bana, sättBana] = useState(null);
