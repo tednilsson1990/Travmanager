@@ -33,6 +33,21 @@ export function köScen(spel, scen) {
 /* Valens effekter                                                     */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Effektregistret är ÖPPET: moduler registrerar sina egna valeffekter med
+ * registreraValeffekt. Så slipper scenmotorn känna till personal, banor
+ * och ägare — samma gräns som händelsebussen drar mot sina lyssnare.
+ *
+ * Registret bor SOM EGENSKAP PÅ EN FUNKTION, inte i en konstant.
+ * Funktionsdeklarationer finns innan någon modulkropp körts; konstanter
+ * gör det inte. Med importcirkeln scener → vecka → personal → scener
+ * hinner personal registrera sina effekter INNAN den här filens
+ * konstanter initierats — en const hade gett TDZ-krasch vid start,
+ * vilket är exakt den svarta skärm verifieraren inte kan se.
+ */
+function valregister() { return (valregister.effekter ??= {}); }
+export function registreraValeffekt(namn, fn) { valregister()[namn] = fn; }
+
 const VALEFFEKTER = {
   /* Segerintervjun. Vad du säger efter ett storlopp sätter tonen: talar
      du upp hästen stiger hypen (och nästa lopps förväntan), håller du
@@ -78,6 +93,7 @@ const VALEFFEKTER = {
       `Budet på ${Math.round(bud / 1000)} tkr gick inte att tacka nej till.`, "neutral");
   },
 };
+Object.assign(valregister(), VALEFFEKTER);
 
 /**
  * Utför valet och plocka scenen ur kön. Anropas från scenvyn via
@@ -92,7 +108,7 @@ export function görVal(spel, scenIndex, valId) {
      beslut — scenen står kvar och frågar igen. En okänd EFFEKT är däremot
      ett versionsglapp: valet är gjort, scenen stängs, effekten uteblir. */
   if ((scen.val ?? []).length > 0 && !val) return;
-  const effekt = val && VALEFFEKTER[val.effekt];
+  const effekt = val && valregister()[val.effekt];
   if (effekt) {
     try { effekt(spel, scen, val); }
     catch (fel) { spel.logg?.push(`<b>Fel i scenval:</b> ${fel?.message || fel}`); }

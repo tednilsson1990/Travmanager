@@ -12,12 +12,14 @@ import { registreraHändelse, hästmilstolpar, säsongsHändelser, loppfakta,
    Måste ske innan något lopp körs — därför här, i veckomotorn. */
 import "./engine-lyssnare.js";
 import { körStorloppsbåge } from "./engine-storlopp.js";
-import { BANOR } from "./data-namnpaket.js";
+import { uppdateraAmbition, prövaAvgång, gamlaBekanta, ägarrelation } from "./engine-personal.js";
+import { köScen } from "./engine-scener.js";
+import { JOURNALISTER, BANOR } from "./data-namnpaket.js";
 
 const DRIFT_PER_HÄST = 3200;
 
-export function skrivPress(spel, rubrik, byline, ton, hästMål, hypeΔ) {
-  spel.press.unshift({ rubrik, byline, ton, vecka: spel.vecka });
+export function skrivPress(spel, rubrik, byline, ton, hästMål, hypeΔ, signatur) {
+  spel.press.unshift({ rubrik, byline, ton, vecka: spel.vecka, signatur: signatur ?? null });
   spel.press = spel.press.slice(0, 20);
   if (hästMål) hästMål.hype = klamp(hästMål.hype + (hypeΔ || 0));
 }
@@ -29,10 +31,10 @@ function media(spel) {
   if (slump() >= 0.28 + spel.renommé / 300) return;
   if (h.form > 66) {
     skrivPress(spel, `Formkurvan pekar rakt upp för ${h.namn}`,
-      "Travmedia noterar jobben. Väntas bli hårt spelad.", "bra", h, 12);
+      "Travmedia noterar jobben. Väntas bli hårt spelad.", "bra", h, 12, JOURNALISTER.siffror);
   } else if (h.form < 40) {
     skrivPress(spel, `Frågetecken kring ${h.namn}`,
-      "Uteblivna resultat gör att spelarna tvekar.", "dålig", h, -8);
+      "Uteblivna resultat gör att spelarna tvekar.", "dålig", h, -8, JOURNALISTER.siffror);
   }
 }
 
@@ -60,6 +62,23 @@ export function körVecka(spel) {
       spel.banerbjudande = { banaId: id, kostnad: krav.kostnad };
       skrivPress(spel, `${bana.namn} öppnar dörren för ${spel.stallnamn}`,
         "Banchefen bekräftar kontakten", "positiv");
+      /* Uppstigningen är ett kapitelskifte — helskärm, inte ett kort i
+         stallvyn. Kortet ligger kvar som reserv: räcker inte kassan i
+         scenen väntar erbjudandet där tills spelaren bestämt sig. */
+      köScen(spel, {
+        slag: "banflytt", betydelse: 66, bild: "bana-kvall",
+        etikett: "TELEFONEN RINGER",
+        rubrik: `${bana.namn.toUpperCase()} VILL HA ER`,
+        ingress: `${bana.karaktär ?? "En större bana."} Större lopp på hemmaplan — och hemmapubliken följer med. Flyttkostnad ${Math.round(krav.kostnad / 1000)} tkr.`,
+        fråga: "Flyttar stallet?",
+        data: { banaId: id, kostnad: krav.kostnad },
+        val: [
+          { id: "flytta", effekt: "bana_flytta",
+            text: `Vi flyttar till ${bana.namn}`, följd: `${Math.round(krav.kostnad / 1000)} tkr — och ett nytt kapitel` },
+          { id: "stanna", effekt: "bana_stanna",
+            text: "Vi trivs där vi är", följd: "Hemmapubliken jublar. Erbjudandet försvinner" },
+        ],
+      });
     }
   }
   spel.logg = [];
@@ -164,6 +183,11 @@ export function körVecka(spel) {
   /* Storloppsbågen: loppet som närmar sig kastar sin skugga i pressen och
      på Hem. Läser bara — rör aldrig fältbygget eller loppmotorn. */
   körStorloppsbåge(spel, skrivPress);
+
+  /* Förstamannens egen kurva: ambitionen växer med stallets framgång,
+     och en dag kommer samtalet. */
+  uppdateraAmbition(spel);
+  prövaAvgång(spel);
 
   if (!spel.erbjudande && boxplats(spel) > 0 && slump() < 0.1 + spel.renommé / 220) {
     const nivå = 30 + spel.renommé * 0.55;
@@ -278,6 +302,11 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   hästmilstolpar(spel, häst, lopp, min, brutto, fakta);
   /* Rivaliteter upptäcks ur data: samma motståndare, gång på gång. */
   if (!min.ur) uppdateraRivalitet(spel, häst, fakta);
+  /* Stod en exförstamans häst i fältet? Pressen bevakar gamla bekanta. */
+  gamlaBekanta(spel, sim?.resultat, häst, min.ur ? null : min.plats);
+  /* Ägaren minns vad hens häst gör hos dig. */
+  if (häst.ägare) ägarrelation(spel, häst.ägare,
+    min.ur ? -3 : vann ? 8 : pall ? 4 : -1);
   if ((spel.säsong ?? 1) === 0 && spel.prolog)
     spel.prolog.sistaResultat = { häst: häst.namn, plats: min.ur ? null : min.plats, ur: !!min.ur };
   /* Hemmapubliken. På hemmabanan går folk och man får del av entrén —
@@ -403,12 +432,14 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
 
     if (uppfyllt) {
       ägartext = { ton: "bra", text: `${häst.ägare} är nöjd — kravet "${k.text}" är uppfyllt.` };
+      ägarrelation(spel, häst.ägare, 10);
       häst.krav = plock(ÄGARKRAV);
       häst.kravStarter = 0;
       spel.renommé = klamp(spel.renommé + 2);
       skrivPress(spel, `${häst.ägare} förlänger med Björkhaga`, `Ägaren nöjd med ${häst.namn}.`, "bra");
     } else if (häst.kravStarter >= k.antal) {
       ägartext = { ton: "dålig", text: `${häst.ägare} drar tillbaka ${häst.namn} — kravet missades.` };
+      ägarrelation(spel, häst.ägare, -18);
       skrivPress(spel, `${häst.ägare} lämnar Björkhaga`, `Kravet på ${häst.namn} infriades aldrig.`, "dålig");
       spel.renommé = klamp(spel.renommé - 4);
       spel.stall = spel.stall.filter((x) => x !== häst);

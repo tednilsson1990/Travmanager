@@ -144,6 +144,9 @@ export function nySäsong(spel) {
     }
   });
   spel.avelsston.forEach((m) => { m.ålder++; });
+  /* Förstamannens tid hos dig räknas i säsonger — det är den valutan
+     avgångssamtalet mäts i. */
+  if (spel.förstaman) spel.förstaman.säsongerHosDig = (spel.förstaman.säsongerHosDig ?? 0) + 1;
   spel.avelsston = spel.avelsston.filter((m) => m.ålder <= 20).slice(-6);
 
   pensionerade.forEach((h) => {

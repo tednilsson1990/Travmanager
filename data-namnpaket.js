@@ -56,6 +56,18 @@ export const DRÄKTER = [
 /* ==================== Förstamän ====================
    Förstamannen sköter den dagliga träningen och har åsikter. Profilen
    färgar råden — en fostrare vill vila, en pådrivare vill jobba. */
+/**
+ * Sfärens återkommande signaturer. Samma tre röster genom hela karriären:
+ * krönikören tar de stora ögonblicken, sifferjägaren statistiken och
+ * formkurvorna, nyhetsjägaren skvallret och skrällarna. Att RÖSTERNA
+ * återkommer är poängen — en tidning utan bekanta bylines är bara text.
+ */
+export const JOURNALISTER = {
+  krönikör: "Cecilia Ramnek",
+  siffror: "Janne Fyhr",
+  nyheter: "Sara Lindeberg",
+};
+
 export const FÖRSTAMANSNAMN = [
   "Gunnar Lidén", "Maj-Britt Åkerlund", "Bo Sjöqvist", "Irene Falk",
   "Rune Vestman", "Anja Kolehmainen", "Sixten Dahl", "Marta Nyström",

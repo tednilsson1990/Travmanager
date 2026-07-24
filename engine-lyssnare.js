@@ -18,6 +18,7 @@ import { påHändelse } from "./engine-handelser.js";
 import { skrivPress } from "./engine-vecka.js";
 import { klamp, kr } from "./engine-util.js";
 import { köScen } from "./engine-scener.js";
+import { JOURNALISTER } from "./data-namnpaket.js";
 
 /* ------------------------------------------------------------------ */
 /* Hjälpare                                                            */
@@ -67,7 +68,8 @@ påHändelse("storloppsseger", (spel, h) => {
   const m = mentorn(spel);
   if (!m) return;
   skrivPress(spel, `${m.namn}: »Nu är gården i bättre händer än mina«`,
-    `Den gamle tränaren om ${h.aktörer?.hästNamn ?? "stallets"} triumf`, "positiv");
+    `Den gamle tränaren om ${h.aktörer?.hästNamn ?? "stallets"} triumf`, "positiv",
+    null, 0, JOURNALISTER.krönikör);
 });
 
 påHändelse("gårdsrekord", (spel, h) => {
@@ -123,6 +125,9 @@ påHändelse("storloppsseger", (spel, h) => {
     citatVem: h.aktörer?.kuskNamn ? `${h.aktörer.kuskNamn}, kusk` : "Stallet",
   });
 
+  /* Framgång föder ambition: förstamannen ser vad hen är med och bygger. */
+  if (spel.förstaman && !spel.förstaman.delägare)
+    spel.förstaman.ambition = klamp((spel.förstaman.ambition ?? 20) + 8);
   läggTrofé(spel, {
     typ: "storlopp", rubrik: d.lopp ?? "Storlopp",
     häst: namn, hästId: h.aktörer?.hästId, bana: d.bana,
@@ -153,7 +158,7 @@ påHändelse("storloppsseger", (spel, h) => {
 påHändelse("miljonen", (spel, h) => {
   const namn = h.aktörer?.hästNamn ?? "Hästen";
   skrivPress(spel, `${namn} passerade miljonen`,
-    `${spel.stallnamn} har fostrat en miljonär.`, "bra");
+    `${spel.stallnamn} har fostrat en miljonär.`, "bra", null, 0, JOURNALISTER.siffror);
   läggTrofé(spel, {
     typ: "miljonen", rubrik: "Miljonären", häst: namn,
     hästId: h.aktörer?.hästId, text: `${namn} passerade en miljon i insprunget.`,
@@ -165,7 +170,8 @@ påHändelse("rivalitet", (spel, h) => {
   const d = h.data ?? {};
   const namn = h.aktörer?.hästNamn ?? "Hästen";
   skrivPress(spel, `${namn} mot ${d.rival} — igen`,
-    `Fjärde mötet på kort tid. Ställningen ${d.dinaSegrar}–${d.hansSegrar}.`, "neutral");
+    `Femte mötet på kort tid. Ställningen ${d.dinaSegrar}–${d.hansSegrar}.`, "neutral",
+    null, 0, JOURNALISTER.nyheter);
 });
 
 påHändelse("gårdsrekord", (spel, h) => {
@@ -295,7 +301,7 @@ påHändelse("pensionering", (spel, h) => {
   }
   skrivPress(spel, `${namn} avslutar karriären`,
     `${d.starter ?? 0} starter och ${d.segrar ?? 0} segrar för ${spel.stallnamn}.`,
-    d.segrar > 0 ? "bra" : "neutral");
+    d.segrar > 0 ? "bra" : "neutral", null, 0, JOURNALISTER.krönikör);
 });
 
 /* ------------------------------------------------------------------ */
@@ -349,6 +355,33 @@ påHändelse("storloppsladdning", (spel, h) => {
     : fm.profil === "taktiker"
       ? `»${d.motståndare ? d.motståndare + " är hästen att slå i " + d.lopp : "Fältet i " + d.lopp + " tar form"}. Jag har börjat titta på spårstatistiken.«`
       : `»${d.lopp} nästa vecka. Ett vasst jobb till, sedan är ${namn} redo.«`}`);
+});
+
+/* ------------------------------------------------------------------ */
+/* Eleven slog mästaren — rivalitetens födelse                          */
+/* ------------------------------------------------------------------ */
+
+påHändelse("eleven_slog_mästaren", (spel, h) => {
+  const d = h.data ?? {};
+  sättHuvudnyhet(spel, {
+    betydelse: h.betydelse,
+    etikett: "GAMLA BEKANTA",
+    rubrik: "ELEVEN SLOG MÄSTAREN",
+    ingress: `${d.tränare} vann med ${d.häst} — före sitt gamla stall. Den som en gång krattade din rakbana står nu överst på din prispall.`,
+    citat: "Allt jag kan har jag lärt mig där. Det är därför jag visste hur jag skulle slå dem.",
+    citatVem: d.tränare,
+  });
+  köScen(spel, {
+    betydelse: h.betydelse, bild: "bana-kvall",
+    etikett: "GAMLA BEKANTA",
+    rubrik: "ELEVEN SLOG MÄSTAREN",
+    ingress: `${d.tränare} vann med ${d.häst} — före sitt gamla stall. Ni skildes som vänner. Ni möts som konkurrenter.`,
+    citat: "Allt jag kan har jag lärt mig där. Det är därför jag visste hur jag skulle slå dem.",
+    citatVem: d.tränare,
+  });
+  const m = mentorn(spel);
+  if (m) spel.logg?.unshift(
+    `<b>${m.namn}</b> ringde, road: »Så känns det. Jag minns när DU först slog MIG. Cirkeln har inga ändar.«`);
 });
 
 export const lyssnareInkopplade = true;

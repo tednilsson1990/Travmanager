@@ -473,3 +473,6 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   font-weight:800;text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
 .helscen-fler{text-align:center;font-family:'Roboto Mono',monospace;font-size:10px;
   color:var(--nattdis);margin-top:14px;letter-spacing:.08em;text-transform:uppercase}
+
+/* ---- Journalisternas signaturer (v62) ---- */
+.signatur{font-style:italic;color:var(--dis)}

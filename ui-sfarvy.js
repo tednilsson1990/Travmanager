@@ -81,7 +81,7 @@ export default function SfarVy({ spel }) {
       : spel.press.map((p, i) => html`
           <div key=${i} class=${"klipp " + (p.ton === "bra" ? "bra" : p.ton === "dålig" ? "dålig" : "")}>
             <div class="rubrik">${p.rubrik}</div>
-            <div class="byline">Vecka ${p.vecka} · ${p.byline}</div>
+            <div class="byline">Vecka ${p.vecka} · ${p.byline}${p.signatur ? html` · <span class="signatur">Text: ${p.signatur}</span>` : ""}</div>
           </div>`)}
 
     <h2>Kuskkåren</h2>

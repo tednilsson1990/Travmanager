@@ -42,6 +42,7 @@ ui-journalvy.js         Stalljournalen: krönika, troférum, rivaliteter
 engine-storlopp.js      storloppsbågen: kval, uppladdning, världens favorit
 engine-scener.js        helskärmsscenerna och deras val
 ui-scenvy.js            scenens yta: kvällsmörker, bild, rubrik, val
+engine-personal.js      personalens karriärer, ägarrelationer, banflytten
 ui-grafik.js            bildspråket: hästsilhuetter, dräkter, gårdskartan
 ui-hemvy.js             Hem — dagens redaktionella uppslag
 engine-forstaman.js     förstamannen: träningsråd och loppmatchning
@@ -315,6 +316,7 @@ node diagnos-radenergi.mjs     raden bakåt: energi eller beteende?
 node prov-handelser.mjs        händelsebussen: utlöses varje reaktion?
 node prov-storlopp.mjs         bågen, avelshagen och arvet
 node prov-scener.mjs           scenkön, valen och deras effekter
+node prov-personal.mjs         förstamansbågen, gamla bekanta, ägarna
 ```
 
 `verifiera.mjs` föddes ur ett tyst fel: en textersättning som missade
@@ -464,6 +466,54 @@ Prövat och avfärdat, i tur och ordning:
 Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållningen,
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
+
+## Personalen och relationerna (v62)
+
+Designdokumentets mening: *"Min första förstaman var en ung hästskötare
+som senare lämnade och blev min största rival."* Hela den bågen finns nu.
+
+**Förstamannens ambition** växer varje vecka — snabbast för pådrivaren —
+tar språng vid storloppssegrar och står still när stallet går i motvind
+(renommé < 30). Vid mogen ambition efter minst en hel säsong kommer
+helskärmsscenen: hen står i dörren och vill starta eget. Tre svar:
+SLÄPP (ni skiljs som vänner), MOTBUD (lön ×1,6; ambitionen faller till 55
+men drömmen dör inte, och nästa motbud blir dyrare) eller DELÄGARSKAP
+(hen stannar för gott — ambitionen fryses, som en delägares gör).
+
+**Släpper du** föds `Stall {Efternamn}` i världen med fem hästar och en
+filosofi ur profilen. Från den stunden bygger världsmotorn hens fält och
+liga precis som alla andras: rivaliteten UPPSTÅR av att ni delar banor,
+den simuleras inte fram — samma princip som hästrivaliteterna. Direkt
+därpå kommer rekryteringsscenen: tre kandidater som val, profilerna som
+i prologen. Möts ni i loppen skriver pressen — men bara när det bär
+(någon vann, eller ni gick i mål sida vid sida). Första gången hens häst
+slår din: händelsen `eleven_slog_mästaren`, scen, uppslag, och mentorn
+som ringer, road: »Jag minns när DU först slog MIG.«
+
+**Ägarna minns.** Relationen (spel.ägarrelationer) byggs av segrar,
+pallplatser och uppfyllda krav; rivs av skador och missade krav. Vid 80
+ringer telefonen som scen: ägaren har köpt en BÄTTRE häst och vill
+placera den hos dig — ta emot (nivån skalar med renommét, generöst krav)
+eller tacka nej (−20 relation, men dörren stängs inte för alltid). Så
+växer uppdragsstall i verkligheten: på rykte hos ägarna.
+
+**Banflytten är en scen** ("TELEFONEN RINGER") med flytta/stanna som val.
+Kortet i stallvyn ligger kvar som reserv: räcker inte kassan i scenen
+väntar erbjudandet där.
+
+**Journalisterna återkommer.** Tre signaturer i `data-namnpaket.js`
+(namnregeln!): krönikören tar de stora ögonblicken och avskeden,
+sifferjägaren formkurvor och miljonärer, nyhetsjägaren rivaliteter.
+`skrivPress` tar en frivillig signatur som Sfären renderar som
+"Text: {namn}" — en tidning utan bekanta bylines är bara text.
+
+**Registerläxan:** valeffektregistret flyttade in SOM EGENSKAP PÅ EN
+FUNKTION (`valregister()`) i stället för en konstant. Importcirkeln
+scener → vecka → personal → scener gör att personal registrerar sina
+effekter innan scenmodulens konstanter initierats — en const gav
+TDZ-krasch vid start, den sortens svarta skärm verifieraren inte ser.
+Funktionsdeklarationer finns före all körning; det är därför registret
+bor i en.
 
 ## Helskärmsscenerna (v61)
 
@@ -751,9 +801,9 @@ bästa tränare via tränarligan).
   sällan (6,1 % mot 9,6) — raden siktar rätt men ligger ändå bakom i halva
   loppen; stigtaktsklampen är prövad och avfärdad, nästa angrepp är VAR
   utflyttningarna sker (de byggs långt bak i fältet)
-- Personalens karriärer (fas 5): förstamän som lämnar och blir
-  konkurrenter — "min första förstaman blev min största rival"
-- Återkommande journalister och permanenta ägarpersonligheter (fas 3)
+- Historiska rekord och stallhistoria som vy (fas 5) — grunddata finns
+  i krönikan och troférummet
+- Mentorns bortgång som sen, varsam berättelse (långt fram)
 Klart och struket: tävlingskalendern med propositioner, tränarligan,
 uppbokade kuskar (v45), service workern (v44), kuskkännedomen (v46),
 ledarförsvaret (v47), radensfixen (v49) och karriärbågen med spelstart,
@@ -761,4 +811,5 @@ förstaman och uppstigning (v50) gården med byggen och personal (v51), prologen
 övertagande, förstamansrekrytering och händelsemotorn (v52) samt
 händelsebussen med lyssnare, rivaliteter, stalljournal, träningsdagbok
 och pensioneringar (v59) samt storloppsbågen, avelshagen och arvet (v60) och helskärmsscenerna
-med val (v61).
+med val (v61) samt personalens karriärer, ägarrelationerna och
+journalisternas signaturer (v62).
