@@ -4,6 +4,7 @@ import { nyttNamn } from "./data-namn.js";
 import { tränarliga } from "./engine-varld.js";
 import { registreraHändelse } from "./engine-handelser.js";
 import { invalIHallOfFame } from "./engine-rekord.js";
+import { prövaMentornsBortgång } from "./engine-mentor.js";
 
 /**
  * SÄSONGEN
@@ -198,6 +199,10 @@ export function nySäsong(spel) {
 
   /* Ett nytt år, en ny start för dem som varit i skottgluggen. */
   spel.stall.forEach((h) => { if (h.krav) h.kravStarter = 0; });
+
+  /* Mentorn åldras med säsongerna — och en dag kommer beskedet.
+     Prövas sist, så att årets övriga scener redan ligger i kön. */
+  prövaMentornsBortgång(spel);
   return { pensionerade, säsong: spel.säsong };
 }
 

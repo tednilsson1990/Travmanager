@@ -44,6 +44,7 @@ engine-scener.js        helskärmsscenerna och deras val
 ui-scenvy.js            scenens yta: kvällsmörker, bild, rubrik, val
 engine-personal.js      personalens karriärer, ägarrelationer, banflytten
 engine-rekord.js        rekordtavlan, hall of fame, säsongskrönikan
+engine-mentor.js        mentorns sista båge: närvaro, bortgång, minneslopp
 ui-grafik.js            bildspråket: hästsilhuetter, dräkter, gårdskartan
 ui-hemvy.js             Hem — dagens redaktionella uppslag
 engine-forstaman.js     förstamannen: träningsråd och loppmatchning
@@ -319,6 +320,7 @@ node prov-storlopp.mjs         bågen, avelshagen och arvet
 node prov-scener.mjs           scenkön, valen och deras effekter
 node prov-personal.mjs         förstamansbågen, gamla bekanta, ägarna
 node prov-rekord.mjs           rekordtavlan, hall of fame, krönikan
+node prov-mentor.mjs           mentorns båge: varsamheten, minnesloppet
 ```
 
 `verifiera.mjs` föddes ur ett tyst fel: en textersättning som missade
@@ -468,6 +470,42 @@ Prövat och avfärdat, i tur och ordning:
 Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållningen,
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
+
+## Mentorns sista båge och gårdens synliga historia (v65)
+
+**Närvaron glesnar.** Mentorn hör av sig efter pensionen — samtal,
+vykort, en tyst stund vid staketet — men kurvan pekar nedåt med flit:
+från var åttonde vecka året efter överlämningen till någon gång per
+säsong efter tio år. Frånvaron ska hinna KÄNNAS innan beskedet kommer,
+annars är beskedet bara text. (Mätt i prov: ~150 hälsningar/2000 veckor
+år 2, ~21 år 12.)
+
+**Bortgången — varsamheten är regeln.** Prövas en gång per säsongsskifte,
+aldrig före säsong 5 (prologens efterklang behöver mentorn: arvet,
+elevens seger, rekorden), sedan med växande sannolikhet från 78 års
+ålder. Beskedet är två scener utan val — vissa scener ska bara få vara:
+SAMTALET (kväll, grannen som ringer, "somnade in, stilla, hemma") och
+TILL MINNE (Travbladets runa av krönikören, med överlämningens ord som
+utdrag: "Tre veckor går du bredvid mig..."). Inga detaljer, ingen
+dramatik. Därefter tystnar mentorns röst i lyssnarna — mentorn()-hjälparen
+respekterar borta-flaggan — och arvets läktarrad ersätts av minnesraden:
+"På läktaren saknades en."
+
+**Minnesloppet.** Hemmabanan instiftar `{Namn}s Minne` (svensk genitiv:
+namn på s får inget extra s — "Evert Sandelius Minne"), ett årligt lopp
+samma vecka varje säsong, byggt på inbjudningsloppets deterministiska
+stomme men på hemmabanan, prestige 4 och 25 % påslag i prisstegen.
+Det går överst i anmälningslistan sin vecka, markerat ❦. Att VINNA det
+är händelsen `minnesloppsseger` (80) och scenen KRANSEN SOM VÄGER MEST —
+vissa segrar väger mer än sitt förstapris. Sorgen får en form som ger
+tillbaka; det är travsportens eget sätt.
+
+**Gården bär sin historia.** Gårdskartan visar nu segervimplar på
+taknocken (en per storlopp, arv och minnesloppsseger, växelvis tegel och
+guld), en mässingsskylt vid stalldörren när hall of fame fått sin första
+häst, och MINNESEKEN vid staketet efter mentorns bortgång — planterad,
+och står kvar. Framgången och sorgen syns från gårdsplanen, inte bara i
+journalens listor.
 
 ## Tidningssidan och prologens rum (v64)
 
@@ -869,8 +907,10 @@ bästa tränare via tränarligan).
   sällan (6,1 % mot 9,6) — raden siktar rätt men ligger ändå bakom i halva
   loppen; stigtaktsklampen är prövad och avfärdad, nästa angrepp är VAR
   utflyttningarna sker (de byggs långt bak i fältet)
-- Mentorns bortgång som sen, varsam berättelse (långt fram)
-- Gårdens visuella utveckling kopplad till troférummet och hall of fame
+Storyplanens fem faser är därmed byggda, inklusive de sena punkterna.
+Naturliga nästa steg är innehållsbredd snarare än nya system: fler
+händelsetyper på bussen, fler krönikeformuleringar, fler scener på
+befintlig scenmotor — samt bilder i bilder/-mappen.
 Klart och struket: tävlingskalendern med propositioner, tränarligan,
 uppbokade kuskar (v45), service workern (v44), kuskkännedomen (v46),
 ledarförsvaret (v47), radensfixen (v49) och karriärbågen med spelstart,
@@ -881,4 +921,5 @@ och pensioneringar (v59) samt storloppsbågen, avelshagen och arvet (v60) och he
 med val (v61) samt personalens karriärer, ägarrelationerna och
 journalisternas signaturer (v62) och rekordtavlan, hall of fame och
 säsongskrönikorna (v63) samt tidningssidan och prologens
-helskärmsberättelse (v64).
+helskärmsberättelse (v64) och mentorns sista båge med minnesloppet och
+gårdens synliga historia (v65).

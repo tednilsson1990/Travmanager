@@ -33,9 +33,15 @@ function Anmälan({ spel, onStart }) {
   );
   /* Inbjudningsloppet läggs överst de veckor en inbjudan gäller —
      arrangörens pengar och ett fält i högre klass. */
-  const veckans = spel.inbjudan?.vecka === spel.vecka
-    ? [medInbjudningspengar(inbjudningslopp(spel.vecka)), ...veckansLopp(spel.vecka)]
-    : veckansLopp(spel.vecka);
+  /* Minnesloppet går sin bestämda vecka varje säsong och läggs överst —
+     före till och med inbjudningsloppen. Vissa lopp väger mer. */
+  const minne = veckansMinneslopp(spel);
+  const veckans = [
+    ...(minne ? [minne] : []),
+    ...(spel.inbjudan?.vecka === spel.vecka
+      ? [medInbjudningspengar(inbjudningslopp(spel.vecka))] : []),
+    ...veckansLopp(spel.vecka),
+  ];
   /* Kåren är stor. Visa dem som tackar ja, plus några snäpp över för att
      visa vad du kan sikta på när renommét stiger. */
   const villiga = KUSKAR.filter((k) => villig(spel, k));
@@ -94,7 +100,7 @@ function Anmälan({ spel, onStart }) {
       <select id="v-lopp" value=${loppIx} onChange=${(e) => sättLopp(+e.target.value)}>
         ${veckans.map((l, i) => html`
           <option key=${l.id} value=${i}>
-            ${l.id.endsWith("-inbjudan") ? "✉ " : ""}${l.v85 ? "★ " : ""}${l.namn} · ${l.dist} m · ${kr(l.pris[0])} kr${spel.hemmabana && BANOR[spel.hemmabana]?.namn === l.banaNamn ? " · hemma" : ""}
+            ${l.minneslopp ? "❦ " : ""}${l.id.endsWith("-inbjudan") ? "✉ " : ""}${l.v85 ? "★ " : ""}${l.namn} · ${l.dist} m · ${kr(l.pris[0])} kr${spel.hemmabana && BANOR[spel.hemmabana]?.namn === l.banaNamn ? " · hemma" : ""}
           </option>`)}
       </select>
 

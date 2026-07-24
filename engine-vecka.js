@@ -14,6 +14,7 @@ import "./engine-lyssnare.js";
 import { körStorloppsbåge } from "./engine-storlopp.js";
 import { uppdateraAmbition, prövaAvgång, gamlaBekanta, ägarrelation } from "./engine-personal.js";
 import { uppdateraRekordEfterLopp, skrivSäsongskrönika } from "./engine-rekord.js";
+import { mentornsNärvaro, efterMinneslopp } from "./engine-mentor.js";
 import { köScen } from "./engine-scener.js";
 import { JOURNALISTER, BANOR } from "./data-namnpaket.js";
 
@@ -190,6 +191,15 @@ export function körVecka(spel) {
   uppdateraAmbition(spel);
   prövaAvgång(spel);
 
+  /* Mentorns närvaro glesnar med åren — frånvaron ska hinna kännas. */
+  mentornsNärvaro(spel);
+  /* Minnesloppet påminner om sig veckan före. */
+  if (spel.minneslopp && spel.vecka === spel.minneslopp.vecka - 1) {
+    skrivPress(spel, `${spel.minneslopp.namn} körs nästa vecka`,
+      `Kransen till den gamle tränarens ära delas ut på ${BANOR[spel.hemmabana]?.namn ?? "hemmabanan"}.`,
+      "neutral");
+  }
+
   if (!spel.erbjudande && boxplats(spel) > 0 && slump() < 0.1 + spel.renommé / 220) {
     const nivå = 30 + spel.renommé * 0.55;
     const h = nyHäst({
@@ -312,6 +322,8 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   /* Rekordtavlan: föll en notering? skrivPress följer med som argument
      så att rekordmodulen slipper importera veckomotorn tillbaka. */
   uppdateraRekordEfterLopp(spel, { häst, lopp, min, brutto, fakta, skrivPress });
+  /* Minnesloppets krans väger mer än sitt förstapris. */
+  efterMinneslopp(spel, lopp, häst, min);
   /* Ägaren minns vad hens häst gör hos dig. */
   if (häst.ägare) ägarrelation(spel, häst.ägare,
     min.ur ? -3 : vann ? 8 : pall ? 4 : -1);

@@ -27,9 +27,11 @@ import { JOURNALISTER, TIDNINGSNAMN } from "./data-namnpaket.js";
 const förnamn = (n) => (n || "").split(" ")[0];
 const längder = (m) => (m == null ? null : m.toFixed(1).replace(".", ","));
 
-/** Mentorn finns bara efter pensionen — under prologen står hen bredvid dig. */
+/** Mentorn finns efter pensionen, så länge hen lever. Under prologen står
+    hen bredvid dig; efter bortgången bärs rösten av minnet i stället. */
 const mentorn = (spel) =>
-  (spel.prolog?.mentor && !spel.prolog?.aktiv) ? spel.prolog.mentor : null;
+  (spel.prolog?.mentor && !spel.prolog?.aktiv && !spel.prolog?.mentor?.borta)
+    ? spel.prolog.mentor : null;
 
 /**
  * Huvudnyheten på Hem. Sedan v61 är den EFTERKLANGEN: ögonblicket visas
@@ -337,6 +339,8 @@ påHändelse("arvet", (spel, h) => {
   const m = mentorn(spel);
   if (m) spel.logg?.unshift(
     `<b>${m.namn}</b> stod på läktaren. Efteråt sa hen bara: »Jag såg ${d.mor ?? "modern"} vinna det här. Nu såg jag dottern. Tack.«`);
+  else if (spel.prolog?.mentor?.borta) spel.logg?.unshift(
+    `På läktaren saknades en. Men ${spel.prolog.mentor.namn} såg ${d.mor ?? "modern"} vinna det här en gång — och i dag bar loppet vidare det hen byggde.`);
   spel.renommé = klamp(spel.renommé + 5);
 
   köScen(spel, {

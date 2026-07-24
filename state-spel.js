@@ -25,6 +25,7 @@ export function nyttSpel() {
     krönika: [], troférum: [], rivaliteter: {}, huvudnyhet: null,
     avelsston: [], bågeSkrivet: {}, båge: null, scener: [],
     tidigareFörstamän: [], ägarrelationer: {}, rekord: {}, hallOfFame: [],
+    minneslopp: null,
     kassa: 180000, intjänat: 0,
     renommé: 25, spelförtroende: 40,
     stallform: 50, marknadsbild: 0, resultathistorik: [],
@@ -86,6 +87,9 @@ export function ladda() {
     /* v63: rekordtavlan, hall of fame och säsongskrönikorna. */
     spel.rekord ??= {};
     spel.hallOfFame ??= [];
+    /* v65: minnesloppet. Mentorer i äldre sparfiler saknar borta-flaggan
+       — den lämnas odefinierad, vilket betyder att hen lever. */
+    spel.minneslopp ??= null;
     if (spel.förstaman) {
       spel.förstaman.ambition ??= 20;
       spel.förstaman.säsongerHosDig ??= Math.max(0, (spel.säsong ?? 1) - 1);

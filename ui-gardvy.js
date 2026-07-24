@@ -21,6 +21,13 @@ export default function GårdVy({ spel, uppdatera }) {
   return html`
     <h2>Gården</h2>
     <${Gårdskarta} spel=${spel} />
+    ${((spel.troférum ?? []).length > 0 || (spel.hallOfFame ?? []).length > 0 || spel.prolog?.mentor?.borta) && html`
+      <div class="meta" style=${{ margin: "4px 2px 10px" }}>
+        ${(spel.troférum ?? []).length > 0 ? `${spel.troférum.length} troféer` : ""}
+        ${(spel.hallOfFame ?? []).length > 0 ? ` · hall of fame: ${spel.hallOfFame.length}` : ""}
+        ${spel.prolog?.mentor?.borta ? ` · minneseken vid staketet` : ""}
+        — allt i Journalen under Mer
+      </div>`}
     <div class="kort">
       <div class="meta">Kapacitet</div>
       <div class="namn">${a.boxar} boxar · ${spel.stall.length} hästar</div>

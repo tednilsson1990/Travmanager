@@ -86,6 +86,16 @@ export function Gårdskarta({ spel }) {
   const a = spel.anläggning ?? { boxar: 4 };
   const dörrar = Math.min(a.boxar ?? 4, 14);
   const veteran = spel.gårdsveteran;
+  /* FRAMGÅNGEN SKA SYNAS FRÅN GÅRDSPLANEN — inte bara i journalens
+     listor. Segervimplar på taknocken (en per storlopp, arv och
+     minneslopp), en mässingsskylt vid dörren när hall of fame har sin
+     första häst, och minnesträdet vid staketet efter mentorns bortgång:
+     en ek som planteras och står kvar. Gården BÄR sin historia. */
+  const vimplar = Math.min(8, (spel.troférum ?? []).filter((t) =>
+    t.typ === "storlopp" || t.typ === "arvet").length
+    + (spel.krönika ?? []).filter((h) => h.typ === "minnesloppsseger").length);
+  const skylt = (spel.hallOfFame ?? []).length > 0;
+  const minnesträd = !!spel.prolog?.mentor?.borta;
   return html`
     <svg class="gardskarta" viewBox="0 0 340 150" role="img"
       aria-label=${`Gården: ${a.boxar} boxar${a.rakbana ? ", rakbana" : ""}${a.backe ? ", backe" : ""}${a.vattenband ? ", vattenband" : ""}`}>
@@ -130,6 +140,27 @@ export function Gårdskarta({ spel }) {
           <path d="M310 104 q3 -6 8 -6 q6 0 8 5 l2 6 l-3 0 l-1 -4 l-9 0 l-1 4 l-3 0 z" fill="#4A3220" />
           <circle cx="326" cy="99" r="2.6" fill="#4A3220" />
           <title>${veteran} vid staketet</title>
+        </g>`}
+      ${vimplar > 0 && html`
+        <g>
+          ${Array.from({ length: vimplar }, (_, i) => html`
+            <path key=${i} d=${`M${44 + i * 15} 62 l0 10 l6 -3 l-6 -3 z`}
+              fill=${i % 2 ? "#A32E2A" : "#C99A2E"} opacity="0.92" />`)}
+          <path d=${`M42 62 L${44 + vimplar * 15} 62`} stroke="#4A4034" stroke-width="1" />
+          <title>${vimplar} segervimplar</title>
+        </g>`}
+      ${skylt && html`
+        <g>
+          <rect x="26" y="80" width="3.5" height="8" rx="0.5" fill="#C99A2E" opacity="0.9" />
+          <title>Hall of fame</title>
+        </g>`}
+      ${minnesträd && html`
+        <g opacity="0.95">
+          <rect x="6" y="96" width="3" height="16" fill="#3A2F22" />
+          <circle cx="7.5" cy="90" r="9" fill="#2E4034" />
+          <circle cx="3" cy="95" r="6" fill="#27382E" />
+          <circle cx="13" cy="94" r="6" fill="#27382E" />
+          <title>Minneseken, planterad efter ${spel.prolog?.mentor?.namn}</title>
         </g>`}
       <path d="M0 112 L340 112" stroke="#2C3A48" stroke-width="1" />
       <path d="M304 112 l0 -8 M312 112 l0 -8 M320 112 l0 -8 M328 112 l0 -8 M300 106 l32 0"
