@@ -72,6 +72,21 @@ export default function HemVy({ spel, gåTill }) {
           <div class="ingress">${huvudnyhet.byline}</div>
         </div>`}
 
+    ${spel.båge && html`
+      <h2>${spel.båge.veckorKvar === 0 ? "Storloppsvecka" : "På horisonten"}</h2>
+      <div class="kort bågkort">
+        <div class="namn">${spel.båge.lopp}</div>
+        <div class="meta">${spel.båge.bana} · ${spel.båge.veckorKvar === 0 ? "körs i veckan"
+          : spel.båge.veckorKvar === 1 ? "nästa vecka" : `om ${spel.båge.veckorKvar} veckor`}
+          · förstapris ${kr(spel.båge.förstapris)} kr</div>
+        ${spel.båge.kvalade.length > 0 && html`
+          <div class="logg">Kvalade: <b>${spel.båge.kvalade.join(", ")}</b></div>`}
+        ${spel.båge.nära.map((n) => html`
+          <div key=${n.namn} class="logg">${n.namn} saknar <b>${kr(n.saknas)} kr</b> i startsumma</div>`)}
+        ${spel.båge.kvalade.length === 0 && spel.båge.nära.length === 0 && html`
+          <div class="logg">Ingen av dina hästar når propositionen den här gången.</div>`}
+      </div>`}
+
     <h2>I dag</h2>
     <div class="kort">
       ${uppgifter.length === 0

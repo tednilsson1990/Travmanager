@@ -39,6 +39,9 @@ engine-prolog.js        säsong 0: mentorn, introhästarna, gårdshistorien
 engine-handelser.js     händelsemotorn — spelets strukturerade minne och buss
 engine-lyssnare.js      reaktionerna: press, mentor, ägare, förstaman, troféer
 ui-journalvy.js         Stalljournalen: krönika, troférum, rivaliteter
+engine-storlopp.js      storloppsbågen: kval, uppladdning, världens favorit
+engine-scener.js        helskärmsscenerna och deras val
+ui-scenvy.js            scenens yta: kvällsmörker, bild, rubrik, val
 ui-grafik.js            bildspråket: hästsilhuetter, dräkter, gårdskartan
 ui-hemvy.js             Hem — dagens redaktionella uppslag
 engine-forstaman.js     förstamannen: träningsråd och loppmatchning
@@ -310,6 +313,8 @@ node diagnos-ledarbyte.mjs     ledarbyten: håller 1000-metersledaren?
 node diagnos-ytterrad.mjs      ytterraden: vem täcker rygg ledaren?
 node diagnos-radenergi.mjs     raden bakåt: energi eller beteende?
 node prov-handelser.mjs        händelsebussen: utlöses varje reaktion?
+node prov-storlopp.mjs         bågen, avelshagen och arvet
+node prov-scener.mjs           scenkön, valen och deras effekter
 ```
 
 `verifiera.mjs` föddes ur ett tyst fel: en textersättning som missade
@@ -459,6 +464,71 @@ Prövat och avfärdat, i tur och ordning:
 Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållningen,
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
+
+## Helskärmsscenerna (v61)
+
+De stora ögonblicken förtjänar mer plats än en ruta högst upp på Hem.
+En storloppsseger, ett fullbordat arv, en trotjänare som slutar eller ett
+gårdsrekord som faller tar nu ÖVER SKÄRMEN, i kvällens visuella språk —
+banan under strålkastare, bild (`seger.jpg`/`gard-hero.jpg` med
+SVG-reserv), stor rubrik, faktaruta, citat. Först när spelaren går vidare
+öppnas vardagsvyn, och samma uppslag ligger då kvar på Hem som veckans
+rubrik. En källa, två visningar: scenen och uppslaget byggs av samma
+händelsedata.
+
+**Valen.** Vissa scener frågar något. Segerintervjun: tala upp hästen
+(hype och förväntan stiger), håll igen (spelförtroendet uppskattar det)
+eller ge kusken äran (relationen byggs). Stjärnstoets avsked: behåll
+henne i avelshagen — och chansen till arvet — eller sälj till ett bud som
+växer med meriterna. Effekterna är små och väldokumenterade; scenerna rör
+aldrig loppmotorn.
+
+**Serialiserbarheten är regeln som bär allt.** Kön (`spel.scener`) sparas
+med spelet, så en halvläst scen står kvar efter omstart. Därför bär en
+scen ALDRIG funktioner — valen är typ + data, effekterna bor i
+`VALEFFEKTER` i `engine-scener.js`. En scen med val kan bara stängas av
+ett giltigt val (ett felskickat id förbrukar inte spelarens beslut),
+medan en okänd EFFEKT är ett versionsglapp: valet är gjort, scenen
+stängs, effekten uteblir snällt. Högst fem scener i kön, viktigast först.
+
+**Dramaturgigränsen:** scenen tar aldrig över mitt i loppfliken — först
+målgången och facit, sedan uppslaget när spelaren lämnar loppet. Och
+inte allt blir en scen: rivaliteter, formnotiser och vardagssegrar bor
+kvar i pressflödet. Får allt helskärm betyder ingenting något.
+
+## Storloppsbågen och generationerna (v60)
+
+**Bågen.** Ett storlopp börjar inte den vecka det körs. `engine-storlopp.js`
+tittar fyra veckor framåt i kalendern och låter loppet kasta skugga:
+upptakten i pressen (kandidaterna räknas, världens troliga favorit pekas
+ut ur AI-stallens meriter), jakten på startsumman två veckor före ("38 tkr
+saknas — och två veckor kvar att springa in dem"), och laddningen sista
+veckan, som registreras som händelse så att förstamannen kommenterar
+upplägget efter sin profil. På Hem ligger bågkortet med kvalade hästar
+och exakt vad de nära saknar — kvalgränsen förvandlar en fjärdeplats i
+Silverserien från tröstpris till ett steg mot Kungsloppet.
+
+Bågen är HÄRLEDD, inte lagrad: kalendern är deterministisk så allt räknas
+fram ur spelläget varje vecka. Det enda som sparas är vilka pressetapper
+som skrivits (`spel.bågeSkrivet`, en per lopp och säsong, städas vid
+säsongsskifte). Designgräns: filen läser världen och skriver press — den
+rör aldrig fältbygget eller loppmotorn. Skuggan är berättelse och mål,
+inte en hand på tärningen.
+
+**Avelshagen.** Ett pensionerat eget sto med minst två segrar eller
+300 tkr insprunget försvinner inte — hon flyttar till `spel.avelsston`
+och kan betäckas från avelsvyn. Egenskaperna fryses FÖRE det sista
+ålderstappet (ögonblicksbild i `nySäsong`; arvsanlag åldras inte — det
+första provet av det här avslöjade att fölen annars ärvde en extra
+årgång förfall). Högst sex i hagen, till 20 års ålder, äldst lämnar.
+
+**Arvet.** Föl bär `morId`, `mor` och `far` in i vuxenlivet. När en häst
+vinner ett storlopp söks moderns storloppssegrar i KRÖNIKAN — inte i
+stallet, för modern kan vara såld eller pensionerad; det är precis det
+händelseminnet finns för. Samma loppnamn ⇒ händelsen `arvet`
+(betydelse 96): uppslaget SOM SIN MOR på Hem, trofé, och mentorn på
+läktaren — designdokumentets slutscen. `prov-storlopp.mjs` låser hela
+kedjan, inklusive att fel lopp INTE utlöser den.
 
 ## Händelsebussen (v59)
 
@@ -681,15 +751,14 @@ bästa tränare via tränarligan).
   sällan (6,1 % mot 9,6) — raden siktar rätt men ligger ändå bakom i halva
   loppen; stigtaktsklampen är prövad och avfärdad, nästa angrepp är VAR
   utflyttningarna sker (de byggs långt bak i fältet)
-- Storloppsbågar: ett storlopp bör kasta skugga före sig — kvalificering,
-  uppladdning och pressens förväntan — inte bara vara ett lopp med större
-  prischeck den vecka det råkar ligga
-- Avkommor efter gamla stjärnor (fas 5). Grunden finns: aktörerna är id:n
-  och krönikan överlever säsonger, så en dotter kan slå upp sin mor
+- Personalens karriärer (fas 5): förstamän som lämnar och blir
+  konkurrenter — "min första förstaman blev min största rival"
+- Återkommande journalister och permanenta ägarpersonligheter (fas 3)
 Klart och struket: tävlingskalendern med propositioner, tränarligan,
 uppbokade kuskar (v45), service workern (v44), kuskkännedomen (v46),
 ledarförsvaret (v47), radensfixen (v49) och karriärbågen med spelstart,
 förstaman och uppstigning (v50) gården med byggen och personal (v51), prologen med mentor,
 övertagande, förstamansrekrytering och händelsemotorn (v52) samt
 händelsebussen med lyssnare, rivaliteter, stalljournal, träningsdagbok
-och pensioneringar (v59).
+och pensioneringar (v59) samt storloppsbågen, avelshagen och arvet (v60) och helskärmsscenerna
+med val (v61).

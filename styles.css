@@ -427,3 +427,49 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 /* ---- Träningsdagbokens formdelta ---- */
 .upp{color:var(--form);font-family:'Roboto Mono',monospace;font-size:10px}
 .ner{color:var(--tegel);font-family:'Roboto Mono',monospace;font-size:10px}
+
+/* ---- Storloppsbågen på Hem (v60) ---- */
+.bågkort{border-left:3px solid var(--guld);
+  background:linear-gradient(90deg,rgba(143,107,42,.06),var(--ark) 55%)}
+.bågkort .namn{font-family:'Big Shoulders Display',sans-serif;font-weight:900;
+  text-transform:uppercase;font-size:21px;letter-spacing:.02em}
+
+/* ============================================================
+   HELSKÄRMSSCENEN (v61)
+
+   Ögonblicket lånar kvällens språk: banan under strålkastare.
+   Kontrasten mot dagens papper ÄR effekten — scenen ska kännas
+   som något annat än vardagen, för det är den.
+   ============================================================ */
+.helscen{position:fixed;inset:0;z-index:60;overflow-y:auto;
+  background:linear-gradient(180deg,var(--natt) 0%,var(--natt-2) 55%,#10161d 100%);
+  color:var(--rail);padding:calc(18px + env(safe-area-inset-top)) 0
+    calc(24px + env(safe-area-inset-bottom));animation:scenin .45s ease}
+@keyframes scenin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.helscen-inre{max-width:520px;margin:0 auto;padding:0 18px}
+.helscen-bild{margin:0 -18px 14px;border-radius:0}
+.helscen-bild img{width:100%;max-height:240px;object-fit:cover;display:block;
+  filter:saturate(.85) brightness(.9)}
+.scen-etikett.ljus{color:var(--strålkastare)}
+.helscen-rubrik{font-family:'Big Shoulders Display',sans-serif;font-weight:900;
+  font-size:42px;line-height:.95;text-transform:uppercase;letter-spacing:.01em;
+  margin:6px 0 10px;color:var(--rail);text-wrap:balance}
+.helscen-ingress{font-family:'Lora',Georgia,serif;font-size:16px;line-height:1.55;
+  color:var(--nattdis);margin-bottom:14px}
+.faktaruta.natt{background:var(--panel);border-color:var(--nattlinje);color:var(--rail)}
+.faktaruta.natt span{color:var(--nattdis)}
+.citat.ljus{color:var(--rail);border-left-color:var(--strålkastare)}
+.citat.ljus .citat-vem{color:var(--nattdis)}
+.helscen-fråga{font-weight:700;margin:18px 0 10px;font-size:15px}
+.helscen-val{display:flex;flex-direction:column;gap:10px}
+.btn.scenval{display:block;width:100%;text-align:left;background:var(--panel);
+  border:1px solid var(--nattlinje);color:var(--rail);border-radius:10px;
+  padding:12px 14px;font:inherit;cursor:pointer}
+.btn.scenval:active{border-color:var(--strålkastare)}
+.scenval-text{display:block;font-weight:700}
+.scenval-följd{display:block;font-size:11px;color:var(--nattdis);margin-top:3px}
+.btn.scen-vidare{display:block;width:100%;margin-top:18px;background:var(--strålkastare);
+  color:var(--natt);border:0;border-radius:10px;padding:13px;font:inherit;
+  font-weight:800;text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
+.helscen-fler{text-align:center;font-family:'Roboto Mono',monospace;font-size:10px;
+  color:var(--nattdis);margin-top:14px;letter-spacing:.08em;text-transform:uppercase}

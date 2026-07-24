@@ -302,8 +302,23 @@ export function hästmilstolpar(spel, häst, lopp, min, brutto, fakta = {}) {
     lägg("första_prispeng", 12, `Första prispengen: ${brutto.toLocaleString("sv-SE")} kr.`);
   if (vann && !har("första_seger"))
     lägg("första_seger", 55, `Första segern, i ${lopp.kortnamn || lopp.namn}.`);
-  if (vann && lopp.storlopp && !har("storloppsseger"))
+  if (vann && lopp.storlopp && !har("storloppsseger")) {
     lägg("storloppsseger", 92, `Storloppsseger i ${lopp.kortnamn || lopp.namn}!`);
+    /* ARVET — slutmålets mening: "den första stjärnhästens dotter vann
+       samma lopp som sin mamma." Mamman kan vara såld, pensionerad eller
+       död; därför söks hon i KRÖNIKAN, inte i stallet. Krönikan är spelets
+       minne, och det är exakt det här den finns för. */
+    if (häst.morId != null) {
+      const loppnamn = lopp.kortnamn || lopp.namn;
+      const mammas = (spel.krönika ?? []).find((h) =>
+        h.typ === "storloppsseger" && h.aktörer?.hästId === häst.morId
+        && h.data?.lopp === loppnamn);
+      if (mammas) {
+        lägg("arvet", 96, `Vann ${loppnamn} — samma lopp som sin mor ${häst.mor ?? ""}.`,
+          { mor: häst.mor, morId: häst.morId, morSäsong: mammas.säsong });
+      }
+    }
+  }
   if (häst.intjänat >= 1000000 && !har("miljonen"))
     lägg("miljonen", 70, `Passerade miljonen i insprunget.`);
   if (vann && häst.friskVecka != null && spel.vecka - häst.friskVecka <= 3 && !har("comeback_" + häst.friskVecka))

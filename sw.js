@@ -7,7 +7,7 @@
  * den gamla cachen städas bort. Glöms detta ser man den gamla versionen
  * för evigt, även online.
  */
-const VERSION = 59;
+const VERSION = 61;
 const CACHE = `stallet-v${VERSION}`;
 
 /* Allt spelet behöver för att starta helt utan nät. Egna filer med samma
@@ -28,6 +28,7 @@ const EGNA = [
   `./ui-grafik.js?v=${VERSION}`,
   `./ui-hemvy.js?v=${VERSION}`,
   `./ui-journalvy.js?v=${VERSION}`,
+  `./ui-scenvy.js?v=${VERSION}`,
   `./ui-loppvy.js?v=${VERSION}`,
   `./ui-marknadvy.js?v=${VERSION}`,
   `./ui-sfarvy.js?v=${VERSION}`,
@@ -41,6 +42,8 @@ const EGNA = [
   `./engine-prolog.js?v=${VERSION}`,
   `./engine-handelser.js?v=${VERSION}`,
   `./engine-lyssnare.js?v=${VERSION}`,
+  `./engine-storlopp.js?v=${VERSION}`,
+  `./engine-scener.js?v=${VERSION}`,
   `./engine-marknad.js?v=${VERSION}`,
   `./engine-sasong.js?v=${VERSION}`,
   `./engine-simulera.js?v=${VERSION}`,

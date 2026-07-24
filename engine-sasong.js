@@ -110,6 +110,12 @@ export function nySäsong(spel) {
   spel.erbjudande = null;
 
   const pensionerade = [];
+  /* Egenskaperna som nedärvs ska vara hästens — inte hästens sista
+     ålderstapp. åldraHäst muterar på plats, så en ögonblicksbild tas
+     FÖRE åldrandet; det är den som följer med till avelshagen. Utan
+     detta ärvde fölen alltid en extra årgång förfall. */
+  const föreÅldring = new Map(spel.stall.map((h) => [h.id,
+    { start: h.start, fart: h.fart, styrka: h.styrka }]));
   spel.stall = spel.stall.filter((h) => {
     if (åldraHäst(h)) { pensionerade.push(h); return false; }
     return true;
@@ -120,6 +126,26 @@ export function nySäsong(spel) {
      en trotjänare med segrar får ett uppslag på Hem och en plats i
      troférummet, en häst som aldrig kom till sin rätt får en notis.
      Lyssnarna avgör resten — den här filen skickar bara händelsen. */
+  /* AVELSSTONA. Ett pensionerat sto med meriter försvinner inte — hon
+     flyttar till avelshagen och kan betäckas. Det är fas 5 på riktigt:
+     avkommor EFTER gamla stjärnor, inte bara efter de ston som råkar stå
+     kvar i tävlingsstallet. Grundegenskaperna fryses vid pensionen; det
+     är dem hon nedärver. Högst sex i hagen — de äldsta lämnar. */
+  spel.avelsston = spel.avelsston ?? [];
+  pensionerade.forEach((h) => {
+    if (h.kön === "sto" && !h.ägare && ((h.segrar || 0) >= 2 || (h.intjänat || 0) >= 300000)) {
+      const frusen = föreÅldring.get(h.id) ?? h;
+      spel.avelsston.push({
+        id: h.id, namn: h.namn, ålder: h.ålder,
+        start: frusen.start, fart: frusen.fart, styrka: frusen.styrka,
+        segrar: h.segrar || 0, intjänat: h.intjänat || 0,
+        milstolpar: h.milstolpar || [],
+      });
+    }
+  });
+  spel.avelsston.forEach((m) => { m.ålder++; });
+  spel.avelsston = spel.avelsston.filter((m) => m.ålder <= 20).slice(-6);
+
   pensionerade.forEach((h) => {
     const betydelse = Math.min(95, 25
       + (h.segrar || 0) * 6

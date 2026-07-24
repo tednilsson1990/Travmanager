@@ -13,6 +13,7 @@ import { ÖvertagandeVy, FörstamansvalVy } from "./ui-prolog.js";
 import { Dräkt } from "./ui-grafik.js";
 import HemVy from "./ui-hemvy.js";
 import JournalVy from "./ui-journalvy.js";
+import ScenVy from "./ui-scenvy.js";
 
 const FLIKAR = [
   { id: "hem", namn: "Hem" },
@@ -50,6 +51,14 @@ export default function App() {
     return html`
       <header><div class="brand">Stallet<span>·</span>${spel.stallnamn}</div></header>
       <div class="wrap"><${FörstamansvalVy} spel=${spel} uppdatera=${uppdatera} /></div>`;
+  }
+
+  /* SCENERNA. Väntar en scen tar den hela skärmen — utom när spelaren
+     står i loppfliken, där facit och loppbilden inte får kapas mitt i.
+     Scenen kommer i stället när hen lämnar loppet, vilket är exakt
+     rätt dramaturgi: först målgången, sedan uppslaget. */
+  if ((spel.scener ?? []).length > 0 && flik !== "lopp") {
+    return html`<${ScenVy} spel=${spel} uppdatera=${uppdatera} />`;
   }
 
   return html`

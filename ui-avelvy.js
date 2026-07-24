@@ -13,7 +13,13 @@ export default function AvelVy({ spel, uppdatera }) {
      betäckas varje vecka så länge kassan räckte, och aveln blev en
      hästautomat i stället för ett långsiktigt beslut. */
   const dräktig = (h) => (spel.föl || []).some((f) => f.morId === h.id);
-  const ston = spel.stall.filter((h) => h.kön === "sto" && h.ålder >= 4 && !h.ägare);
+  /* Två sorters ston: de som fortfarande tävlar, och stjärnorna i
+     avelshagen — pensionerade med meriter. Hagen är generationsspelets
+     nav: det är därifrån "dottern som vann samma lopp som sin mamma"
+     kommer. */
+  const aktiva = spel.stall.filter((h) => h.kön === "sto" && h.ålder >= 4 && !h.ägare);
+  const hagen = (spel.avelsston || []).map((m) => ({ ...m, kön: "sto", urHagen: true }));
+  const ston = [...aktiva, ...hagen];
   const lediga = ston.filter((h) => !dräktig(h));
   const [stoId, sättSto] = useState(null);
   const [hingstIx, sättHingst] = useState(0);
@@ -23,7 +29,9 @@ export default function AvelVy({ spel, uppdatera }) {
   const valtSto = lediga.find((h) => h.id === stoId) || lediga[0] || null;
 
   const betäck = () => uppdatera((s) => {
-    const sto = s.stall.find((h) => h.id === (valtSto ? valtSto.id : stoId));
+    const id = valtSto ? valtSto.id : stoId;
+    const sto = s.stall.find((h) => h.id === id)
+      ?? (s.avelsston || []).find((m) => m.id === id);
     if (!sto || s.kassa < hingst.avgift) return;
     if ((s.föl || []).some((f) => f.morId === sto.id)) return;   // redan dräktig
     s.kassa -= hingst.avgift;
@@ -51,7 +59,7 @@ export default function AvelVy({ spel, uppdatera }) {
         <div class="kort">
           <label class="fält" for="a-sto">Sto</label>
           <select id="a-sto" value=${valtSto ? valtSto.id : ""} onChange=${(e) => sättSto(+e.target.value)}>
-            ${lediga.map((h) => html`<option key=${h.id} value=${h.id}>${h.namn} (${h.ålder} år)</option>`)}
+            ${lediga.map((h) => html`<option key=${h.id} value=${h.id}>${h.namn} (${h.ålder} år${h.urHagen ? ", avelshagen" : ""})</option>`)}
           </select>
           <label class="fält" for="a-hingst">Hingst</label>
           <select id="a-hingst" value=${hingstIx} onChange=${(e) => sättHingst(+e.target.value)}>
@@ -63,6 +71,17 @@ export default function AvelVy({ spel, uppdatera }) {
         </div>
         <button class="btn" disabled=${spel.kassa < hingst.avgift} onClick=${betäck}>Betäck</button>
         ${spel.kassa < hingst.avgift && html`<div class="hint">Kassan räcker inte till betäckningsavgiften.</div>`}`}
+
+    ${hagen.length > 0 && html`
+      <h2>Avelshagen</h2>
+      <div class="hint">Pensionerade stjärnor. Egenskaperna frystes vid pensionen — det är dem de nedärver.</div>
+      <div class="kort">
+        ${hagen.map((m) => html`
+          <div key=${m.id} class="prisrad">
+            <span>${m.namn}, ${m.ålder} år${dräktig(m) ? " · dräktig" : ""}</span>
+            <span class="pris">${m.segrar} seg · ${kr(m.intjänat)} kr</span>
+          </div>`)}
+      </div>`}
 
     <h2>Uppfödning</h2>
     ${spel.föl.length === 0

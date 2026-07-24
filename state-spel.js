@@ -23,6 +23,7 @@ export function nyttSpel() {
     prolog: { aktiv: true, klar: false, övertagen: false, mentor, sistaResultat: null },
     gårdshistoria: nyGårdshistoria(mentor),
     krönika: [], troférum: [], rivaliteter: {}, huvudnyhet: null,
+    avelsston: [], bågeSkrivet: {}, båge: null, scener: [],
     kassa: 180000, intjänat: 0,
     renommé: 25, spelförtroende: 40,
     stallform: 50, marknadsbild: 0, resultathistorik: [],
@@ -72,6 +73,12 @@ export function ladda() {
     spel.rivaliteter ??= {};
     spel.huvudnyhet ??= null;
     spel.stall.forEach((h) => { h.dagbok ??= []; });
+    /* v60: storloppsbågen och avelshagen. */
+    spel.avelsston ??= [];
+    spel.bågeSkrivet ??= {};
+    spel.båge ??= null;
+    /* v61: scenkön. Serialiserbar; en halvläst scen överlever omstart. */
+    spel.scener ??= [];
     // Fält som tillkommit efter att sparfilen skapades
     spel.stallform ??= 50;
     spel.marknadsbild ??= 0;

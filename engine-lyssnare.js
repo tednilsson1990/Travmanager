@@ -17,6 +17,7 @@
 import { påHändelse } from "./engine-handelser.js";
 import { skrivPress } from "./engine-vecka.js";
 import { klamp, kr } from "./engine-util.js";
+import { köScen } from "./engine-scener.js";
 
 /* ------------------------------------------------------------------ */
 /* Hjälpare                                                            */
@@ -30,9 +31,11 @@ const mentorn = (spel) =>
   (spel.prolog?.mentor && !spel.prolog?.aktiv) ? spel.prolog.mentor : null;
 
 /**
- * Huvudnyheten på Hem. Rikare än en pressnotis: rubrik, ingress, faktaruta
- * och citat — skisserna panel 3. Den skrivs bara av det som verkligen bär
- * ett uppslag; får allt en stor rubrik känns ingenting stort.
+ * Huvudnyheten på Hem. Sedan v61 är den EFTERKLANGEN: ögonblicket visas
+ * först som helskärmsscen (engine-scener), och när spelaren gått vidare
+ * ligger samma uppslag kvar på Hem som veckans stora rubrik. En källa,
+ * två visningar. Den skrivs bara av det som verkligen bär ett uppslag;
+ * får allt en stor rubrik känns ingenting stort.
  */
 function sättHuvudnyhet(spel, nyhet) {
   const gammal = spel.huvudnyhet;
@@ -126,6 +129,25 @@ påHändelse("storloppsseger", (spel, h) => {
     text: `Vann ${d.lopp ?? "storloppet"}${d.bana ? ` på ${d.bana}` : ""}.`,
   });
   spel.renommé = klamp(spel.renommé + 3);
+
+  /* Helskärmsscenen — med segerintervjun som val. Samma text som
+     uppslaget: en källa, två visningar. */
+  köScen(spel, {
+    betydelse: h.betydelse, bild: "seger",
+    etikett: spel.huvudnyhet.etikett, rubrik: spel.huvudnyhet.rubrik,
+    ingress: spel.huvudnyhet.ingress, fakta: spel.huvudnyhet.fakta,
+    citat: spel.huvudnyhet.citat, citatVem: spel.huvudnyhet.citatVem,
+    fråga: "Travmedia sträcker fram mikrofonen. Vad säger du?",
+    data: { hästId: h.aktörer?.hästId, kuskNamn: h.aktörer?.kuskNamn },
+    val: [
+      { id: "upp", effekt: "intervju_tala_upp",
+        text: "»Det här är bara början.«", följd: "Hypen stiger — och förväntningarna" },
+      { id: "lugn", effekt: "intervju_ödmjuk",
+        text: "»En bra dag. Vi tar nästa lopp när det kommer.«", följd: "Spelarna uppskattar måttfullheten" },
+      { id: "kusk", effekt: "intervju_hylla_kusken",
+        text: `»Segern är ${h.aktörer?.kuskNamn ?? "kuskens"}.«`, följd: "Relationen till kusken stärks" },
+    ],
+  });
 });
 
 påHändelse("miljonen", (spel, h) => {
@@ -150,6 +172,17 @@ påHändelse("gårdsrekord", (spel, h) => {
   läggTrofé(spel, {
     typ: "rekord", rubrik: "Gårdsrekord",
     text: h.data?.text ?? "Nytt gårdsrekord.",
+  });
+  /* Rekordet som faller är gårdens historia som skrivs om — en scen,
+     med mentorns ord som citat. Inga val: vissa ögonblick ska bara få
+     vara. */
+  köScen(spel, {
+    betydelse: h.betydelse, bild: "gard-hero",
+    etikett: "GÅRDENS HISTORIA",
+    rubrik: "REKORDET FALLER",
+    ingress: h.data?.text ?? "Ett gårdsrekord har fallit.",
+    citat: `${h.data?.text ?? "Rekordet"}. Jag hade det i ${h.data?.gammaltÅr ?? "många"} år. Det är rätt att det faller.`,
+    citatVem: mentorn(spel)?.namn ?? spel.stallnamn,
   });
 });
 
@@ -203,6 +236,41 @@ påHändelse("pensionering", (spel, h) => {
   const d = h.data ?? {};
   const namn = h.aktörer?.hästNamn ?? "Hästen";
   if ((h.betydelse ?? 0) >= 55) {
+    /* Står stoet i avelshagen finns ett verkligt val: behåll för avel —
+       och chansen till arvet — eller sälj till ett bud som växer med
+       meriterna. Pengar nu mot generationer sen. */
+    const iHagen = (spel.avelsston ?? []).some((m) => m.id === h.aktörer?.hästId);
+    const bud = iHagen
+      ? Math.round((80000 + (d.segrar ?? 0) * 25000 + (d.intjänat ?? 0) * 0.1) / 5000) * 5000
+      : 0;
+    köScen(spel, {
+      betydelse: h.betydelse, bild: "gard-hero",
+      etikett: "AVSKED",
+      rubrik: `${namn.toUpperCase()} SLUTAR`,
+      ingress: `${d.starter ?? 0} starter, ${d.segrar ?? 0} segrar och ${kr(d.intjänat ?? 0)} kr insprunget.`,
+      fakta: [
+        { etikett: "Ålder", värde: `${d.ålder ?? "?"} år` },
+        { etikett: "Starter", värde: String(d.starter ?? 0) },
+        { etikett: "Segrar", värde: String(d.segrar ?? 0) },
+        { etikett: "Insprunget", värde: `${kr(d.intjänat ?? 0)} kr` },
+      ],
+      citat: d.segrar > 0
+        ? "Den hästen gav oss allt den hade, varje gång vi bad om det."
+        : "Alla hästar bär inte pokaler hem. Den här bar stallet.",
+      citatVem: spel.stallnamn,
+      ...(iHagen ? {
+        fråga: `En uppfödare har hört av sig med ett bud på ${kr(bud)} kr. Vad gör du?`,
+        data: { hästId: h.aktörer?.hästId, hästNamn: namn, bud },
+        val: [
+          { id: "behåll", effekt: "pension_behåll",
+            text: "Hon stannar i avelshagen", följd: "Avkommorna — och kanske arvet" },
+          { id: "sälj", effekt: "pension_sälj",
+            text: `Sälj för ${kr(bud)} kr`, följd: "Pengar nu, men blodslinjen lämnar gården" },
+        ],
+      } : {}),
+    });
+  }
+  if ((h.betydelse ?? 0) >= 55) {
     sättHuvudnyhet(spel, {
       betydelse: h.betydelse,
       etikett: "AVSKED",
@@ -228,6 +296,59 @@ påHändelse("pensionering", (spel, h) => {
   skrivPress(spel, `${namn} avslutar karriären`,
     `${d.starter ?? 0} starter och ${d.segrar ?? 0} segrar för ${spel.stallnamn}.`,
     d.segrar > 0 ? "bra" : "neutral");
+});
+
+/* ------------------------------------------------------------------ */
+/* Arvet — designdokumentets slutscen                                  */
+/* ------------------------------------------------------------------ */
+
+påHändelse("arvet", (spel, h) => {
+  const d = h.data ?? {};
+  const namn = h.aktörer?.hästNamn ?? "Dottern";
+  sättHuvudnyhet(spel, {
+    betydelse: h.betydelse,
+    etikett: `${d.bana ?? ""} · ARVET`,
+    rubrik: "SOM SIN MOR",
+    ingress: `${namn} vann ${d.lopp} — samma lopp som ${d.mor ?? "hennes mor"} vann säsong ${d.morSäsong}. Två generationer, en gård, ett lopp.`,
+    fakta: [
+      { etikett: "Lopp", värde: d.lopp ?? "" },
+      { etikett: "Modern vann", värde: `säsong ${d.morSäsong}` },
+      d.marginal && { etikett: "Marginal", värde: `${längder(d.marginal)} längder` },
+      d.streck != null && { etikett: "Spelprocent", värde: `${Math.round(d.streck)} %` },
+    ].filter(Boolean),
+    citat: "Jag stod på läktaren när mamman vann. Nu stod jag här igen. Vissa cirklar sluts.",
+    citatVem: mentorn(spel)?.namn ?? spel.stallnamn,
+  });
+  läggTrofé(spel, {
+    typ: "arvet", rubrik: "Arvet", häst: namn, hästId: h.aktörer?.hästId,
+    text: `${namn} vann ${d.lopp}, samma lopp som sin mor ${d.mor ?? ""}.`,
+  });
+  /* Mentorn på läktaren — slutmålets bild. Registrerad i loggen så att
+     den finns kvar i veckans berättelse, inte bara i en rubrik. */
+  const m = mentorn(spel);
+  if (m) spel.logg?.unshift(
+    `<b>${m.namn}</b> stod på läktaren. Efteråt sa hen bara: »Jag såg ${d.mor ?? "modern"} vinna det här. Nu såg jag dottern. Tack.«`);
+  spel.renommé = klamp(spel.renommé + 5);
+
+  köScen(spel, {
+    betydelse: h.betydelse, bild: "seger",
+    etikett: spel.huvudnyhet.etikett, rubrik: spel.huvudnyhet.rubrik,
+    ingress: spel.huvudnyhet.ingress, fakta: spel.huvudnyhet.fakta,
+    citat: spel.huvudnyhet.citat, citatVem: spel.huvudnyhet.citatVem,
+  });
+});
+
+/* Laddningen inför ett storlopp: förstamannen har en åsikt om upplägget. */
+påHändelse("storloppsladdning", (spel, h) => {
+  const fm = spel.förstaman;
+  if (!fm) return;
+  const namn = h.aktörer?.hästNamn ?? "hästen";
+  const d = h.data ?? {};
+  spel.logg?.unshift(`<b>${förnamn(fm.namn)}</b>: ${fm.profil === "fostrare"
+    ? `»En vecka till ${d.lopp}. Jag vill se ${namn} på lugna jobb — formen finns, den ska inte slösas på träningsbanan.«`
+    : fm.profil === "taktiker"
+      ? `»${d.motståndare ? d.motståndare + " är hästen att slå i " + d.lopp : "Fältet i " + d.lopp + " tar form"}. Jag har börjat titta på spårstatistiken.«`
+      : `»${d.lopp} nästa vecka. Ett vasst jobb till, sedan är ${namn} redo.«`}`);
 });
 
 export const lyssnareInkopplade = true;

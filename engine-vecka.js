@@ -11,6 +11,7 @@ import { registreraHändelse, hästmilstolpar, säsongsHändelser, loppfakta,
 /* Sidoeffektsimport: att importera lyssnarna kopplar in dem på bussen.
    Måste ske innan något lopp körs — därför här, i veckomotorn. */
 import "./engine-lyssnare.js";
+import { körStorloppsbåge } from "./engine-storlopp.js";
 import { BANOR } from "./data-namnpaket.js";
 
 const DRIFT_PER_HÄST = 3200;
@@ -160,6 +161,10 @@ export function körVecka(spel) {
 
   media(spel);
 
+  /* Storloppsbågen: loppet som närmar sig kastar sin skugga i pressen och
+     på Hem. Läser bara — rör aldrig fältbygget eller loppmotorn. */
+  körStorloppsbåge(spel, skrivPress);
+
   if (!spel.erbjudande && boxplats(spel) > 0 && slump() < 0.1 + spel.renommé / 220) {
     const nivå = 30 + spel.renommé * 0.55;
     const h = nyHäst({
@@ -178,6 +183,12 @@ export function körVecka(spel) {
     f.veckorKvar--;
     if (f.veckorKvar > 0) return true;
     const h = nyHäst({ namn: f.namn, ålder: 3, kön: f.kön, start: f.start, fart: f.fart, styrka: f.styrka });
+    /* Härstamningen följer med hästen. Utan den kan "dottern vann samma
+       lopp som sin mamma" aldrig upptäckas — och det är den meningen hela
+       generationsspelet byggs för. */
+    h.morId = f.morId ?? null;
+    h.mor = f.mor ?? null;
+    h.far = f.far ?? null;
     h.form = 42;
     h.energi = 80;
     spel.stall.push(h);
