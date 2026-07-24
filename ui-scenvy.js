@@ -53,7 +53,7 @@ export default function ScenVy({ spel, uppdatera }) {
           </div>
           ${scen.etikett && html`<div class="tidning-avdelning">${scen.etikett}</div>`}
           <div class="tidning-rubrik">${scen.rubrik}</div>
-          ${scen.bild && html`<${Bild} id=${scen.bild} alt="" klass="tidning-bild" fallback=${null} />`}
+          ${scen.bild && html`<${Bild} id=${scen.bild} reserv=${scen.bildreserv} alt="" klass="tidning-bild" fallback=${null} />`}
           ${scen.ingress && html`<div class="tidning-ingress">${scen.ingress}</div>`}
           ${scen.brödtext && scen.brödtext.map((st, i) => html`
             <p key=${i} class="tidning-text">${st}</p>`)}
@@ -82,7 +82,7 @@ export default function ScenVy({ spel, uppdatera }) {
   return html`
     <div class="helscen">
       <div class="helscen-inre">
-        ${scen.bild && html`<${Bild} id=${scen.bild} alt="" klass="helscen-bild" fallback=${null} />`}
+        ${scen.bild && html`<${Bild} id=${scen.bild} reserv=${scen.bildreserv} alt="" klass="helscen-bild" fallback=${null} />`}
         <div class="scen-etikett ljus">${scen.etikett ?? ""}</div>
         <div class="helscen-rubrik">${scen.rubrik}</div>
         ${scen.ingress && html`<div class="helscen-ingress">${scen.ingress}</div>`}

@@ -100,7 +100,9 @@ console.log("\nPROV 4 — krönikan byggs av året, inte av en mall");
   prov("fel säsongs händelser lämnas utanför", !text.includes("FelSäsong"));
   prov("rekordet nämns", text.includes("notering"));
   prov("avskedet nämns", text.includes("Gamle Bo"));
-  prov("tronförsvaret avslutar", text.includes("tron"));
+  /* Utgången dras ur ligavinnarens pool sedan v67 — provet låser grenen. */
+  prov("ligavinnarens utgång avslutar",
+    text.includes("tron") || text.includes("förväntningarna"));
 
   const tomRad = { säsong: 4, plats: 12, avStall: 21, segrar: 1, starter: 22,
     intjänat: 90000, bästaHäst: null };

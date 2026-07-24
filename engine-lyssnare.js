@@ -194,7 +194,7 @@ påHändelse("gårdsrekord", (spel, h) => {
      med mentorns ord som citat. Inga val: vissa ögonblick ska bara få
      vara. */
   köScen(spel, {
-    betydelse: h.betydelse, bild: "gard-hero", stil: "tidning",
+    betydelse: h.betydelse, bild: "rekord", bildreserv: "gard-hero", stil: "tidning",
     signatur: JOURNALISTER.siffror,
     etikett: "GÅRDENS HISTORIA",
     rubrik: "REKORDET FALLER",
@@ -272,7 +272,7 @@ påHändelse("pensionering", (spel, h) => {
       ? Math.round((80000 + (d.segrar ?? 0) * 25000 + (d.intjänat ?? 0) * 0.1) / 5000) * 5000
       : 0;
     köScen(spel, {
-      betydelse: h.betydelse, bild: "gard-hero", stil: "tidning",
+      betydelse: h.betydelse, bild: "avsked", bildreserv: "gard-hero", stil: "tidning",
       signatur: JOURNALISTER.krönikör,
       etikett: "AVSKED",
       rubrik: `${namn.toUpperCase()} SLUTAR`,
@@ -362,7 +362,7 @@ påHändelse("arvet", (spel, h) => {
   spel.renommé = klamp(spel.renommé + 5);
 
   köScen(spel, {
-    betydelse: h.betydelse, bild: "seger", stil: "tidning",
+    betydelse: h.betydelse, bild: "arv", bildreserv: "seger", stil: "tidning",
     signatur: JOURNALISTER.krönikör,
     etikett: spel.huvudnyhet.etikett, rubrik: spel.huvudnyhet.rubrik,
     ingress: spel.huvudnyhet.ingress, fakta: spel.huvudnyhet.fakta,
@@ -402,7 +402,7 @@ påHändelse("eleven_slog_mästaren", (spel, h) => {
     citatVem: d.tränare,
   });
   köScen(spel, {
-    betydelse: h.betydelse, bild: "bana-kvall", stil: "tidning",
+    betydelse: h.betydelse, bild: "rivaler", bildreserv: "bana-kvall", stil: "tidning",
     signatur: JOURNALISTER.nyheter,
     etikett: "GAMLA BEKANTA",
     rubrik: "ELEVEN SLOG MÄSTAREN",

@@ -23,7 +23,7 @@ import { slump, int, kr } from "./engine-util.js";
 import { registreraHändelse } from "./engine-handelser.js";
 import { köScen } from "./engine-scener.js";
 import { inbjudningslopp } from "./data-kalender.js";
-import { JOURNALISTER, TIDNINGSNAMN, BANOR } from "./data-namnpaket.js";
+import { JOURNALISTER, TIDNINGSNAMN, BANOR, könAvFörnamn } from "./data-namnpaket.js";
 
 /** Är mentorn kvar i livet och pensionerad? */
 export const mentornLever = (spel) =>
@@ -89,7 +89,9 @@ export function prövaMentornsBortgång(spel) {
 
   /* Samtalet — kvällsscen, personlig, utan val. Stillhet, inga detaljer. */
   köScen(spel, {
-    betydelse: 88, bild: "mentor",
+    /* Samtalets motiv är en tom veranda — ingen person, inget kön.
+       Reserven är därför den könlösa mentorbilden. */
+    betydelse: 88, bild: "samtalet", bildreserv: "mentor",
     etikett: "TELEFONEN RINGER",
     rubrik: "SAMTALET",
     ingress: `Det är grannen som ringer, från gården dit ${m.namn} flyttade. `
@@ -102,7 +104,7 @@ export function prövaMentornsBortgång(spel) {
      som handlar om er: gården som levde vidare. */
   const gh = spel.gårdshistoria ?? {};
   köScen(spel, {
-    betydelse: 86, stil: "tidning", bild: "mentor",
+    betydelse: 86, stil: "tidning", bild: `mentor-${könAvFörnamn(m.namn)}`, bildreserv: "mentor",
     signatur: JOURNALISTER.krönikör,
     etikett: "TILL MINNE",
     rubrik: `${m.namn.toUpperCase()} ${m.ålder ? `· ${m.ålder} ÅR` : ""}`,
@@ -168,7 +170,7 @@ export function efterMinneslopp(spel, lopp, häst, min) {
     data: { lopp: lopp.kortnamn, mentor: spel.prolog?.mentor?.namn },
   });
   köScen(spel, {
-    betydelse: 80, bild: "seger",
+    betydelse: 80, bild: "krans", bildreserv: "seger",
     etikett: lopp.banaNamn?.toUpperCase() ?? "HEMMABANAN",
     rubrik: "KRANSEN SOM VÄGER MEST",
     ingress: `${häst.namn} vann ${lopp.kortnamn} — loppet som bär ${spel.prolog?.mentor?.namn}s namn, `

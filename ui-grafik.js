@@ -174,15 +174,25 @@ export function Gårdskarta({ spel }) {
    Lägg egna bilder i bilder/-mappen med rätt filnamn så används de
    automatiskt; saknas de faller spelet tillbaka på SVG-scenerna nedan.
    Se bilder/LÄSMIG.md för filnamn och tips. */
-export function Bild({ id, alt = "", klass = "", fallback = null }) {
-  /* Bilderna kan ligga i bilder/-mappen ELLER direkt i roten — prova
-     båda innan SVG-reserven tar över. */
+export function Bild({ id, reserv = null, alt = "", klass = "", fallback = null }) {
+  /* RESERVKEDJAN. Bildlagret är byggt i två skikt: åtta KÄRNBILDER som
+     täcker allt, och valfria UTÖKNINGSBILDER som ger scentyperna egna
+     motiv (avsked, comeback, kransen...). En scen pekar på sin
+     utökningsbild med kärnbilden som reserv — saknas utökningen faller
+     den tillbaka i tur och ordning:
+       bilder/{id}.jpg → ./{id}.jpg → bilder/{reserv}.jpg → ./{reserv}.jpg → SVG
+     Så kan bildmappen växa i egen takt utan att någon plats gapar tom. */
+  const kedja = [
+    `./bilder/${id}.jpg`, `./${id}.jpg`,
+    ...(reserv ? [`./bilder/${reserv}.jpg`, `./${reserv}.jpg`] : []),
+  ];
   return html`
     <div class=${"bildram " + klass}>
-      <img src=${`./bilder/${id}.jpg`} alt=${alt} loading="lazy"
+      <img src=${kedja[0]} alt=${alt} loading="lazy"
         onError=${(e) => {
           const img = e.target;
-          if (!img.dataset.rot) { img.dataset.rot = "1"; img.src = `./${id}.jpg`; return; }
+          const steg = (Number(img.dataset.steg) || 0) + 1;
+          if (steg < kedja.length) { img.dataset.steg = String(steg); img.src = kedja[steg]; return; }
           img.style.display = "none";
           const f = img.nextElementSibling; if (f) f.style.display = "block";
         }} />
@@ -191,14 +201,21 @@ export function Bild({ id, alt = "", klass = "", fallback = null }) {
 }
 
 /** Porträttet: bild om den finns, annars initialer på dräktfärg. */
-export function Porträtt({ id, namn, färg = "#1E3A5F", storlek = 44 }) {
+export function Porträtt({ id, reserv = null, namn, färg = "#1E3A5F", storlek = 44 }) {
+  /* Samma reservkedja som Bild: könsspecifik fil → könlös → initialer.
+     mentor-kvinna.jpg → mentor.jpg → "BL" på dräktfärg. */
   const initialer = String(namn ?? "?").split(" ").map((d) => d[0]).slice(0, 2).join("");
+  const kedja = [
+    `./bilder/${id}.jpg`, `./${id}.jpg`,
+    ...(reserv ? [`./bilder/${reserv}.jpg`, `./${reserv}.jpg`] : []),
+  ];
   return html`
     <span class="portratt" style=${{ width: storlek + "px", height: storlek + "px" }}>
-      <img src=${`./bilder/${id}.jpg`} alt="" loading="lazy"
+      <img src=${kedja[0]} alt="" loading="lazy"
         onError=${(e) => {
           const img = e.target;
-          if (!img.dataset.rot) { img.dataset.rot = "1"; img.src = `./${id}.jpg`; return; }
+          const steg = (Number(img.dataset.steg) || 0) + 1;
+          if (steg < kedja.length) { img.dataset.steg = String(steg); img.src = kedja[steg]; return; }
           img.style.display = "none";
         }} />
       <span class="portratt-init" style=${{ background: färg }}>${initialer}</span>

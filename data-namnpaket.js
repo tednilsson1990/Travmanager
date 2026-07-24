@@ -70,6 +70,21 @@ export const JOURNALISTER = {
   nyheter: "Sara Lindeberg",
 };
 
+/**
+ * Kön ur förnamnet — EXAKT uppslagning, ingen gissning: varenda person i
+ * spelet kommer ur poolerna i den här filen och prologens mentorlista,
+ * så listan över kvinnonamn är fullständig per konstruktion. Behövs för
+ * att bildplatserna (mentor, förstaman, kandidater) ska kunna välja
+ * rätt porträtt: Berit ska inte visas med bild på en karl.
+ */
+const KVINNONAMN = new Set([
+  "Gunhild", "Berit", "Maj-Britt", "Irene", "Anja", "Marta",
+  "Karin", "Lena", "Marie", "Camilla", "Ulrika", "Annika", "Pia", "Eva",
+  "Cecilia", "Sara",
+]);
+export const könAvFörnamn = (namn) =>
+  KVINNONAMN.has(String(namn || "").split(" ")[0]) ? "kvinna" : "man";
+
 export const FÖRSTAMANSNAMN = [
   "Gunnar Lidén", "Maj-Britt Åkerlund", "Bo Sjöqvist", "Irene Falk",
   "Rune Vestman", "Anja Kolehmainen", "Sixten Dahl", "Marta Nyström",

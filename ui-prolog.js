@@ -14,6 +14,7 @@ import { förstamanskandidater } from "./engine-forstaman.js";
 import { registreraHändelse } from "./engine-handelser.js";
 import { Rad } from "./ui-delar.js";
 import { Porträtt } from "./ui-grafik.js";
+import { könAvFörnamn } from "./data-namnpaket.js";
 
 /** Mentorns kort i stallet under säsong 0. */
 export function Mentorkort({ spel }) {
@@ -24,7 +25,7 @@ export function Mentorkort({ spel }) {
   return html`
     <div class="kort mentor">
       <div class="portrad">
-        <${Porträtt} id="mentor" namn=${m.namn} färg="#6B4E1D" storlek=${48} />
+        <${Porträtt} id=${"mentor-" + könAvFörnamn(m.namn)} reserv="mentor" namn=${m.namn} färg="#6B4E1D" storlek=${48} />
         <div class="meta">${m.namn}, ${m.ålder} · ${m.filosofitext} · går i pension efter säsongen</div>
       </div>
       <div class="meta">Största seger: ${m.störstaSeger} med ${m.stjärnhäst}</div>
@@ -116,7 +117,7 @@ export function FörstamansvalVy({ spel, uppdatera }) {
         <button key=${k.profil} class=${"banval" + (vald === k.profil ? " vald" : "")}
           onClick=${() => sättVald(k.profil)}>
           <div class="portrad">
-            <${Porträtt} id=${"kandidat-" + k.profil.replace("å", "a")} namn=${k.namn} färg="#1E3A5F" storlek=${44} />
+            <${Porträtt} id=${"kandidat-" + k.profil.replace("å", "a") + "-" + könAvFörnamn(k.namn)} reserv=${"kandidat-" + k.profil.replace("å", "a")} namn=${k.namn} färg="#1E3A5F" storlek=${44} />
             <div class="namn" style=${{ fontSize: "19px" }}>${k.namn}, ${k.ålder}</div>
           </div>
           <div class="meta">${k.profil} — ${k.profiltext} · ${kr(k.lön)} kr/vecka</div>

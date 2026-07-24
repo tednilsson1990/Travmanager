@@ -50,26 +50,22 @@ export default function HemVy({ spel, gåTill }) {
   ].filter(Boolean);
 
   return html`
+    ${/* TIDNINGSKLIPPET. Ögonblicket har redan fått sin helskärm — det
+        som ligger kvar på Hem är URKLIPPET man sparar: etikett, rubrik i
+        klippstorlek, en rad. Före v69 låg hela uppslaget kvar i scen-
+        storlek och såg ut som en dubblett av helskärmen den just var. */ ""}
     ${storFärsk
       ? html`
-        <div class="scen" style=${{ marginTop: "12px" }}>
-          <div class="scen-etikett">${stor.etikett}</div>
-          <div class="scen-rubrik">${stor.rubrik}</div>
-          <div class="ingress">${stor.ingress}</div>
-          ${(stor.fakta ?? []).length > 0 && html`
-            <div class="faktaruta">
-              ${stor.fakta.map((f, i) => html`
-                <div key=${i}><span>${f.etikett}</span>${f.värde}</div>`)}
-            </div>`}
-          ${stor.citat && html`
-            <div class="citat">»${stor.citat}«
-              <span class="citat-vem">${stor.citatVem}</span></div>`}
+        <div class="klipp" style=${{ marginTop: "12px" }}>
+          <div class="klipp-etikett">Ur ${""}Travbladet · ${stor.etikett}</div>
+          <div class="klipp-rubrik">${stor.rubrik}</div>
+          <div class="klipp-rad">${stor.ingress}</div>
         </div>`
       : huvudnyhet && html`
-        <div class="scen" style=${{ marginTop: "12px" }}>
-          <div class="scen-etikett">Säsong ${spel.säsong} · vecka ${Math.min(spel.vecka, spel.veckor)}${spel.hemmabana ? ` · ${BANOR[spel.hemmabana]?.namn}` : ""}</div>
-          <div class=${"scen-rubrik" + (huvudnyhet.ton === "dålig" ? " tegel" : "")}>${huvudnyhet.rubrik}</div>
-          <div class="ingress">${huvudnyhet.byline}</div>
+        <div class="klipp" style=${{ marginTop: "12px" }}>
+          <div class="klipp-etikett">Säsong ${spel.säsong} · vecka ${Math.min(spel.vecka, spel.veckor)}${spel.hemmabana ? ` · ${BANOR[spel.hemmabana]?.namn}` : ""}</div>
+          <div class=${"klipp-rubrik" + (huvudnyhet.ton === "dålig" ? " tegel" : "")}>${huvudnyhet.rubrik}</div>
+          <div class="klipp-rad">${huvudnyhet.byline}</div>
         </div>`}
 
     ${spel.båge && html`

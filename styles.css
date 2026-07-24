@@ -577,3 +577,20 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .btn.steg-vidare:disabled{opacity:.4;cursor:default}
 .startfält.stor{font-size:22px;padding:14px;font-weight:700;width:100%;box-sizing:border-box}
 .draktrad.stor{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0}
+
+/* ---- Tidningsklippet på Hem (v69) ----
+   Efter helskärmen är Hem-rutan ett SPARAT URKLIPP, inte en repris:
+   klippkant i toppen, rubrik i klippstorlek, en rad. Full storlek hade
+   gjort den till en dubblett av scenen den just var. */
+.klipp{background:var(--ark);border:1px solid var(--linje-mörk);border-radius:6px;
+  border-top:3px solid var(--tegel);padding:10px 12px 11px;
+  box-shadow:0 1px 0 rgba(0,0,0,.05)}
+.klipp-etikett{font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--dis);margin-bottom:3px}
+.klipp-rubrik{font-family:'Big Shoulders Display',sans-serif;font-weight:900;
+  text-transform:uppercase;font-size:21px;line-height:1;letter-spacing:.01em;
+  color:var(--marin);text-wrap:balance}
+.klipp-rubrik.tegel{color:var(--tegel)}
+.klipp-rad{font-family:'Lora',Georgia,serif;font-size:12.5px;line-height:1.45;
+  color:#3A444F;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden}

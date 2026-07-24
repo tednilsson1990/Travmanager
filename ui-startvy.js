@@ -17,7 +17,7 @@
 import { useState } from "preact/hooks";
 import { html } from "htm/preact";
 import { slump } from "./engine-util.js";
-import { BANOR, DRÄKTER, JOURNALISTER, TIDNINGSNAMN } from "./data-namnpaket.js";
+import { BANOR, DRÄKTER, JOURNALISTER, TIDNINGSNAMN, könAvFörnamn } from "./data-namnpaket.js";
 import { skrivPress } from "./engine-vecka.js";
 import { köScen } from "./engine-scener.js";
 import { Dräkt, Bild, GårdIRegn, Porträtt } from "./ui-grafik.js";
@@ -93,7 +93,7 @@ export default function StartVy({ spel, uppdatera }) {
             <p>Tre veckor går du bredvid mig. Sedan är nyckelknippan din.«</p>
           </div>
           <div class="portrad" style=${{ margin: "6px 0" }}>
-            <${Porträtt} id="mentor" namn=${m?.namn} färg="#6B4E1D" storlek=${52} />
+            <${Porträtt} id=${"mentor-" + könAvFörnamn(m?.namn)} reserv="mentor" namn=${m?.namn} färg="#6B4E1D" storlek=${52} />
             <div class="meta">${m?.namn}, ${m?.ålder} · ${m?.filosofitext}</div>
           </div>
           <div class="faktaruta">

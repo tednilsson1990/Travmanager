@@ -63,7 +63,7 @@ påHändelse("stjärnskada", (spel, h) => {
   const fm = spel.förstaman;
   if (d.scen) {
     köScen(spel, {
-      betydelse: h.betydelse, stil: "tidning", bild: "stall-morgon",
+      betydelse: h.betydelse, stil: "tidning", bild: "skada", bildreserv: "stall-morgon",
       signatur: JOURNALISTER.nyheter,
       etikett: "SKADEALARM",
       rubrik: `${namn.toUpperCase()} BORTA ${d.veckor} VECKOR`,
@@ -106,7 +106,7 @@ påHändelse("*", (spel, h) => {
     return;
   }
   köScen(spel, {
-    betydelse: 72, stil: "tidning", bild: "seger",
+    betydelse: 72, stil: "tidning", bild: "comeback", bildreserv: "seger",
     signatur: JOURNALISTER.krönikör,
     etikett: "COMEBACKEN",
     rubrik: "TILLBAKA — OCH FÖRBI ALLA",
@@ -142,7 +142,7 @@ påHändelse("favoritfall", (spel, h) => {
   const namn = h.aktörer?.hästNamn ?? "Favoriten";
   if (d.storlopp) {
     köScen(spel, {
-      betydelse: h.betydelse, stil: "tidning", bild: "bana-kvall",
+      betydelse: h.betydelse, stil: "tidning", bild: "facit", bildreserv: "bana-kvall",
       signatur: JOURNALISTER.nyheter,
       etikett: "STORLOPPSFACIT",
       rubrik: d.dåligDag ? `${namn.toUpperCase()} VAR INTE SIG SJÄLV` : "FAVORITFALLET",

@@ -68,7 +68,7 @@ export function prövaAvgång(spel) {
   const nyLön = Math.round((fm.lön || 1000) * 1.6 / 100) * 100;
   köScen(spel, {
     slag: "förstaman_avgång",
-    betydelse: 78, bild: "forstaman",
+    betydelse: 78, bild: "kontor", bildreserv: "forstaman",
     etikett: "STALLKONTORET",
     rubrik: `${förnamn(fm.namn).toUpperCase()} VILL VIDARE`,
     ingress: `${fm.namn} har varit din högra hand i ${fm.säsongerHosDig} säsong${fm.säsongerHosDig > 1 ? "er" : ""}. `
@@ -144,7 +144,7 @@ export function köRekrytering(spel) {
   const kandidater = förstamanskandidater();
   köScen(spel, {
     slag: "rekrytering",
-    betydelse: 70, bild: "forstaman",
+    betydelse: 70, bild: "kontor", bildreserv: "forstaman",
     etikett: "STALLKONTORET",
     rubrik: "STOLEN STÅR TOM",
     ingress: "Tre har sökt jobbet som förstaman. Profilen färgar råden genom hela karriären — fostraren bygger långsamt, pådrivaren pressar formen, taktikern läser loppen.",
@@ -221,7 +221,7 @@ export function ägarrelation(spel, ägare, delta) {
     const nivå = 46 + Math.round(spel.renommé / 5);
     köScen(spel, {
       slag: "ägarhäst",
-      betydelse: 64, bild: "stall-morgon",
+      betydelse: 64, bild: "agare", bildreserv: "stall-morgon",
       etikett: "TELEFONEN RINGER",
       rubrik: `${ägare.toUpperCase()} HAR EN TILL`,
       ingress: `${ägare} är nöjd — så nöjd att nästa häst också ska stå hos dig. Den här är bättre än den förra: ägaren har köpt dyrt och siktar högt.`,

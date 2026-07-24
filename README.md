@@ -475,6 +475,38 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Rätt ansikte och klippet på Hem (v69)
+
+Två fynd från spel i mobilen. **Berit visades med bild på en karl:**
+mentorpoolen har två kvinnor och två män men bildplatsen var en enda
+`mentor.jpg`. Nu väljer alla persondrivna bildplatser fil efter
+förnamnet — `könAvFörnamn` i namnpaketet är en EXAKT uppslagning (alla
+namn i spelet kommer ur våra egna pooler, ingen heuristik) — med
+reservkedja `mentor-kvinna.jpg → mentor.jpg → initialer`. Porträtt-
+komponenten fick samma kedja som Bild. Kandidaterna kan finlira med
+`kandidat-{profil}-{kön}.jpg`; samtalsscenens motiv är en tom veranda
+och förblir könlös.
+
+**Uppslaget på Hem såg ut som en dubblett av helskärmen** det just var
+— hela scen-rubriken i full storlek låg kvar. Tänkt som eko, upplevt
+som repris. Nu är det ett TIDNINGSKLIPP (.klipp): klippkant i tegel,
+etikett "Ur Travbladet", rubrik i klippstorlek, en tvåraders rad.
+Ögonblicket bor i scenen och i Journalen; Hem sparar urklippet.
+
+## Bildlagrets två skikt (v68)
+
+Bild-komponenten fick en RESERVKEDJA: en scen kan peka på en dedikerad
+utökningsbild (`bild: "avsked", bildreserv: "gard-hero"`) och laddningen
+provar i tur och ordning bilder/avsked.jpg → ./avsked.jpg →
+bilder/gard-hero.jpg → ./gard-hero.jpg → SVG. Åtta KÄRNBILDER täcker
+därmed hela spelet, och tio UTÖKNINGSBILDER (arv, avsked, rekord,
+rivaler, kontor, agare, samtalet, krans, skada, comeback, facit) ger
+scentyperna egna motiv i den takt bildmappen fylls — ingen plats gapar
+någonsin tom. Hela listan med storlekar, motivbeskrivningar,
+promptråd och prioritetsordning står i `bilder/LÄSMIG.md`; pressens
+tidningssidor behöver inga egna bildversioner eftersom CSS-filtret
+(saturate 0.7, förhöjd kontrast) gör färgfotona till pressfoton.
+
 ## Världens röst och variationsbredden (v67)
 
 **Sfären handlar om fler än dig.** En tidning som bara skriver om ett
@@ -986,4 +1018,5 @@ journalisternas signaturer (v62) och rekordtavlan, hall of fame och
 säsongskrönikorna (v63) samt tidningssidan och prologens
 helskärmsberättelse (v64) och mentorns sista båge med minnesloppet och
 gårdens synliga historia (v65) samt motgången som berättelse (v66) och världens röst med
-variationsbredden (v67).
+variationsbredden (v67) samt bildlagrets reservkedja (v68) och rätt ansikte med klippet på
+Hem (v69).
