@@ -4,6 +4,7 @@ import { TAKTIKER } from "./data-lopp.js";
 import { veckansLopp, startförbud, kravText } from "./data-kalender.js";
 import { KUSKAR, villig, svar, uppbokad, uppbokadeI } from "./data-kuskar.js";
 import { loppmatchning } from "./engine-forstaman.js";
+import { Bild } from "./ui-grafik.js";
 import { BANOR } from "./data-namnpaket.js";
 import { distanspassning } from "./engine-hast.js";
 import { byggFält, rustaFält, bokför } from "./engine-varld.js";
@@ -307,10 +308,63 @@ function Tracking({ bild, dist }) {
     </div>`;
 }
 
+/**
+ * Segerartikeln — skissernas panel 3. Visas efter stora segrar och skrivs
+ * av loppfakta: dödensresa, spets hela vägen, skräll, marginal. Samma
+ * seger ger aldrig samma artikel som en annan, för loppen är olika.
+ */
+function Segerartikel({ körning, facit }) {
+  const { sim, häst, kusk, lopp } = körning;
+  const min = facit.min;
+  if (min.ur || min.plats !== 1) return null;
+  const stor = lopp.storlopp || (lopp.pris?.[0] ?? 0) >= 40000 || min.streck < 14
+    || (häst.milstolpar ?? []).some((m) => m.typ === "första_seger" && m.vecka === min.vecka);
+  if (!stor && (lopp.pris?.[0] ?? 0) < 25000) return null;
+
+  const tvåa = sim.resultat.find((r) => r.plats === 2);
+  const marginal = tvåa ? Math.max(0.1, (tvåa.sek - min.sek) * 5.5) : null;
+  const dödens = (min.dödensTid ?? 0) > 22;
+  const spets = min.läge === "ledningen";
+  const skräll = min.streck < 12;
+
+  const rubrik = dödens ? "KROSSADE MOTSTÅNDET"
+    : skräll ? "SKRÄLLEN INGEN SÅG KOMMA"
+    : spets ? "LEDDE FRÅN START TILL MÅL"
+    : lopp.storlopp ? "STALLETS STÖRSTA KVÄLL"
+    : "SEGERN SATT DÄR DEN SKULLE";
+  const ingress = dödens
+    ? `${häst.namn} vann från dödens — ${Math.round(min.dödensTid * 13)} meter utan rygg, och ändå starkast på upploppet.`
+    : skräll ? `Bara ${min.streck.toFixed(0)} % av spelarna trodde på ${häst.namn}. ${kusk.namn} visste bättre.`
+    : spets ? `${kusk.namn} tog kommandot direkt med ${häst.namn} och släppte det aldrig.`
+    : `${häst.namn} och ${kusk.namn} gjorde jobbet när det räknades.`;
+
+  return html`
+    <div class="scen" style=${{ marginTop: "12px" }}>
+      <${Bild} id="bana-kvall" alt="" fallback=${null} />
+      <div class="scen-etikett">${lopp.banaNamn} · säsong ${min.säsong ?? ""} ${lopp.storlopp ? "· STORLOPP" : ""}</div>
+      <div class="scen-rubrik" style=${{ fontSize: "32px" }}>${rubrik}</div>
+      <div class="ingress">${ingress}</div>
+      <div class="faktaruta">
+        <div><span>Lopp</span>${lopp.kortnamn || lopp.namn}</div>
+        <div><span>Distans</span>${lopp.dist} m ${lopp.start}</div>
+        <div><span>Segertid</span>${kmtid(min.km)}</div>
+        ${marginal && html`<div><span>Marginal</span>${marginal.toFixed(1).replace(".", ",")} längder</div>`}
+        <div><span>Spelprocent</span>${min.streck.toFixed(0)} %</div>
+        ${dödens && html`<div><span>Utan rygg</span>ca ${Math.round(min.dödensTid * 13)} m</div>`}
+      </div>
+      <div class="citat">»${dödens ? "Hon fick göra allt jobbet själv. Att hon ändå orkar hela vägen — det säger allt."
+        : skräll ? "Vi visste mer än spelarna den här gången."
+        : "Precis loppet vi ville ha."}«
+        <span class="citat-vem">${spel_citat(körning)}</span></div>
+    </div>`;
+}
+const spel_citat = (k) => k.kusk?.namn ? `${k.kusk.namn}, kusk` : "Stallet";
+
 function Facit({ körning, facit, onKlart }) {
   const { sim, häst, kusk } = körning;
   const min = facit.min;
   return html`
+    <${Segerartikel} körning=${körning} facit=${facit} />
     <table>
       <thead><tr><th>Pl</th><th>Sp</th><th>Häst</th><th>Kusk</th><th>%</th><th>Km</th><th>S400</th></tr></thead>
       <tbody>

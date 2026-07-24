@@ -116,7 +116,7 @@ export function FörstamansvalVy({ spel, uppdatera }) {
         <button key=${k.profil} class=${"banval" + (vald === k.profil ? " vald" : "")}
           onClick=${() => sättVald(k.profil)}>
           <div class="portrad">
-            <${Porträtt} id=${"kandidat-" + k.profil} namn=${k.namn} färg="#1E3A5F" storlek=${44} />
+            <${Porträtt} id=${"kandidat-" + k.profil.replace("å", "a")} namn=${k.namn} färg="#1E3A5F" storlek=${44} />
             <div class="namn" style=${{ fontSize: "19px" }}>${k.namn}, ${k.ålder}</div>
           </div>
           <div class="meta">${k.profil} — ${k.profiltext} · ${kr(k.lön)} kr/vecka</div>

@@ -457,6 +457,22 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Skissernas sista paneler (v57)
+
+Träningsplanen (panel 6) i ärlig veckoform: rutnät över hela stallet med
+figur, vald träning som färgkodat pass, energi/form-läget och
+förstamannens invändning som guldflagga — spelet är veckobaserat, så
+planen visar veckan i stället för ett påhittat dagsschema. Segerartikeln
+(panel 3) skrivs av loppfakta efter stora segrar: KROSSADE MOTSTÅNDET
+vid dödensresa, SKRÄLLEN INGEN SÅG KOMMA under 12 %, LEDDE FRÅN START
+TILL MÅL i spets — med faktaruta (segertid, marginal i längder,
+spelprocent, meter utan rygg) och kuskcitat. Säsongskrönikan (panel 9)
+fick rubrik efter utfall, säsongens häst med figur, höjdpunkterna ur
+händelsemotorn och förstamannens slutord färgat av profilen.
+
+Bildspecifikationen ligger i bilder/LÄSMIG.md: åtta valfria JPG-filer
+(scener 1200×800, porträtt 512×512) med exakta filnamn och prompttips.
+
 ## Skissernas paneler (v56)
 
 Designskissernas layouter, byggda på riktigt: ATG-startlistan (spår, häst

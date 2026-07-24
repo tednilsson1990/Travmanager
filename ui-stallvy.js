@@ -12,25 +12,40 @@ import { säsongsHändelser } from "./engine-handelser.js";
 import { Häst } from "./ui-grafik.js";
 import { BANOR } from "./data-namnpaket.js";
 
-function Förstamankort({ spel, uppdatera }) {
+/**
+ * Träningsplanen — skissernas panel 6, i ärlig veckoform. Ett rutnät över
+ * hela stallet: figuren, vald träning, energi- och formläget, och
+ * förstamannens invändning där den finns. Spelet är veckobaserat, så
+ * planen visar veckan — inte ett påhittat dagsschema.
+ */
+function Träningsplan({ spel, uppdatera }) {
   const fm = spel.förstaman;
-  if (!fm) return null;
-  const råd = spel.stall.map((h) => ({ häst: h, ...träningsråd(fm, h) }));
-  const avviker = råd.filter((r) => r.häst.träning !== r.träning);
+  if (!fm || !spel.stall.length) return null;
+  const rader = spel.stall.map((h) => ({ häst: h, råd: träningsråd(fm, h) }));
+  const avviker = rader.filter((r) => r.häst.skada === 0 && r.häst.träning !== r.råd.träning);
   return html`
     <div class="kort">
-      <div class="meta">Förstaman · ${fm.profil}</div>
-      <div class="namn">${fm.namn}</div>
-      ${avviker.length === 0
-        ? html`<div class="logg">»Träningen ligger som jag vill ha den. Bra vecka.«</div>`
-        : html`
-          ${avviker.slice(0, 3).map((r) => html`
-            <div class="logg" key=${r.häst.id ?? r.häst.namn}>
-              »<b>${r.häst.namn}</b>: ${r.motiv}«
-            </div>`)}
-          <button class="btn liten" onClick=${() => uppdatera((s) => {
-            s.stall.forEach((h) => { h.träning = träningsråd(s.förstaman, h).träning; });
-          })}>Låt ${fm.namn.split(" ")[0]} lägga träningen</button>`}
+      <div class="meta">Veckans träningsplan · vecka ${Math.min(spel.vecka, spel.veckor)}</div>
+      <div class="tplan">
+        ${rader.map(({ häst, råd }) => html`
+          <div class="tplan-rad" key=${häst.id}>
+            <${Häst} namn=${häst.namn} dräkt=${spel.dräkt} storlek=${40} />
+            <div class="tplan-mitt">
+              <div class="tplan-namn">${häst.namn}</div>
+              <div class="tplan-mini">E ${Math.round(häst.energi)} · F ${Math.round(häst.form)}</div>
+            </div>
+            ${häst.skada > 0
+              ? html`<span class="tplan-pass skadad">skadad ${häst.skada} v</span>`
+              : html`<span class=${"tplan-pass " + häst.träning}>${TRÄNING[häst.träning].namn}</span>`}
+            ${häst.skada === 0 && häst.träning !== råd.träning &&
+              html`<span class="tplan-flagga" title=${råd.motiv}>${fm.namn.split(" ")[0]}: ${TRÄNING[råd.träning].namn}</span>`}
+          </div>`)}
+      </div>
+      ${avviker.length > 0 && html`
+        <div class="logg" style=${{ marginTop: "8px" }}>»${avviker[0].råd.motiv}«${avviker.length > 1 ? ` — och ${avviker.length - 1} till.` : ""}</div>
+        <button class="btn liten" onClick=${() => uppdatera((s) => {
+          s.stall.forEach((h) => { if (h.skada === 0) h.träning = träningsråd(s.förstaman, h).träning; });
+        })}>Låt ${fm.namn.split(" ")[0]} lägga planen</button>`}
     </div>`;
 }
 
@@ -223,19 +238,58 @@ function Hästkort({ häst, uppdatera, dräkt, öppna }) {
     </div>`;
 }
 
+/**
+ * Säsongskrönikan — skissernas panel 9. Rubriken skrivs av utfallet,
+ * säsongens häst får sin egen ruta, höjdpunkterna hämtas ur
+ * händelsemotorn och förstamannen får sista ordet, färgat av profilen.
+ */
 function Säsongsavslut({ spel, uppdatera }) {
   const rad = spel.säsongAvslutad;
   if (!rad) return null;
+  const topp = rad.plats <= 3, botten = rad.plats > rad.avStall * 0.7;
+  const rubrik = rad.säsong === 1
+    ? (topp ? "EN FÖRSTA SÄSONG ATT MINNAS" : botten ? "EN TUFF START — MEN GRUNDEN ÄR LAGD" : "EN STARK FÖRSTA SÄSONG")
+    : topp ? `ÅRET DÅ ${spel.stallnamn.toUpperCase()} TOG STEGET`
+    : botten ? "ETT ÅR ATT LÄGGA BAKOM SIG" : "STEG FÖR STEG ÅT RÄTT HÅLL";
+  const bästa = rad.bästaHäst && spel.stall.find((h) => h.namn === rad.bästaHäst);
+  const fm = spel.förstaman;
+  const fmOrd = !fm ? null
+    : fm.profil === "taktiker"
+      ? `»${rad.segrar} segrar på ${rad.starter} starter — matchningen bär. Nästa år väljer vi loppen ännu hårdare.«`
+    : fm.profil === "pådrivare"
+      ? `»Vi lämnade segrar på bordet. Mer jobb i backen, fler starter — nästa säsong tar vi dem.«`
+      : `»Hästarna gick helare genom året än de flesta stall kan säga. Det är så man bygger något som håller.«`;
   return html`
     <div class="sasong">
-      <div class="sasong-rubrik">Säsong ${rad.säsong} avslutad</div>
-      <div class="sasong-plats">${rad.plats}:a<span> av ${rad.avStall} stall</span></div>
-      <div class="logg">${kr(rad.intjänat)} kr insprunget · ${rad.segrar} segrar på ${rad.starter} starter</div>
-      ${rad.bästaHäst && html`<div class="logg">Stallets bästa: <b>${rad.bästaHäst}</b>,
-        ${kr(rad.bästaHästIntjänat)} kr</div>`}
-      ${säsongsHändelser(spel, rad.säsong).slice(0, 3).map((h) => html`
-        <div class="logg" key=${h.id}>· ${h.data?.text ?? h.typ.replaceAll("_", " ")}
-          ${h.aktörer?.häst ? ` — ${h.aktörer.häst}` : ""} (v${h.vecka})</div>`)}
+      <div class="scen-etikett">Säsong ${rad.säsong} · krönika</div>
+      <div class="scen-rubrik" style=${{ fontSize: "31px" }}>${rubrik}</div>
+      <div class="sasong-plats">${rad.plats}:a<span> av ${rad.avStall} stall i tränarligan</span></div>
+      <div class="logg" style=${{ textAlign: "center" }}>${kr(rad.intjänat)} kr insprunget · ${rad.segrar} segrar på ${rad.starter} starter</div>
+
+      ${rad.bästaHäst && html`
+        <div class="kort" style=${{ textAlign: "left", marginTop: "12px" }}>
+          <div class="meta">Säsongens häst</div>
+          <div class="portrad">
+            ${bästa && html`<${Häst} namn=${bästa.namn} dräkt=${spel.dräkt} storlek=${64} />`}
+            <div>
+              <div class="namn" style=${{ fontSize: "20px" }}>${rad.bästaHäst}</div>
+              <div class="meta">${kr(rad.bästaHästIntjänat)} kr insprunget i år</div>
+            </div>
+          </div>
+        </div>`}
+
+      <div class="kort" style=${{ textAlign: "left" }}>
+        <div class="meta">Säsongens höjdpunkter</div>
+        ${säsongsHändelser(spel, rad.säsong).slice(0, 4).map((h) => html`
+          <div class="notis" key=${h.id}><b>${h.data?.text ?? h.typ.replaceAll("_", " ")}</b>${h.aktörer?.häst ? ` — ${h.aktörer.häst}` : ""} · v${h.vecka}</div>`)}
+        ${säsongsHändelser(spel, rad.säsong).length === 0 && html`
+          <div class="logg">Ett år utan rubriker. De kommer.</div>`}
+      </div>
+
+      ${fmOrd && html`<div class="samtal" style=${{ textAlign: "left" }}>
+        <div class="samtal-vem">Förstamannen har ordet · ${fm.namn}</div>
+        <div class="samtal-text">${fmOrd}</div>
+      </div>`}
       <button class="btn" onClick=${() => {
         let resultat;
         uppdatera((s) => { resultat = nySäsong(s); s.säsongAvslutad = null; });
@@ -262,7 +316,7 @@ export default function StallVy({ spel, uppdatera, nystart }) {
     <${Mentorkort} spel=${spel} />
     <${Banflytt} spel=${spel} uppdatera=${uppdatera} />
     <${Erbjudande} spel=${spel} uppdatera=${uppdatera} />
-    <${Förstamankort} spel=${spel} uppdatera=${uppdatera} />
+    <${Träningsplan} spel=${spel} uppdatera=${uppdatera} />
     <h2>Veckans jobb</h2>
     ${spel.stall.map((h) => html`<${Hästkort} key=${h.id} häst=${h} uppdatera=${uppdatera} dräkt=${spel.dräkt}
       öppna=${() => sättValdHäst(h.id)} />`)}

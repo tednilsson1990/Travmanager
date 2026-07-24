@@ -363,3 +363,28 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .flik[aria-selected="true"]{color:var(--bläck);background:rgba(30,58,95,.08)}
 .tillbaka{background:none;border:0;color:var(--marin);font:600 13px 'Inter',sans-serif;
   cursor:pointer;padding:10px 0 0;display:block}
+
+/* Träningsplanen — veckorutnätet */
+.tplan{display:grid;gap:2px;margin-top:6px}
+.tplan-rad{display:flex;align-items:center;gap:9px;padding:6px 2px;
+  border-bottom:1px solid var(--linje)}
+.tplan-rad:last-child{border-bottom:0}
+.tplan-mitt{flex:1;min-width:0}
+.tplan-namn{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tplan-mini{font-family:'Roboto Mono',monospace;font-size:9px;color:var(--dis)}
+.tplan-pass{font-family:'Roboto Mono',monospace;font-size:10px;padding:4px 8px;border-radius:6px;
+  white-space:nowrap;background:#E5E1D6;color:#454F5B}
+.tplan-pass.vila{background:#DCE7F2;color:#2A4A6E}
+.tplan-pass.intervall,.tplan-pass.kvalitet{background:#F2E3D9;color:#8A4A22}
+.tplan-pass.start{background:#EDE4F2;color:#5A3A78}
+.tplan-pass.skadad{background:#F2DCDA;color:var(--tegel)}
+.tplan-flagga{font-family:'Roboto Mono',monospace;font-size:9px;color:var(--guld);
+  border:1px dashed var(--guld);border-radius:6px;padding:3px 6px;white-space:nowrap}
+
+/* Segerartikelns faktaruta */
+.faktaruta{background:#F7F4EC;border:1px solid var(--linje);border-radius:8px;
+  padding:10px 12px;margin:12px 0 4px;font-size:13px}
+.faktaruta > div{display:flex;gap:8px;padding:3px 0;border-bottom:1px dotted var(--linje)}
+.faktaruta > div:last-child{border-bottom:0}
+.faktaruta span{font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--dis);min-width:88px;padding-top:2px}
