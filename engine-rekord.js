@@ -12,7 +12,7 @@
  * uppdrivet lopp är ingen notering. DESIGNGRÄNS: allt här LÄSER lopp som
  * redan avgjorts. Ingen slump, inget som rör motorn.
  */
-import { kr } from "./engine-util.js";
+import { kr, plock } from "./engine-util.js";
 import { registreraHändelse } from "./engine-handelser.js";
 import { JOURNALISTER } from "./data-namnpaket.js";
 
@@ -150,6 +150,18 @@ export function skrivSäsongskrönika(spel, rad) {
   if (rekord.length === 1) stycken.push(`En notering föll: ${rekord[0].data?.text?.toLowerCase() ?? "ett stallrekord"}.`);
   else if (rekord.length > 1) stycken.push(`${rekord.length} noteringar föll under året — tavlan i stallgången fick skrivas om.`);
 
+  /* Motgångarna hör också till året — skadeåret och favoritfallet får
+     sina meningar när de präglade säsongen. En krönika som bara minns
+     segrarna är en annons, inte en krönika. */
+  const skador = händelser.filter((h) => h.typ === "stjärnskada");
+  if (skador.length >= 2) {
+    stycken.push(`Året var också skadornas: ${skador.length} gånger tvingades stallets bärande hästar till boxvila. Att facit ändå blev ${rad.segrar} segrar säger något om djupet.`);
+  }
+  const fall = händelser.find((h) => h.typ === "favoritfall" && h.data?.storlopp);
+  if (fall && störst?.typ !== "favoritfall") {
+    stycken.push(`Och så favoritfallet i ${fall.data?.lopp} — ${fall.data?.streck} procent av spelarna fick fel med ${fall.aktörer?.hästNamn}. Sådant glömmer varken spelare eller stall.`);
+  }
+
   /* Sorgen och avskeden, om de fanns och inte redan var årets ögonblick. */
   const avsked = händelser.filter((h) => h.typ === "pensionering" && (h.betydelse ?? 0) >= 55);
   if (avsked.length && störst?.typ !== "pensionering") {
@@ -160,10 +172,19 @@ export function skrivSäsongskrönika(spel, rad) {
 
   /* Utgången: blicken framåt, färgad av tabelläget. */
   stycken.push(rad.plats === 1
-    ? `Frågan inför nästa år är den som alltid följer på en ligaseger: hur försvarar man en tron man just byggt?`
+    ? plock([
+        `Frågan inför nästa år är den som alltid följer på en ligaseger: hur försvarar man en tron man just byggt?`,
+        `Nästa säsong börjar alla tabeller på noll — utom förväntningarna. De börjar här.`,
+      ])
     : rad.plats <= 3
-      ? `Steget till toppen är inte långt. Det är det som gör vintern kort.`
-      : `Grunden ligger där den ligger. Nu handlar det om vad som byggs på den.`);
+      ? plock([
+          `Steget till toppen är inte långt. Det är det som gör vintern kort.`,
+          `Så nära, så många gånger i år. Någon gång tippar det över — frågan är bara när.`,
+        ])
+      : plock([
+          `Grunden ligger där den ligger. Nu handlar det om vad som byggs på den.`,
+          `Tabeller mäter ett år i taget. Gårdar byggs i längre valutor än så.`,
+        ]));
 
   rad.krönika = { signatur: JOURNALISTER.krönikör, stycken };
   return rad.krönika;

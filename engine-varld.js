@@ -253,7 +253,10 @@ export function bokför(värld, lopp, resultat, vecka) {
     h.intjänat = (h.intjänat || 0) + pris;
     if (!r.ur && r.plats) {
       h.form = klamp(h.form + (r.plats <= 3 ? 4 : -2));
-      if (r.plats === 1) h.segrar = (h.segrar || 0) + 1;
+      /* Segersviten — världens hästar bygger också berättelser. Sviten
+         är det pressen räknar högt: "fjärde raka" säljer lösnummer. */
+      if (r.plats === 1) { h.segrar = (h.segrar || 0) + 1; h.svit = (h.svit || 0) + 1; }
+      else h.svit = 0;
     } else {
       h.form = klamp(h.form - 3);
     }

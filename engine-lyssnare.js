@@ -16,7 +16,7 @@
  */
 import { påHändelse } from "./engine-handelser.js";
 import { skrivPress } from "./engine-vecka.js";
-import { klamp, kr } from "./engine-util.js";
+import { klamp, kr, plock } from "./engine-util.js";
 import { köScen } from "./engine-scener.js";
 import { JOURNALISTER, TIDNINGSNAMN } from "./data-namnpaket.js";
 
@@ -61,9 +61,11 @@ function läggTrofé(spel, trofé) {
 påHändelse("första_seger", (spel, h) => {
   const m = mentorn(spel);
   if (!m) return;
-  spel.logg?.unshift(
-    `<b>${m.namn}</b> ringde på kvällen. »Jag såg loppet. Första segern glömmer man aldrig — min kom också på ${h.data?.bana ?? "hemmabanan"}.«`
-  );
+  spel.logg?.unshift(plock([
+    `<b>${m.namn}</b> ringde på kvällen. »Jag såg loppet. Första segern glömmer man aldrig — min kom också på ${h.data?.bana ?? "hemmabanan"}.«`,
+    `<b>${m.namn}</b> ringde. »Nu börjar det. Skriv upp datumet någonstans — du kommer vilja minnas det.«`,
+    `<b>${m.namn}</b> lämnade ett meddelande: »Såg det på skärmen. Gården har vunnit lopp igen. Tack.«`,
+  ]));
 });
 
 påHändelse("storloppsseger", (spel, h) => {
@@ -104,10 +106,10 @@ påHändelse("storloppsseger", (spel, h) => {
   sättHuvudnyhet(spel, {
     betydelse: h.betydelse,
     etikett: `${d.bana ?? ""} · STORLOPP`,
-    rubrik: dödens ? "KROSSADE MOTSTÅNDET"
-      : skräll ? "SKRÄLLEN INGEN SÅG KOMMA"
-      : spets ? "LEDDE FRÅN START TILL MÅL"
-      : "STALLETS STÖRSTA KVÄLL",
+    rubrik: dödens ? plock(["KROSSADE MOTSTÅNDET", "STARKAST NÄR DET KOSTADE", "VANN UTAN RYGG — VANN ÄNDÅ"])
+      : skräll ? plock(["SKRÄLLEN INGEN SÅG KOMMA", "SPELARNA FICK FEL — REJÄLT", "OUTSIDERN SOM VISSTE BÄST"])
+      : spets ? plock(["LEDDE FRÅN START TILL MÅL", "SPETS, LUGN OCH SEDAN AVGÖRANDE", "INGEN KOM ENS NÄRA"])
+      : plock(["STALLETS STÖRSTA KVÄLL", "KVÄLLEN ALLT FÖLL PÅ PLATS", "SEGERN SOM BYGGDES I ÅR AV JOBB"]),
     ingress: dödens
       ? `${namn} vann från dödens — ${d.meterUtanRygg} meter utan rygg, och ändå starkast på upploppet.`
       : skräll ? `Bara ${Math.round(d.streck)} % av spelarna trodde på ${namn}. ${h.aktörer?.kuskNamn ?? "Kusken"} visste bättre.`
@@ -121,9 +123,15 @@ påHändelse("storloppsseger", (spel, h) => {
       d.position1000 && { etikett: "Vid 1 000 m", värde: d.position1000 },
       d.meterUtanRygg ? { etikett: "Utan rygg", värde: `ca ${d.meterUtanRygg} m` } : null,
     ].filter(Boolean),
-    citat: dödens ? "Hon fick göra allt jobbet själv. Att hon ändå orkar hela vägen — det säger allt."
-      : skräll ? "Vi visste mer än spelarna den här gången."
-      : "Precis loppet vi ville ha.",
+    citat: dödens ? plock([
+        "Hon fick göra allt jobbet själv. Att hon ändå orkar hela vägen — det säger allt.",
+        "Utvändigt varvet runt. Det finns hästar som inte vet vad det kostar. Det här är en av dem.",
+      ])
+      : skräll ? plock([
+        "Vi visste mer än spelarna den här gången.",
+        "Ingen trodde på oss. Vi behövde inte fler än oss själva.",
+      ])
+      : plock(["Precis loppet vi ville ha.", "Allt satt. Sådana kvällar tackar man för."]),
     citatVem: h.aktörer?.kuskNamn ? `${h.aktörer.kuskNamn}, kusk` : "Stallet",
   });
 
@@ -205,11 +213,21 @@ påHändelse("*", (spel, h) => {
   if (!ägare || (h.betydelse ?? 0) < 50) return;
   const namn = h.aktörer?.hästNamn ?? "hästen";
   const text = h.typ === "storloppsseger"
-    ? `»Jag har väntat hela livet på en sådan kväll. Tack för att du tog hand om ${namn}.«`
+    ? plock([
+        `»Jag har väntat hela livet på en sådan kväll. Tack för att du tog hand om ${namn}.«`,
+        `»Jag grät på upploppet. Skäms inte ett dugg. ${namn}!«`,
+        `»Farsan köpte sin första häst 1974. Han hade älskat det här.«`,
+      ])
     : h.typ === "miljonen"
-      ? `»En miljon. Vem hade trott det när vi köpte ${namn}.«`
+      ? plock([
+          `»En miljon. Vem hade trott det när vi köpte ${namn}.«`,
+          `»Jag har ramen till miljondiplomet klar sedan i våras. Nu åker det upp.«`,
+        ])
       : h.typ === "första_seger"
-        ? `»Första segern! Jag stod vid mållinjen och skrek.«`
+        ? plock([
+            `»Första segern! Jag stod vid mållinjen och skrek.«`,
+            `»Nu vet ${namn} hur det känns. Det ändrar allt, sa alltid min far.«`,
+          ])
         : null;
   if (text) spel.logg?.unshift(`<b>${ägare}</b> hörde av sig: ${text}`);
 });

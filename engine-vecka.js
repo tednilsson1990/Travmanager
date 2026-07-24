@@ -15,6 +15,8 @@ import { körStorloppsbåge } from "./engine-storlopp.js";
 import { uppdateraAmbition, prövaAvgång, gamlaBekanta, ägarrelation } from "./engine-personal.js";
 import { uppdateraRekordEfterLopp, skrivSäsongskrönika } from "./engine-rekord.js";
 import { mentornsNärvaro, efterMinneslopp } from "./engine-mentor.js";
+import { vidSkada, vidFavoritfall, vidFormsvacka } from "./engine-motgang.js";
+import { världensRöst } from "./engine-varldsrost.js";
 import { köScen } from "./engine-scener.js";
 import { JOURNALISTER, BANOR } from "./data-namnpaket.js";
 
@@ -31,12 +33,24 @@ function media(spel) {
   const h = [...spel.stall].filter((x) => x.skada === 0).sort((a, b) => b.form - a.form)[0];
   if (!h) return;
   if (slump() >= 0.28 + spel.renommé / 300) return;
+  /* Poolerna finns för att en karriär är lång: samma rubrik varje månad
+     gör tidningen till tapet. Varianterna säger samma sak med olika ord —
+     hypeeffekten är identisk, bara språket varierar. */
   if (h.form > 66) {
-    skrivPress(spel, `Formkurvan pekar rakt upp för ${h.namn}`,
-      "Travmedia noterar jobben. Väntas bli hårt spelad.", "bra", h, 12, JOURNALISTER.siffror);
+    const [rubrik, byline] = plock([
+      [`Formkurvan pekar rakt upp för ${h.namn}`, "Travmedia noterar jobben. Väntas bli hårt spelad."],
+      [`${h.namn} flyger på träningen`, "Klockorna i jobben har fått spelarna att vässa pennorna."],
+      [`Insidern: »${h.namn} är bättre än någonsin«`, "Stallbacken viskar, och strecket lär följa efter."],
+      [`Håll ögonen på ${h.namn}`, "Formtoppen ser ut att pricka in nästa start."],
+    ]);
+    skrivPress(spel, rubrik, byline, "bra", h, 12, JOURNALISTER.siffror);
   } else if (h.form < 40) {
-    skrivPress(spel, `Frågetecken kring ${h.namn}`,
-      "Uteblivna resultat gör att spelarna tvekar.", "dålig", h, -8, JOURNALISTER.siffror);
+    const [rubrik, byline] = plock([
+      [`Frågetecken kring ${h.namn}`, "Uteblivna resultat gör att spelarna tvekar."],
+      [`Var är formen, ${h.namn}?`, "Jobben imponerar inte, och strecket sjunker."],
+      [`Spelarna sviker ${h.namn}`, "Siffrorna ljuger sällan — och de pekar nedåt."],
+    ]);
+    skrivPress(spel, rubrik, byline, "dålig", h, -8, JOURNALISTER.siffror);
   }
 }
 
@@ -114,6 +128,8 @@ export function körVecka(spel) {
       h.skada = läkning(spel, int(1, 3));
       h.form = klamp(h.form - 12);
       spel.logg.push(`<b>${h.namn}</b> kom ur jobbet ömmande. Borta ${h.skada} v.`);
+      /* En vardagshäst stannar i loggen; en stjärna blir en nyhet. */
+      vidSkada(spel, h, h.skada);
     }
   });
 
@@ -179,6 +195,9 @@ export function körVecka(spel) {
   });
   spel.startadeLopp = [];
   världensNyheter.forEach((n) => skrivPress(spel, n.rubrik, n.byline, "neutral"));
+  /* Ligan, sviterna, miljongränserna, uppstickaren — världens egna
+     följetonger, hårt throttlade så att de sorlar utan att dränka. */
+  världensRöst(spel, skrivPress);
 
   media(spel);
 
@@ -324,6 +343,9 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   uppdateraRekordEfterLopp(spel, { häst, lopp, min, brutto, fakta, skrivPress });
   /* Minnesloppets krans väger mer än sitt förstapris. */
   efterMinneslopp(spel, lopp, häst, min);
+  /* Motgången som berättelse: favoritfallet och formsvackan. */
+  vidFavoritfall(spel, { häst, lopp, min, dåligDag });
+  vidFormsvacka(spel, häst, min);
   /* Ägaren minns vad hens häst gör hos dig. */
   if (häst.ägare) ägarrelation(spel, häst.ägare,
     min.ur ? -3 : vann ? 8 : pall ? 4 : -1);
@@ -345,8 +367,10 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
     skrivPress(spel, `${häst.namn} inbjuden till arrangörslopp`,
       `Segern i ${lopp.kortnamn || lopp.namn} öppnade dörren`, "positiv");
   }
+  const skadaFöre = häst.skada;
   if (slump() < (häst.energi < 25 ? 0.18 : 0.05)) häst.skada = läkning(spel, int(1, 2));
   if (dåligDag && slump() < 0.35) häst.skada = Math.max(häst.skada, läkning(spel, int(1, 2)));
+  if (häst.skada > 0 && skadaFöre === 0) vidSkada(spel, häst, häst.skada);
 
   let renΔ = 0, relΔ = 0, hypeΔ = 0, troΔ = 0;
   const kortnamn = lopp.kortnamn || lopp.namn.split(",")[0];

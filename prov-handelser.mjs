@@ -48,7 +48,11 @@ console.log("\nPROV 1 — storloppsseger utlöser alla reaktioner");
   prov("krönikan fick posten", spel.krönika.length === 1);
   prov("hästNamn fylldes i ur id:t", spel.krönika[0].aktörer.hästNamn === "Vindarnas Ö");
   prov("förstamanId sattes automatiskt", spel.krönika[0].aktörer.förstamanId === "Elin Ranstad");
-  prov("huvudnyheten skrevs", spel.huvudnyhet?.rubrik === "KROSSADE MOTSTÅNDET");
+  /* Sedan v67 dras rubriken ur en variantpool — provet låser GRENEN
+     (dödensresan), inte den exakta strängen. */
+  prov("huvudnyheten skrevs ur dödensgrenen",
+    ["KROSSADE MOTSTÅNDET", "STARKAST NÄR DET KOSTADE", "VANN UTAN RYGG — VANN ÄNDÅ"]
+      .includes(spel.huvudnyhet?.rubrik));
   prov("huvudnyheten fick faktaruta", (spel.huvudnyhet?.fakta ?? []).length >= 4);
   prov("troférummet fick sin pokal", spel.troférum.length === 1);
   prov("renommét steg", spel.renommé > 40);

@@ -45,6 +45,8 @@ ui-scenvy.js            scenens yta: kvällsmörker, bild, rubrik, val
 engine-personal.js      personalens karriärer, ägarrelationer, banflytten
 engine-rekord.js        rekordtavlan, hall of fame, säsongskrönikan
 engine-mentor.js        mentorns sista båge: närvaro, bortgång, minneslopp
+engine-motgang.js       motgången: stjärnskada, favoritfall, svacka, comeback
+engine-varldsrost.js    världens röst: liga, sviter, miljonärer, uppstickaren
 ui-grafik.js            bildspråket: hästsilhuetter, dräkter, gårdskartan
 ui-hemvy.js             Hem — dagens redaktionella uppslag
 engine-forstaman.js     förstamannen: träningsråd och loppmatchning
@@ -321,6 +323,8 @@ node prov-scener.mjs           scenkön, valen och deras effekter
 node prov-personal.mjs         förstamansbågen, gamla bekanta, ägarna
 node prov-rekord.mjs           rekordtavlan, hall of fame, krönikan
 node prov-mentor.mjs           mentorns båge: varsamheten, minnesloppet
+node prov-motgang.mjs          motgångens trösklar och cirklar
+node prov-varldsrost.mjs       världsröstens throttling
 ```
 
 `verifiera.mjs` föddes ur ett tyst fel: en textersättning som missade
@@ -470,6 +474,65 @@ Prövat och avfärdat, i tur och ordning:
 Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållningen,
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
+
+## Världens röst och variationsbredden (v67)
+
+**Sfären handlar om fler än dig.** En tidning som bara skriver om ett
+stall är ett medlemsblad. `engine-varldsrost.js` ger världens egna
+följetonger notiser: ligadramatiken efter halva säsongen (dominans → "X
+drar ifrån", jämn topp → "Rysare i ligatoppen"), segersviter, miljonärer
+och exförstamansstallets frammarsch ("uppstickaren växer — alla vet var
+hen lärde sig").
+
+**Throttlingen ÄR designen**, och mätningen bevisade varför: första
+varvet gav en svitnotis och en miljonnotis varannan vecka — i en värld
+som kör sex lopp i veckan är fyra raka vanligare än det låter, och
+meriterna byggs bakåt redan vid världsskapandet så miljongränsen
+passeras i strid ström. Nu: sviter från FEM raka, en miljonrubrik per
+säsong (resten markeras tyst), en ligarubrik per säsong, och högst en
+världsföljetong var tredje vecka. Utfall på sex säsonger: 4 liga, 12
+sviter, 7 miljonärer — världen sorlar utan att dränka.
+
+**Variationsbredden.** En karriär är lång, och samma rubrik varje månad
+gör tidningen till tapet. De mest repeterade texterna drar nu ur pooler:
+medienotisernas formrubriker (4+3 varianter), storloppssegerns rubriker
+och citat (3+2 per gren — dödens, skräll, spets, standard),
+ägarreaktionerna, mentorns första_seger-samtal och hälsningar (8 st),
+samt krönikans utgångar (2 per tabelläge). Effekterna är identiska —
+bara språket varierar. Proven låser numera GRENEN, inte den exakta
+strängen. Mätt: 254 unika rubriker över sex säsonger.
+
+## Motgången som berättelse (v66)
+
+Fram till v65 tändes nästan all berättelse av framgång. Men slutmålets
+karriär är en berättelse om motgångar som ÖVERVANNS — och då måste
+motgångarna först få finnas. Fyra bågar i `engine-motgang.js`:
+
+**Stjärnans skada.** En vardagshäst som ömmar är en loggrad; en häst som
+BETYDER något (4+ segrar, 500 tkr, hype 55+ eller storloppsseger) blir
+händelsen `stjärnskada`. Lång frånvaro ger tidningssidan SKADEALARM med
+förstamannens plan efter profil — men HÖGST EN skadeförstasida per
+säsong. Första genomkörningen gav 65 sidor på sex säsonger i ett hårt
+tränat stall, och en förstasida i veckan är ingen förstasida; resten
+blir pressnotiser. Comebackscenen (TILLBAKA — OCH FÖRBI ALLA) kräver
+att skadan VAR en förstasida — cirkeln som sluts måste ha öppnats;
+övriga comebacksegrar blir en glad notis.
+
+**Favoritfallet.** Tung favorit (streck ≥ 35) utanför pallen: i
+vardagslopp en pressnotis av sifferjägaren och −2 spelförtroende; i
+storlopp tidningssidan STORLOPPSFACIT och −4. Dagsformen mildrar tonen —
+"VAR INTE SIG SJÄLV" i stället för "FAVORITFALLET", för en häst som inte
+var sig själv döms inte som en bluff.
+
+**Formsvackan.** Tre raka lopp utanför pallen för en stjärna väcker
+frågan "Vad är det med X?" — EN gång per svacka (flaggan sitter på
+hästen), −10 hype. Nästa pallplats nollställer räknaren och stänger
+frågan med den goda nyheten "Svackan bruten". Vardagshästars svackor är
+ingen nyhet alls.
+
+**Krönikan minns motgången.** Två eller fler stjärnskador ger
+skadeårets stycke; ett storloppsfavoritfall får sitt. En krönika som
+bara minns segrarna är en annons, inte en krönika.
 
 ## Mentorns sista båge och gårdens synliga historia (v65)
 
@@ -922,4 +985,5 @@ med val (v61) samt personalens karriärer, ägarrelationerna och
 journalisternas signaturer (v62) och rekordtavlan, hall of fame och
 säsongskrönikorna (v63) samt tidningssidan och prologens
 helskärmsberättelse (v64) och mentorns sista båge med minnesloppet och
-gårdens synliga historia (v65).
+gårdens synliga historia (v65) samt motgången som berättelse (v66) och världens röst med
+variationsbredden (v67).

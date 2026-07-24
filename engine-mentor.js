@@ -38,6 +38,10 @@ const HÄLSNINGAR = [
   (m) => `<b>${m.namn}</b> skickade ett vykort från kusten. »Hästarna syns härifrån också. Sköt om dig.«`,
   (m, spel) => `<b>${m.namn}</b> tittade förbi gårdsplanen. Stod länge vid staketet utan att säga något. »Den luktar likadant«, sa hen till slut.`,
   (m) => `<b>${m.namn}</b> ringde. Samtalet var kort. »Jag ville bara höra hovarna i bakgrunden.«`,
+  (m, spel) => `<b>${m.namn}</b> ringde efter en tävlingskväll. »Jag satt med programbladet och strök för ${spel.stallnamn}s hästar. Gammal vana.«`,
+  (m) => `<b>${m.namn}</b> skickade en urklippt tidningssida med ett veck i hörnet. Inget kort. Det behövdes inget.`,
+  (m, spel) => `<b>${m.namn}</b>: »Grannen frågade om jag saknar det. Jag sa: jag har inte slutat. Jag har bara bytt plats på läktaren.«`,
+  (m) => `<b>${m.namn}</b> ringde och pratade i tjugo minuter om en häst från 1988. Det var det bästa samtalet på länge.`,
 ];
 
 /**

@@ -106,6 +106,8 @@ export function avslutaSäsong(spel) {
 export function nySäsong(spel) {
   spel.säsong = (spel.säsong || 1) + 1;
   spel.vecka = 1;
+  /* Ny säsong, ny chans till en (1) skadeförstasida. */
+  delete spel.skadescenSäsong;
   spel.intjänat = 0;
   spel.logg = [];
   spel.startadeLopp = [];
