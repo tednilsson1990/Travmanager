@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="./styles.css?v=57" />
+<link rel="stylesheet" href="./styles.css?v=58" />
 
 <!--
   Inget byggsteg. Beroenden hämtas som ES-moduler.
@@ -40,28 +40,44 @@ window.addEventListener("unhandledrejection", (e) => {
 if ("serviceWorker" in navigator) {
   addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
 }
-/* VAKTHUNDEN. iOS Safari rapporterar inte alltid misslyckade modulimporter
-   som fel — då blir sidan bara svart. Efter sex sekunder med tom sida
-   provhämtas varje fil ur importmappen och de som saknas listas. En svart
-   skärm ska aldrig mer vara stum. */
+/* VAKTHUNDEN v2. Är sidan tom efter fem sekunder har modulgrafen
+   aldrig börjat köra — och iOS Safari berättar inte varför. Då tar
+   vakthunden reda på det själv: provimporterar main.js, och om den
+   fallerar provas varje modul ur importmappen tills syndaren hittas.
+   Skärmen visar filnamn och exakt felmeddelande — konsolen på skärmen. */
 setTimeout(async () => {
   const rot = document.getElementById("root");
   if (!rot || rot.childElementCount) return;
-  let saknade = [];
+  const visa = (rubrik, rader) => {
+    rot.innerHTML = '<div class="felruta"><div class="fel-rubrik">' + rubrik + ' (v58)</div>' +
+      '<div class="fel-text">' + rader.map((r) => String(r).replace(/</g, "&lt;")).join("<br><br>") + '</div>' +
+      '<div class="fel-hjalp">Din karriär är sparad och ligger kvar. Skicka texten ovan vidare — den räcker för att laga felet.</div></div>';
+  };
+  let karta;
+  try { karta = JSON.parse(document.querySelector("script[type=importmap]").textContent).imports; }
+  catch (e) { visa("Importmappen är trasig", [e.message]); return; }
+  /* Saknas filer på servern? */
+  const lokala = Object.values(karta).filter((u) => u.startsWith("./"));
+  const status = await Promise.all(lokala.map((u) =>
+    fetch(u, { method: "HEAD", cache: "no-store" }).then((r) => [u, r.status]).catch(() => [u, 0])));
+  const saknade = status.filter(([, st]) => st !== 200);
+  if (saknade.length) {
+    visa("Filer saknas på servern", saknade.map(([u, st]) => u + " — " + (st || "nätfel")));
+    return;
+  }
+  /* Alla filer finns — hitta modulen som vägrar köra. */
   try {
-    const karta = JSON.parse(document.querySelector("script[type=importmap]").textContent).imports;
-    const lokala = Object.values(karta).filter((u) => u.startsWith("./"));
-    const svar = await Promise.all(lokala.map((u) =>
-      fetch(u, { method: "HEAD", cache: "no-store" }).then((r) => [u, r.status]).catch(() => [u, 0])));
-    saknade = svar.filter(([, st]) => st !== 200);
-  } catch { /* diagnosen får inte själv krascha */ }
-  rot.innerHTML = '<div class="felruta"><div class="fel-rubrik">Spelet kunde inte starta (v57)</div>' +
-    '<div class="fel-text">' + (saknade.length
-      ? 'Följande filer saknas på servern eller gick inte att hämta:<br>' +
-        saknade.map(([u, st]) => u + " (" + (st || "nätfel") + ")").join("<br>")
-      : 'Alla filer finns — felet är i koden eller webbläsaren. Öppna konsolen och skicka vidare felmeddelandet.') +
-    '</div><div class="fel-hjalp">Din karriär är sparad och ligger kvar. Saknas filer: ladda upp HELA zip-innehållet igen, inte bara ändrade filer.</div></div>';
-}, 6000);
+    await import(karta["./main.js"] ?? "./main.js");
+    visa("Modulerna kör men sidan är tom", ["Hela grafen laddade utan fel — kraschen sker i renderingen. Skicka en skärmbild av webbläsarkonsolen."]);
+  } catch (huvudfel) {
+    for (const [namn, url] of Object.entries(karta)) {
+      if (!url.startsWith("./") || namn === "./main.js") continue;
+      try { await import(url); }
+      catch (e) { visa("Felet sitter i " + namn, [e.name + ": " + e.message]); return; }
+    }
+    visa("Felet sitter i ./main.js", [huvudfel.name + ": " + huvudfel.message]);
+  }
+}, 5000);
 </script>
 <script type="importmap">
 {
@@ -69,46 +85,46 @@ setTimeout(async () => {
     "preact": "https://esm.sh/preact@10.23.2",
     "preact/hooks": "https://esm.sh/preact@10.23.2/hooks",
     "htm/preact": "https://esm.sh/htm@3.1.1/preact?deps=preact@10.23.2",
-    "./data-agare.js": "./data-agare.js?v=57",
-    "./data-hingstar.js": "./data-hingstar.js?v=57",
-    "./data-kalender.js": "./data-kalender.js?v=57",
-    "./data-kuskar.js": "./data-kuskar.js?v=57",
-    "./data-lopp.js": "./data-lopp.js?v=57",
-    "./data-namn.js": "./data-namn.js?v=57",
-    "./data-namnpaket.js": "./data-namnpaket.js?v=57",
-    "./engine-hast.js": "./engine-hast.js?v=57",
-    "./ui-startvy.js": "./ui-startvy.js?v=57",
-    "./ui-gardvy.js": "./ui-gardvy.js?v=57",
-    "./ui-prolog.js": "./ui-prolog.js?v=57",
-    "./ui-grafik.js": "./ui-grafik.js?v=57",
-    "./ui-hemvy.js": "./ui-hemvy.js?v=57",
-    "./engine-forstaman.js": "./engine-forstaman.js?v=57",
-    "./engine-gard.js": "./engine-gard.js?v=57",
-    "./engine-prolog.js": "./engine-prolog.js?v=57",
-    "./engine-handelser.js": "./engine-handelser.js?v=57",
-    "./engine-marknad.js": "./engine-marknad.js?v=57",
-    "./engine-sasong.js": "./engine-sasong.js?v=57",
-    "./engine-simulera.js": "./engine-simulera.js?v=57",
-    "./engine-streck.js": "./engine-streck.js?v=57",
-    "./engine-util.js": "./engine-util.js?v=57",
-    "./engine-varld.js": "./engine-varld.js?v=57",
-    "./engine-vecka.js": "./engine-vecka.js?v=57",
-    "./main.js": "./main.js?v=57",
-    "./state-spel.js": "./state-spel.js?v=57",
-    "./ui-app.js": "./ui-app.js?v=57",
-    "./ui-avelvy.js": "./ui-avelvy.js?v=57",
-    "./ui-banvy.js": "./ui-banvy.js?v=57",
-    "./ui-delar.js": "./ui-delar.js?v=57",
-    "./ui-loppvy.js": "./ui-loppvy.js?v=57",
-    "./ui-marknadvy.js": "./ui-marknadvy.js?v=57",
-    "./ui-sfarvy.js": "./ui-sfarvy.js?v=57",
-    "./ui-stallvy.js": "./ui-stallvy.js?v=57"
+    "./data-agare.js": "./data-agare.js?v=58",
+    "./data-hingstar.js": "./data-hingstar.js?v=58",
+    "./data-kalender.js": "./data-kalender.js?v=58",
+    "./data-kuskar.js": "./data-kuskar.js?v=58",
+    "./data-lopp.js": "./data-lopp.js?v=58",
+    "./data-namn.js": "./data-namn.js?v=58",
+    "./data-namnpaket.js": "./data-namnpaket.js?v=58",
+    "./engine-hast.js": "./engine-hast.js?v=58",
+    "./ui-startvy.js": "./ui-startvy.js?v=58",
+    "./ui-gardvy.js": "./ui-gardvy.js?v=58",
+    "./ui-prolog.js": "./ui-prolog.js?v=58",
+    "./ui-grafik.js": "./ui-grafik.js?v=58",
+    "./ui-hemvy.js": "./ui-hemvy.js?v=58",
+    "./engine-forstaman.js": "./engine-forstaman.js?v=58",
+    "./engine-gard.js": "./engine-gard.js?v=58",
+    "./engine-prolog.js": "./engine-prolog.js?v=58",
+    "./engine-handelser.js": "./engine-handelser.js?v=58",
+    "./engine-marknad.js": "./engine-marknad.js?v=58",
+    "./engine-sasong.js": "./engine-sasong.js?v=58",
+    "./engine-simulera.js": "./engine-simulera.js?v=58",
+    "./engine-streck.js": "./engine-streck.js?v=58",
+    "./engine-util.js": "./engine-util.js?v=58",
+    "./engine-varld.js": "./engine-varld.js?v=58",
+    "./engine-vecka.js": "./engine-vecka.js?v=58",
+    "./main.js": "./main.js?v=58",
+    "./state-spel.js": "./state-spel.js?v=58",
+    "./ui-app.js": "./ui-app.js?v=58",
+    "./ui-avelvy.js": "./ui-avelvy.js?v=58",
+    "./ui-banvy.js": "./ui-banvy.js?v=58",
+    "./ui-delar.js": "./ui-delar.js?v=58",
+    "./ui-loppvy.js": "./ui-loppvy.js?v=58",
+    "./ui-marknadvy.js": "./ui-marknadvy.js?v=58",
+    "./ui-sfarvy.js": "./ui-sfarvy.js?v=58",
+    "./ui-stallvy.js": "./ui-stallvy.js?v=58"
   }
 }
 </script>
 </head>
 <body>
 <div id="root"></div>
-<script type="module" src="./main.js?v=57"></script>
+<script type="module" src="./main.js?v=58"></script>
 </body>
 </html>

@@ -144,11 +144,17 @@ export function Gårdskarta({ spel }) {
    automatiskt; saknas de faller spelet tillbaka på SVG-scenerna nedan.
    Se bilder/LÄSMIG.md för filnamn och tips. */
 export function Bild({ id, alt = "", klass = "", fallback = null }) {
+  /* Bilderna kan ligga i bilder/-mappen ELLER direkt i roten — prova
+     båda innan SVG-reserven tar över. */
   return html`
     <div class=${"bildram " + klass}>
       <img src=${`./bilder/${id}.jpg`} alt=${alt} loading="lazy"
-        onError=${(e) => { e.target.style.display = "none";
-          const f = e.target.nextElementSibling; if (f) f.style.display = "block"; }} />
+        onError=${(e) => {
+          const img = e.target;
+          if (!img.dataset.rot) { img.dataset.rot = "1"; img.src = `./${id}.jpg`; return; }
+          img.style.display = "none";
+          const f = img.nextElementSibling; if (f) f.style.display = "block";
+        }} />
       <div class="bildfall" style=${{ display: "none" }}>${fallback}</div>
     </div>`;
 }
@@ -159,7 +165,11 @@ export function Porträtt({ id, namn, färg = "#1E3A5F", storlek = 44 }) {
   return html`
     <span class="portratt" style=${{ width: storlek + "px", height: storlek + "px" }}>
       <img src=${`./bilder/${id}.jpg`} alt="" loading="lazy"
-        onError=${(e) => { e.target.style.display = "none"; }} />
+        onError=${(e) => {
+          const img = e.target;
+          if (!img.dataset.rot) { img.dataset.rot = "1"; img.src = `./${id}.jpg`; return; }
+          img.style.display = "none";
+        }} />
       <span class="portratt-init" style=${{ background: färg }}>${initialer}</span>
     </span>`;
 }

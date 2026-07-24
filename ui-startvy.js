@@ -21,7 +21,12 @@ const NAMNFÖRSLAG = [
 
 export default function StartVy({ spel, uppdatera }) {
   const m = spel?.prolog?.mentor;
+  /* ALLA hooks före första möjliga return — preact kräver samma
+     hookordning i varje rendering, annars kraschar den. */
   const [anlänt, sättAnlänt] = useState(false);
+  const [namn, sättNamn] = useState("Björkhaga");
+  const [dräkt, sättDräkt] = useState(DRÄKTER[0].id);
+  const [bana, sättBana] = useState(null);
 
   /* Pressuppslaget — spelet börjar som en berättelse, inte ett formulär. */
   if (!anlänt) {
@@ -44,9 +49,6 @@ export default function StartVy({ spel, uppdatera }) {
         <button class="btn" onClick=${() => sättAnlänt(true)}>Anländ till gården</button>
       </div>`;
   }
-  const [namn, sättNamn] = useState("Björkhaga");
-  const [dräkt, sättDräkt] = useState(DRÄKTER[0].id);
-  const [bana, sättBana] = useState(null);
   const små = Object.entries(BANOR).filter(([, b]) => b.storlek === 1);
 
   const öppna = () => uppdatera((s) => {
