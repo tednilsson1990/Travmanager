@@ -36,6 +36,13 @@ export const BANOR = {
                 karaktär: "Landets längsta upplopp. Spurtare får sin chans." },
   sorgarden:  { namn: "Sörgården",    bana: 1000, upplopp: 195, openStretch: false,
                 karaktär: "Liten bana med snäva kurvor — innerspåret är guld." },
+  /* STORBANAN — landets Solvalla-motsvarighet (fiktiv, som allt annat).
+     Storlek 4 nås aldrig av vardagens banerbjudanden utan är karriärens
+     sista dörr: den som öppnas sent, kostar mest — och som designens
+     slutmål uttryckligen låter spelaren TACKA NEJ till. */
+  kronvallen: { storlek: 4, namn: "Kronvallen", bana: 1000, upplopp: 220,
+    openStretch: true,
+    karaktär: "Huvudstadsbanan. Här körs de lopp hela landet ser." },
 };
 
 /* ==================== Tränardräkter ====================

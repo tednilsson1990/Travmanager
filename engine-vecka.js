@@ -71,7 +71,15 @@ export function körVecka(spel) {
   if (hemma && !spel.banerbjudande) {
     const nästaStorlek = (hemma.storlek ?? 1) + 1;
     const krav = nästaStorlek === 2 ? { renommé: 40, segrar: 6, kostnad: 60000 }
-               : nästaStorlek === 3 ? { renommé: 62, segrar: 16, kostnad: 140000 } : null;
+               : nästaStorlek === 3 ? { renommé: 62, segrar: 16, kostnad: 140000 }
+               /* Kronvallen ringer bara den som redan är någon: högt
+                  renommé, lång meritlista OCH minst en storloppsseger.
+                  Samtalet ska kännas som karriärens sista dörr. */
+               : nästaStorlek === 4 ? { renommé: 82, segrar: 30, kostnad: 320000,
+                   kravStorlopp: true } : null;
+    const harStorlopp = (spel.krönika ?? []).some((h) => h.typ === "storloppsseger");
+    if (krav?.kravStorlopp && !harStorlopp) { /* dörren väntar */ }
+    else
     if (krav && spel.renommé >= krav.renommé && (spel.segrarTotalt ?? 0) >= krav.segrar) {
       const kandidater = Object.entries(BANOR).filter(([, b]) => b.storlek === nästaStorlek);
       const [id, bana] = kandidater[Math.floor(slump() * kandidater.length)];

@@ -49,7 +49,18 @@ const KLASSER = [
 const STORLOPP = STORLOPPSMALLAR.map((m) => ({
   vecka: m.vecka,
   namn: m.namn,
-  bana: Object.keys(BANOR)[m.vecka % Object.keys(BANOR).length],
+  /* De tyngsta storloppen (prestige 5 — Kungsloppet, Sprinterkronan) körs
+     på Kronvallen: hela landet ser dem, och det är dit karriären pekar.
+     Prestige 4 roterar på mellanbanorna och de större (storlek 2–3) —
+     landsortens egna högtidsdagar. Småbanorna (storlek 1) får aldrig
+     storlopp; deras stolthet är minnesloppet och vardagen. */
+  bana: m.prestige >= 5
+    ? "kronvallen"
+    : (() => {
+        const kandidater = Object.keys(BANOR)
+          .filter((b) => (BANOR[b].storlek ?? 1) >= 2 && (BANOR[b].storlek ?? 1) <= 3);
+        return kandidater[m.vecka % kandidater.length];
+      })(),
   dist: m.dist,
   nivå: 60 + m.prestige * 2,
   prestige: m.prestige,
@@ -137,7 +148,7 @@ function byggLopp(r, { id, namn, banaId, dist, start, klass, extra = {} }) {
 export function inbjudningslopp(vecka) {
   const r = frö(vecka * 7919 + 31);
   const klass = KLASSER[KLASSER.length - 1];
-  const banaId = välj(r, Object.keys(BANOR).filter((b) => BANOR[b].storlek >= 2));
+  const banaId = välj(r, Object.keys(BANOR).filter((b) => BANOR[b].storlek >= 2 && BANOR[b].storlek <= 3));
   return byggLopp(r, {
     id: `v${vecka}-inbjudan`,
     namn: "Arrangörens inbjudningslopp",

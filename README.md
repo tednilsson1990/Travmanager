@@ -475,6 +475,32 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Kronvallen — storbanan och nejet (v72)
+
+Designdokumentets slutmål innehåller meningen "jag tackade nej till en
+flytt till Solvalla och byggde i stället ut den gamla gården" — och det
+valet kräver att storbanan FINNS. Kronvallen (storlek 4, öppet
+innerspår, "huvudstadsbanan — här körs de lopp hela landet ser") är nu:
+
+- **Storloppens hem:** prestige 5 (Kungsloppet, Sprinterkronan) körs
+  alltid på Kronvallen; prestige 4 roterar på storlek 2–3. Småbanorna
+  får aldrig storlopp — deras stolthet är minnesloppet och vardagen.
+- **Karriärens sista dörr:** banerbjudandetrappan har fått steg 4 —
+  renommé 82, 30 segrar OCH minst en storloppsseger. Dörren väntar
+  tills meriterna finns.
+- **Nejet är ett beat:** tackar spelaren nej till Kronvallen (och bara
+  till storbanan) registreras `tackade_nej_storbanan` i krönikan,
+  renommét stiger och pressen skriver "Gården är inte till salu — inte
+  ens för huvudstaden." Nej till en mellanbana förblir ett artigt nej.
+- Inbjudningsloppen bjuder aldrig till Kronvallen — dit bjuds man inte
+  via brev.
+
+En felplacering fångades på vägen: första försöket att styra storloppen
+hamnade i inbjudningsloppets funktion där variabeln `mall` inte finns —
+en runtime-krasch som verifierarens modulladdning inte ser (funktions-
+kropp). Utfallslistan (`veckansLopp` för alla 20 veckor) avslöjade den;
+den kontrollen är billig och kördes igen efter rättningen.
+
 ## Minnesloppskraschen och anropskontrollen (v71)
 
 **Buggen:** loppfliken kraschade med "Can't find variable:
@@ -1064,4 +1090,5 @@ helskärmsberättelse (v64) och mentorns sista båge med minnesloppet och
 gårdens synliga historia (v65) samt motgången som berättelse (v66) och världens röst med
 variationsbredden (v67) samt bildlagrets reservkedja (v68) och rätt ansikte med klippet på
 Hem (v69) samt hästhuvudena och extrabildernas platser (v70) och
-anropskontrollen efter minnesloppskraschen (v71).
+anropskontrollen efter minnesloppskraschen (v71) samt Kronvallen med
+storbanenejet (v72).

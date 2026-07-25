@@ -338,10 +338,26 @@ registreraValeffekt("bana_flytta", (spel, scen) => {
   spel.logg?.unshift(`Stallet flyttar till <b>${BANOR[banaId]?.namn}</b>. Ett nytt kapitel.`);
 });
 
-registreraValeffekt("bana_stanna", (spel) => {
+registreraValeffekt("bana_stanna", (spel, scen) => {
+  const bana = BANOR[scen?.data?.banaId];
   spel.banerbjudande = null;
-  skrivPress(spel, `${spel.stallnamn} stannar hemma`,
-    "»Vi trivs där vi är.« Publiken på hemmabanan jublar.", "bra");
+  /* Att tacka nej till STORBANAN är designdokumentets slutmålsbeat —
+     "jag tackade nej till en flytt och byggde i stället ut den gamla
+     gården." Det registreras i krönikan och stärker hemmapubliken;
+     att tacka nej till en mellanbana är bara ett artigt nej. */
+  if ((bana?.storlek ?? 0) >= 4) {
+    registreraHändelse(spel, {
+      typ: "tackade_nej_storbanan", betydelse: 58,
+      data: { bana: bana.namn,
+        text: `${spel.stallnamn} tackade nej till ${bana.namn} och stannade på hemmabanan.` },
+    });
+    spel.renommé = klamp(spel.renommé + 2);
+    skrivPress(spel, `${spel.stallnamn} tackar NEJ till ${bana.namn}`,
+      "»Gården är inte till salu — inte ens för huvudstaden.« Hembygden jublar.", "positiv");
+  } else {
+    skrivPress(spel, `${spel.stallnamn} stannar hemma`,
+      "»Vi trivs där vi är.« Publiken på hemmabanan jublar.", "bra");
+  }
 });
 
 /* Använd ÄGARNAMN-importen för nya spontana ägare i framtiden. */
