@@ -46,6 +46,40 @@ for (const f of js) {
   }
 }
 
+/* ANVÄNDA MEN OIMPORTERADE NAMN. Minnesloppsbuggen (v70): ett anrop av
+   veckansMinneslopp() i loppvyn utan import — modulladdningen nedan ser
+   det inte, för referensen ligger i en funktionskropp som bara körs när
+   fliken öppnas i mobilen. Kontrollen: varje namn som exporteras av
+   EXAKT en modul och ANROPAS i en fil måste vara importerat eller
+   deklarerat där. Entydighetskravet och deklarationskollen håller
+   falsklarmen borta. */
+{
+  const ägare = {};
+  for (const [fil, e] of Object.entries(exporter))
+    for (const n of e) { if (n !== "default") (ägare[n] ??= []).push(fil); }
+  for (const f of js) {
+    /* Kommentarerna strippas före analysen — projektets kommentarer
+       nämner gärna funktioner vid namn ("...och slump() dras en gång"),
+       och prosa ska inte kunna utlösa importlarm. */
+    const s2 = fs.readFileSync(f, "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, "");
+    const importerat = new Set();
+    for (const m of s2.matchAll(/import\s*\{([^}]+)\}\s*from/g))
+      m[1].split(",").forEach((x) => importerat.add(x.split(" as ").pop().trim()));
+    for (const [namn, filer] of Object.entries(ägare)) {
+      if (filer.length !== 1 || filer[0] === f || namn.length < 5) continue;
+      if (!new RegExp(`(?<![.\\w])${namn}\\s*\\(`).test(s2)) continue;
+      if (importerat.has(namn)) continue;
+      if (new RegExp(`(function|const|let|var)\\s+${namn}\\b`).test(s2)) continue;
+      /* Parametern räknas som deklaration: körStorloppsbåge(spel, skrivPress)
+         får sin skrivPress utifrån — det är designmönstret mot
+         importcirklar, inte ett fel. */
+      if (new RegExp(`[,({]\\s*${namn}\\s*[,)}]`).test(s2)) continue;
+      console.log(`${f}: anropar ${namn}() utan att importera det (finns i ${filer[0]})`);
+      fel++;
+    }
+  }
+}
+
 /* MODULLADDNINGEN. Importgrafen ovan är statisk text — den ser inte fel
    som uppstår när modulkroppen KÖRS: TDZ i importcirklar, anrop av något
    som inte finns, syntaxfel htm sväljer. Därför importeras varje modul

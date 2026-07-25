@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { html } from "htm/preact";
 import { TAKTIKER } from "./data-lopp.js";
-import { veckansLopp, startförbud, kravText } from "./data-kalender.js";
+import { veckansLopp, startförbud, kravText, inbjudningslopp, medInbjudningspengar } from "./data-kalender.js";
 import { KUSKAR, villig, svar, uppbokad, uppbokadeI } from "./data-kuskar.js";
 import { loppmatchning } from "./engine-forstaman.js";
+import { veckansMinneslopp } from "./engine-mentor.js";
 import { Bild } from "./ui-grafik.js";
 import { BANOR } from "./data-namnpaket.js";
 import { distanspassning } from "./engine-hast.js";

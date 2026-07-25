@@ -475,6 +475,29 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Minnesloppskraschen och anropskontrollen (v71)
+
+**Buggen:** loppfliken kraschade med "Can't find variable:
+veckansMinneslopp" — anropet lades in i v65 men importraden föll bort
+för att insticksankaret (`import { KUSKAR }`) inte matchade filens
+verkliga rad (`import { KUSKAR, villig, ...`), och ersättningen skedde
+tyst utan assert. Verifierarens modulladdning såg inget: referensen
+ligger i en funktionskropp som bara körs när fliken öppnas.
+
+**Lärdomen byggdes in:** verifieraren kontrollerar nu att varje namn som
+exporteras av EXAKT en modul och ANROPAS i en fil också är importerat
+eller deklarerat där. Kommentarer strippas före analysen (projektets
+kommentarer nämner gärna funktioner vid namn), och parametrar räknas
+som deklaration (skrivPress-injektionen är ett designmönster, inte ett
+fel). Kontrollen regressionstestas genom att avsiktligt plocka bort
+importen.
+
+**Skörden:** utöver minnesloppsbuggen hittade kontrollen direkt TVÅ
+äldre latenta krascher — inbjudningsveckans lopp anropade
+inbjudningslopp() och medInbjudningspengar() utan import (kraschade
+först den vecka en inbjudan gällde), samt en oanvänd slump-referens.
+Tre buggar av samma klass, en kontroll som stänger klassen.
+
 ## Hästhuvudena och extrabildernas platser (v70)
 
 **Riktiga hästhuvuden.** Hästarna genereras i tusental så en bild per
@@ -1040,4 +1063,5 @@ säsongskrönikorna (v63) samt tidningssidan och prologens
 helskärmsberättelse (v64) och mentorns sista båge med minnesloppet och
 gårdens synliga historia (v65) samt motgången som berättelse (v66) och världens röst med
 variationsbredden (v67) samt bildlagrets reservkedja (v68) och rätt ansikte med klippet på
-Hem (v69) samt hästhuvudena och extrabildernas platser (v70).
+Hem (v69) samt hästhuvudena och extrabildernas platser (v70) och
+anropskontrollen efter minnesloppskraschen (v71).
