@@ -5,9 +5,18 @@ STATUS EFTER TEDS LEVERANS (v75): 61 filer på plats — hela kärnan, alla
 varianter, journalisterna, ikonen och fem nya motiv som fått egna
 platser: seger-storlopp (storloppssegerns sida), malfoto (överst i
 facit), traning (dagbokens topp), rekrytering och avsked-forsteman
-(personalscenerna). Reservmaterial som ännu saknar plats ligger kvar
-hos Ted: trav, lopp, intervju, efter-lopp, seger2, comeback2,
-hast-pa-gard(2), stall-morgon2, bana-kronvallen2/3.
+(personalscenerna). ALLT material är nu inkopplat (v76): varianterna roterar
+deterministiskt via data-bilder.js (bana-kronvallen ×3 per säsong,
+seger-storlopp ×2 — intervjubilden är tvåan, facit ×2 — efter-lopp är
+tvåan, comeback ×2, stall-morgon ×2, hage ×3 — hästarna på gård), och
+trav/lopp blev vytoppar i Sfären respektive anmälan. Hästhuvudena
+skiftas dessutom så att stallkamrater med samma päls garanterat får
+OLIKA foton. Vill du utöka en rotation: lägg filen som {motiv}-4.jpg
+och höj siffran i BILDVARIANTER i data-bilder.js.
+
+Nytt i v77: kandidat-egna-led.jpg (512², beskuren ur "Kandidat från
+egna led") — porträttet för rekryteringens fjärde kandidat, gårdens
+egen hästskötare.
 
 Kvar att göra om andan faller på: kandidaternas könsvarianter och
 fler pälsvarianter (fux/svart har två, skimmel/ljusbrun en).
