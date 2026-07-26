@@ -121,5 +121,20 @@ console.log("\nPROV 4 — formsvackan: frågan ställs en gång och stängs av p
   prov("vardagshästens svacka är ingen nyhet", spel2.press.length === 0);
 }
 
+console.log("\nPROV 5 — förlorarintervjun");
+{
+  const { görVal } = await import("./engine-scener.js");
+  const spel = nyttProvspel();
+  const h = stjärna(); spel.stall = [h];
+  vidFavoritfall(spel, { häst: h, lopp: { kortnamn: "Kungsloppet", storlopp: true },
+    min: { ur: false, plats: 6, streck: 52 } });
+  const scen = spel.scener.find((s) => s.etikett === "STORLOPPSFACIT");
+  prov("intervjun har tre svar", scen?.val?.length === 3);
+  const hypeFöre = h.hype, troFöre = spel.spelförtroende;
+  görVal(spel, spel.scener.indexOf(scen), "ansvar");
+  prov("ansvaret kostar hype men bygger förtroende",
+    h.hype < hypeFöre && spel.spelförtroende > troFöre);
+}
+
 console.log(fel === 0 ? "\nALLA PROV OK\n" : `\n${fel} PROV MISSLYCKADES\n`);
 process.exit(fel ? 1 : 0);

@@ -74,6 +74,7 @@ function Anmälan({ spel, onStart }) {
   const matchning = spel.förstaman ? loppmatchning(spel.förstaman, häst, veckans) : null;
 
   return html`
+    <${Bild} id="lopp" alt="" klass="vytopp" fallback=${null} />
     <h2>Vecka ${spel.vecka} — anmälan</h2>
     ${spel.inbjudan?.vecka === spel.vecka && html`
       <div class="kort inbjudan">
@@ -370,6 +371,30 @@ const spel_citat = (k) => k.kusk?.namn ? `${k.kusk.namn}, kusk` : "Stallet";
 function Facit({ körning, facit, onKlart }) {
   const { sim, häst, kusk } = körning;
   const min = facit.min;
+  /* MÅLFOTOT SOM ÖGONBLICK. När tätduon skiljs av mindre än ~en halv
+     längd OCH spelarens häst är en av dem hålls facit tillbaka en
+     knapptryckning: domarna granskar bilden. Tröskeln räknas i sekunder
+     ur km-tiderna (0,08 s ≈ en dryg halvlängd i travtempo). Rena
+     UI-teatern — resultatet är redan avgjort, bara inte VISAT. */
+  const [målfotoKvar, sättMålfotoKvar] = useState(() => {
+    const [etta, tvåa] = (sim?.resultat ?? []).filter((r) => !r.ur);
+    if (!etta || !tvåa || etta.km == null || tvåa.km == null) return false;
+    const sek = (tvåa.km - etta.km) * ((körning.lopp?.dist ?? 2140) / 1000);
+    const inblandad = !min.ur && (min.plats ?? 9) <= 2;
+    return sek < 0.08 && inblandad;
+  });
+  if (målfotoKvar) {
+    return html`
+      <div class="malfoto-scen">
+        <${Bild} id="malfoto" alt="" klass="vytopp" fallback=${null} />
+        <div class="scen-etikett">Måldomarna</div>
+        <div class="malfoto-rubrik">MÅLFOTO</div>
+        <div class="ingress">Två hästar över linjen som en. Domarna lutar sig
+          över bilden — hela läktaren står upp och väntar.</div>
+        <button class="btn steg-vidare" onClick=${() => sättMålfotoKvar(false)}>
+          Domarnas besked</button>
+      </div>`;
+  }
   return html`
     ${/* Målfotot — bilden domaren tittar på. Ligger överst i facit så
         att resultatlistan känns som just ett facit, inte en tabell. */ ""}

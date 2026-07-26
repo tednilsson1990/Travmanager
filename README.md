@@ -475,6 +475,77 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Fem idéer ur bilderna (v78)
+
+Bildleveransen föreslog berättelser som systemen ännu inte gjorde.
+Alla fem byggdes — ren berättelse ovanpå befintliga system, motorn orörd:
+
+**Målfotot som ögonblick.** Skiljs tätduon av under ~0,08 s (en dryg
+halvlängd) OCH spelarens häst är en av dem, hålls facit tillbaka en
+knapptryckning: målfotobilden, pulserande MÅLFOTO-rubrik, "Domarnas
+besked". Ren UI-teater i Facit-komponenten — resultatet är redan
+avgjort, bara inte VISAT.
+
+**Kvällen före.** Sista veckan före ett prestige 5-lopp med kvalad häst
+slutar med en stilla kvällsscen (Kronvallens bildvariant): strålkastarna
+släcks, i morgon tittar hela landet. Bågens sista andetag. OBS
+nyckelformatet: bågens städning raderar allt som inte börjar med
+"{säsong}:" — upptäckt i prov när scenen kom två gånger.
+
+**Förlorarintervjun.** Storloppsfacit-sidan fick mikrofonen: skyll på
+dagen (+hype, −spelförtroende), ta ansvaret (−hype, +förtroende,
++renommé) eller försvara hästen (++hype, −−förtroende). Den starkaste
+intervjun i sporten är den efter förlusten.
+
+**Albumet.** Journalen fick fliken album: krönikans händelser med
+betydelse ≥ 70 som bildsidor (typ→motiv-mappning), nyast först, max 24.
+Karriären som bläddringsbar fotohistoria — byggd helt av data och
+bilder som redan fanns.
+
+**Fölvisningen.** När gårdens egen uppfödning körs in: en hagsida med
+härstamningen och förstamannens FÖRSTA LEDTRÅD om temperamentet — läst
+ur starkaste egenskapen, utan siffror. Så lär man känna en unghäst i
+verkligheten: på känn.
+
+## Kandidaten från egna led (v77)
+
+Teds bild "Kandidat från egna led" var mer än en scenbakgrund — den var
+en KANDIDAT. Rekryteringen (både prologens och scenens) har nu fyra:
+de tre yttre profilerna, och gårdens egen unga hästskötare. Designdok-
+umentets mening är ordagrann: "min första förstaman var en ung
+hästskötare."
+
+Avvägningen: hen är 19–23, billigast (600 kr/v mot 900–1500), känner
+redan varenda häst — men profilen LOTTAS (man vet inte vem någon är
+förrän hen fått ansvar). Och lojaliteten är hens egenskap: urEgnaLed-
+flaggan följer med anställningen och saktar ambitionskurvan till 55 %
+— den som fostrats på gården drömmer inte bort sig lika fort, vilket
+skjuter avgångssamtalet flera säsonger framåt. Eget porträtt
+(kandidat-egna-led.jpg, beskuret ur Teds bild) med forstaman som
+reserv. Sju nya prov i prov-personal.
+
+## Variantrotationen (v76)
+
+Teds princip: finns flera bilder ska ALLA användas. `data-bilder.js`
+(datalager — motorn får aldrig importera UI, men båda får importera
+data) äger registret: BILDVARIANTER säger hur många foton varje
+scenmotiv har, HÄSTVARIANTER per päls, och bildvariant(id, frö) väljer
+deterministiskt — scenens bildsträng löses vid SKAPANDET och sparas i
+scenen, aldrig vid visningen, så en sparfil visar alltid samma bild.
+Kronvallen roterar tre foton över säsongerna, storloppssegern växlar
+mellan vinnarcirkeln och intervjubilden, facit mellan målfoto- och
+efterloppsmotivet, hagen tre motiv per säsong.
+
+**Stallkamrater med samma päls får garanterat olika foton:** stallvyn
+räknar hästens plats bland samma-päls-kamrater (sorterat på id — stabilt
+per sparfil) och skickar det som SKIFTE till Hästbild, som lägger det
+på namnhashens grundval modulo pälsens variantantal. Utan skiftet
+kolliderade två bruna hästar var tredje gång — och det är just sida
+vid sida i stallistan som tvillingar skär sig.
+
+Sist in fick trav.jpg och lopp.jpg platser som vytoppar i Sfären och
+anmälan. Därmed är samtliga 72 levererade bilder i bruk.
+
 ## Bilderna på plats (v75)
 
 Teds första bildleverans: 72 källbilder varav 61 konverterade in i
@@ -1144,4 +1215,5 @@ variationsbredden (v67) samt bildlagrets reservkedja (v68) och rätt ansikte med
 Hem (v69) samt hästhuvudena och extrabildernas platser (v70) och
 anropskontrollen efter minnesloppskraschen (v71) samt Kronvallen med
 storbanenejet (v72) och dräkten som identitet med tränarnamnet (v73) samt dräktsteget mot
-mockupen (v74) och bilderna på plats (v75).
+mockupen (v74) och bilderna på plats (v75), variantrotationen (v76) samt kandidaten
+från egna led (v77) och de fem bildidéerna (v78).

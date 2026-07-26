@@ -658,3 +658,17 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   background:var(--ark);color:var(--marin);font-size:24px;line-height:1;
   cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .helscen .helscen-inre{position:relative}
+
+/* ---- Målfotot och albumet (v78) ---- */
+.malfoto-scen{text-align:center;padding:8px 0 20px}
+.malfoto-rubrik{font-family:'Big Shoulders Display',sans-serif;font-weight:900;
+  font-size:42px;letter-spacing:.04em;color:var(--tegel);
+  animation:malfoto-puls 1.4s ease-in-out infinite}
+@keyframes malfoto-puls{0%,100%{opacity:1}50%{opacity:.55}}
+.albumsida{background:var(--ark);border:1px solid var(--linje-mörk);border-radius:8px;
+  overflow:hidden;margin-bottom:14px;box-shadow:0 2px 6px rgba(0,0,0,.07)}
+.albumbild img{width:100%;max-height:170px;object-fit:cover;display:block;
+  filter:saturate(.85)}
+.albumtext{padding:9px 12px 11px;border-top:3px solid var(--tegel)}
+.albumrubrik{font-family:'Big Shoulders Display',sans-serif;font-weight:900;
+  text-transform:uppercase;font-size:17px;line-height:1.05;color:var(--marin)}

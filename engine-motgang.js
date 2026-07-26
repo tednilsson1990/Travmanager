@@ -20,8 +20,9 @@
  */
 import { klamp } from "./engine-util.js";
 import { registreraHändelse, påHändelse } from "./engine-handelser.js";
-import { köScen } from "./engine-scener.js";
+import { köScen, registreraValeffekt } from "./engine-scener.js";
 import { JOURNALISTER, TIDNINGSNAMN } from "./data-namnpaket.js";
+import { bildvariant } from "./data-bilder.js";
 
 /** Betyder hästen något för läsarna? Meriterna eller hypen avgör. */
 const ärStjärna = (h) =>
@@ -63,7 +64,8 @@ påHändelse("stjärnskada", (spel, h) => {
   const fm = spel.förstaman;
   if (d.scen) {
     köScen(spel, {
-      betydelse: h.betydelse, stil: "tidning", bild: "skada", bildreserv: "stall-morgon",
+      betydelse: h.betydelse, stil: "tidning", bild: "skada",
+      bildreserv: bildvariant("stall-morgon", (spel.säsong ?? 1) * 100 + spel.vecka),
       signatur: JOURNALISTER.nyheter,
       etikett: "SKADEALARM",
       rubrik: `${namn.toUpperCase()} BORTA ${d.veckor} VECKOR`,
@@ -106,7 +108,8 @@ påHändelse("*", (spel, h) => {
     return;
   }
   köScen(spel, {
-    betydelse: 72, stil: "tidning", bild: "comeback", bildreserv: "seger",
+    betydelse: 72, stil: "tidning",
+    bild: bildvariant("comeback", (spel.säsong ?? 1) * 100 + spel.vecka), bildreserv: "seger",
     signatur: JOURNALISTER.krönikör,
     etikett: "COMEBACKEN",
     rubrik: "TILLBAKA — OCH FÖRBI ALLA",
@@ -142,7 +145,8 @@ påHändelse("favoritfall", (spel, h) => {
   const namn = h.aktörer?.hästNamn ?? "Favoriten";
   if (d.storlopp) {
     köScen(spel, {
-      betydelse: h.betydelse, stil: "tidning", bild: "facit", bildreserv: "bana-kvall",
+      betydelse: h.betydelse, stil: "tidning",
+      bild: bildvariant("facit", (spel.säsong ?? 1) * 100 + spel.vecka), bildreserv: "bana-kvall",
       signatur: JOURNALISTER.nyheter,
       etikett: "STORLOPPSFACIT",
       rubrik: d.dåligDag ? `${namn.toUpperCase()} VAR INTE SIG SJÄLV` : "FAVORITFALLET",
@@ -153,9 +157,19 @@ påHändelse("favoritfall", (spel, h) => {
           ? `I stallet är tonen sansad: hästen kändes inte som vanligt redan i defileringen. Sådana dagar finns, och de förklarar mer än taktiken.`
           : `Loppet bjöd inga ursäkter — position, tempo och lägen fanns där. Frågorna får stallet bära in i nästa vecka.`,
       ],
-      citat: d.dåligDag ? "Hästar är inga maskiner. I dag var inte hens dag."
-        : "Vi var inte bra nog. Det är hela analysen.",
-      citatVem: spel.stallnamn,
+      fråga: `${TIDNINGSNAMN} sträcker fram mikrofonen även åt förloraren. Vad säger du?`,
+      data: { hästId: h.aktörer?.hästId },
+      val: [
+        { id: "dagen", effekt: "förlust_dagen",
+          text: "»Hästen var inte sig själv i dag.«",
+          följd: "Skyddar hästens rykte — spelarna köper det halvt" },
+        { id: "ansvar", effekt: "förlust_ansvar",
+          text: "»Vi var inte bra nog. Det är hela analysen.«",
+          följd: "Rakryggat — spelarna och pressen respekterar det" },
+        { id: "försvar", effekt: "förlust_försvar",
+          text: "»Döm inte den här hästen på ett lopp.«",
+          följd: "Eldar hästens läger — men låter som en bortförklaring" },
+      ],
     });
   } else {
     spel.press?.unshift({ rubrik: `${namn} föll som ${d.streck}-procentare`,
@@ -202,5 +216,30 @@ export function vidFormsvacka(spel, häst, min) {
     häst.hype = klamp((häst.hype || 0) - 10);
   }
 }
+
+/* Förlorarintervjuns effekter. Den starkaste intervjun i sporten är den
+   efter förlusten — och vad man säger i den ska betyda något. */
+const intervjuHäst = (spel, scen) =>
+  (spel.stall || []).find((h) => h.id === scen?.data?.hästId);
+
+registreraValeffekt("förlust_dagen", (spel, scen) => {
+  const h = intervjuHäst(spel, scen);
+  if (h) h.hype = klamp((h.hype || 0) + 3);
+  spel.spelförtroende = klamp(spel.spelförtroende - 1);
+  spel.logg?.unshift("Citatet trycks. Spelarna köper det — halvt.");
+});
+registreraValeffekt("förlust_ansvar", (spel, scen) => {
+  const h = intervjuHäst(spel, scen);
+  if (h) h.hype = klamp((h.hype || 0) - 4);
+  spel.spelförtroende = klamp(spel.spelförtroende + 3);
+  spel.renommé = klamp(spel.renommé + 1);
+  spel.logg?.unshift("Rakryggat. Pressen noterar att stallet inte gömmer sig.");
+});
+registreraValeffekt("förlust_försvar", (spel, scen) => {
+  const h = intervjuHäst(spel, scen);
+  if (h) h.hype = klamp((h.hype || 0) + 6);
+  spel.spelförtroende = klamp(spel.spelförtroende - 2);
+  spel.logg?.unshift("Hästens läger eldas. Spelarkollektivet himlar med ögonen.");
+});
 
 export const motgångInkopplad = true;

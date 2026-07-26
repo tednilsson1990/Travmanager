@@ -117,10 +117,10 @@ export function FörstamansvalVy({ spel, uppdatera }) {
         <button key=${k.profil} class=${"banval" + (vald === k.profil ? " vald" : "")}
           onClick=${() => sättVald(k.profil)}>
           <div class="portrad">
-            <${Porträtt} id=${"kandidat-" + k.profil.replace("å", "a") + "-" + könAvFörnamn(k.namn)} reserv=${"kandidat-" + k.profil.replace("å", "a")} namn=${k.namn} färg="#1E3A5F" storlek=${44} />
+            <${Porträtt} id=${k.bildId ?? ("kandidat-" + k.profil.replace("å", "a") + "-" + könAvFörnamn(k.namn))} reserv=${k.bildId ? "forstaman" : "kandidat-" + k.profil.replace("å", "a")} namn=${k.namn} färg="#1E3A5F" storlek=${44} />
             <div class="namn" style=${{ fontSize: "19px" }}>${k.namn}, ${k.ålder}</div>
           </div>
-          <div class="meta">${k.profil} — ${k.profiltext} · ${kr(k.lön)} kr/vecka</div>
+          <div class="meta">${k.profil} — ${k.urEgnaLed ? "Från egna led · " + k.profiltext : k.profiltext} · ${kr(k.lön)} kr/vecka</div>
           <div class="meta">${k.pitch}</div>
         </button>`)}
       <button class="btn" disabled=${!vald} onClick=${() => uppdatera((s) => {

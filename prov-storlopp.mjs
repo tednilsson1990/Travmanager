@@ -124,5 +124,25 @@ console.log("\nPROV 5 — avelshagen tar emot pensionerade stjärnston");
     spel.krönika.filter((h) => h.typ === "pensionering").length === 2);
 }
 
+console.log("\nPROV EXTRA — kvällen före storloppet");
+{
+  const { veckansLopp } = await import("./data-kalender.js");
+  /* Hitta prestige 5-veckan dynamiskt — kalenderns veckor är data, inte
+     något provet ska gissa. */
+  let storVecka = null;
+  for (let v = 1; v <= 20; v++)
+    if (veckansLopp(v).some((l) => l.storlopp && (l.prestige ?? 0) >= 5)) { storVecka = v; break; }
+  const spel = nyttProvspel();
+  spel.säsong = 3; spel.vecka = storVecka - 1;
+  spel.scener = []; spel.bågeSkrivet = {};
+  spel.stall = [{ id: 1, namn: "Vindarnas Ö", skada: 0, intjänat: 2000000,
+    ålder: 6, kön: "hingst", starter: 30, form: 60, energi: 80, milstolpar: [] }];
+  körStorloppsbåge(spel, () => {});
+  const kväll = spel.scener.find((s) => s.rubrik === "KVÄLLEN FÖRE");
+  prov("kvällsscenen köades sista veckan", !!kväll && (kväll.val ?? []).length === 0);
+  körStorloppsbåge(spel, () => {});
+  prov("men bara en gång", spel.scener.filter((s) => s.rubrik === "KVÄLLEN FÖRE").length === 1);
+}
+
 console.log(fel === 0 ? "\nALLA PROV OK\n" : `\n${fel} PROV MISSLYCKADES\n`);
 process.exit(fel ? 1 : 0);

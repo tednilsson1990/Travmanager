@@ -49,7 +49,9 @@ export function uppdateraAmbition(spel) {
   if (fm.delägare) return;                      // delägaren är redan framme
   if (spel.renommé < 30) return;
   const takt = fm.profil === "pådrivare" ? 0.75 : fm.profil === "taktiker" ? 0.55 : 0.4;
-  fm.ambition = klamp(fm.ambition + takt * (1 + spel.renommé / 150));
+  /* Den som fostrats på gården drömmer inte bort sig lika fort. */
+  const lojalitet = fm.urEgnaLed ? 0.55 : 1;
+  fm.ambition = klamp(fm.ambition + takt * lojalitet * (1 + spel.renommé / 150));
 }
 
 /**
@@ -152,7 +154,7 @@ export function köRekrytering(spel) {
     data: { kandidater },
     val: kandidater.map((k, i) => ({
       id: "k" + i, effekt: "anställ_förstaman",
-      text: `${k.namn}, ${k.ålder} år — ${k.profiltext}`,
+      text: `${k.namn}, ${k.ålder} år — ${k.urEgnaLed ? "från egna led" : k.profiltext}`,
       följd: `${k.pitch} (${k.lön} kr/v)`,
     })),
   });
@@ -286,7 +288,8 @@ registreraValeffekt("anställ_förstaman", (spel, scen, val) => {
   const k = (scen.data?.kandidater ?? [])[ix];
   if (!k) return;
   spel.förstaman = { namn: k.namn, profil: k.profil, profiltext: k.profiltext,
-    lön: k.lön, ambition: 20, säsongerHosDig: 0 };
+    lön: k.lön, ambition: 20, säsongerHosDig: 0,
+    urEgnaLed: !!k.urEgnaLed };
   registreraHändelse(spel, {
     typ: "förstaman_anställd", betydelse: 45,
     aktörer: { förstamanId: k.namn },

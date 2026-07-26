@@ -7,7 +7,7 @@
  * den gamla cachen städas bort. Glöms detta ser man den gamla versionen
  * för evigt, även online.
  */
-const VERSION = 75;
+const VERSION = 78;
 const CACHE = `stallet-v${VERSION}`;
 
 /* Allt spelet behöver för att starta helt utan nät. Egna filer med samma
@@ -63,6 +63,7 @@ const EGNA = [
   `./data-lopp.js?v=${VERSION}`,
   `./data-namn.js?v=${VERSION}`,
   `./data-namnpaket.js?v=${VERSION}`,
+  `./data-bilder.js?v=${VERSION}`,
 ];
 
 /* Beroendena från esm.sh. Dessa URL:er är oföränderliga (versionen står i

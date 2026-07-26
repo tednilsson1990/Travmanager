@@ -81,14 +81,17 @@ export function Häst({ namn, dräkt, storlek = 64 }) {
  *   hast-{päls}{-2?}.jpg → hast-{päls}.jpg → SVG-hästen
  * Samma häst får ALLTID samma bild — hashen är minnet.
  */
-export function Hästbild({ namn, dräkt, storlek = 64 }) {
+export function Hästbild({ namn, dräkt, storlek = 64, skifte = 0 }) {
   const päls = pälsnamnFör(namn);
-  /* Tre varianthinkar: hästarna delas i tredjedelar via namnhashen och
-     provar sin variant först, grundbilden sedan. Pälsar med färre foton
-     faller mjukt tillbaka — skimmeln har ett foto, alla skimlar delar
-     det, och det är ändå en oändlig förbättring mot ikonen. */
-  const h = hash01((namn ?? "") + "•variant");
-  const variant = h < 1 / 3 ? "" : h < 2 / 3 ? "-2" : "-3";
+  /* Varianten väljs ur registrets faktiska antal per päls, förskjuten
+     med SKIFTET: stallvyn räknar hästens plats bland stallkamrater med
+     samma päls, så att två bruna hästar i samma stall garanterat får
+     olika foton (så länge fotona räcker). Utan skifte hade namnhashen
+     gett kollision var tredje gång — och det är just sida vid sida i
+     stallistan som tvillingar skär sig. */
+  const antal = HÄSTVARIANTER[päls] ?? 1;
+  const n = ((Math.floor(hash01((namn ?? "") + "•variant") * antal) + skifte) % antal) + 1;
+  const variant = n === 1 ? "" : `-${n}`;
   const kedja = [
     `./bilder/hast-${päls}${variant}.jpg`, `./hast-${päls}${variant}.jpg`,
     ...(variant ? [`./bilder/hast-${päls}.jpg`, `./hast-${päls}.jpg`] : []),
@@ -116,10 +119,10 @@ export function Hästbild({ namn, dräkt, storlek = 64 }) {
  * tecknade travhästen. Ihopslagningen bor här så att vyerna slipper
  * veta vilka filer som råkar ligga i bildmappen.
  */
-export function HästEllerFoto({ namn, dräkt, storlek = 64 }) {
+export function HästEllerFoto({ namn, dräkt, storlek = 64, skifte = 0 }) {
   return html`
     <span class="hast-kombo">
-      <${Hästbild} namn=${namn} storlek=${Math.round(storlek * 0.9)} />
+      <${Hästbild} namn=${namn} skifte=${skifte} storlek=${Math.round(storlek * 0.9)} />
       <span style=${{ display: "none" }}>
         <${Häst} namn=${namn} dräkt=${dräkt} storlek=${storlek} />
       </span>

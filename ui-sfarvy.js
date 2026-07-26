@@ -1,4 +1,5 @@
 import { html } from "htm/preact";
+import { Bild } from "./ui-grafik.js";
 import { KUSKAR, relation, svar } from "./data-kuskar.js";
 import { klamp, kr } from "./engine-util.js";
 import { tränarliga } from "./engine-varld.js";

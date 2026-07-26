@@ -154,5 +154,36 @@ console.log("\nPROV 7 — nej tack kostar, men stänger inte dörren");
   prov("men frågan kan väckas igen", r.hästerbjudet === false);
 }
 
+console.log("\nPROV 8 — kandidaten från egna led");
+{
+  const { förstamanskandidater } = await import("./engine-forstaman.js");
+  const k = förstamanskandidater();
+  const egen = k.find((x) => x.urEgnaLed);
+  prov("fyra kandidater, en från egna led", k.length === 4 && !!egen);
+  prov("ung och billigast", egen.ålder < 25 && egen.lön < Math.min(...k.filter(x=>!x.urEgnaLed).map(x=>x.lön)));
+  prov("med eget porträtt", egen.bildId === "kandidat-egna-led");
+
+  const spel = nyttProvspel();
+  spel.förstaman = { namn: egen.namn, profil: "pådrivare", lön: 600,
+    ambition: 20, säsongerHosDig: 1, urEgnaLed: true };
+  uppdateraAmbition(spel);
+  const egenTakt = spel.förstaman.ambition - 20;
+  spel.förstaman = { namn: "Yttre", profil: "pådrivare", lön: 1200,
+    ambition: 20, säsongerHosDig: 1 };
+  uppdateraAmbition(spel);
+  const yttreTakt = spel.förstaman.ambition - 20;
+  prov("den egna drömmer långsammare", egenTakt < yttreTakt && egenTakt > 0);
+
+  spel.förstaman = null;
+  spel.scener = [];
+  köRekrytering(spel);
+  const scen = spel.scener.find((s) => s.slag === "rekrytering");
+  prov("rekryteringsscenen har fyra val", scen.val.length === 4);
+  prov("egna ledet märkt i valtexten", scen.val.some((v) => v.text.includes("från egna led")));
+  const ixEgen = scen.data.kandidater.findIndex((x) => x.urEgnaLed);
+  görVal(spel, spel.scener.indexOf(scen), "k" + ixEgen);
+  prov("anställningen bär lojaliteten", spel.förstaman.urEgnaLed === true);
+}
+
 console.log(fel === 0 ? "\nALLA PROV OK\n" : `\n${fel} PROV MISSLYCKADES\n`);
 process.exit(fel ? 1 : 0);

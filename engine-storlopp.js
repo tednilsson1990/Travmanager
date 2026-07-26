@@ -18,6 +18,8 @@
  */
 import { veckansLopp, startförbud } from "./data-kalender.js";
 import { registreraHändelse } from "./engine-handelser.js";
+import { köScen } from "./engine-scener.js";
+import { bildvariant } from "./data-bilder.js";
 
 /** Hur många veckor i förväg bågen börjar synas. */
 export const BÅGHORISONT = 4;
@@ -90,6 +92,31 @@ export function körStorloppsbåge(spel, skrivPress) {
 
   const { lopp, veckorKvar } = nästa;
   const { kvalade, nära } = kvalläge(spel, lopp);
+
+  /* KVÄLLEN FÖRE. Sista veckan före ett prestige 5-lopp med kvalad häst
+     slutar med en stilla kvällsscen: banan i skymning, hela landet
+     tittar i morgon. Bågens sista andetag före loppet — inga val, bara
+     stämning. En gång per lopp och säsong, som allt bågen skriver. */
+  if (veckorKvar === 1 && (lopp.prestige ?? 0) >= 5 && kvalade.length > 0) {
+    /* Nyckeln MÅSTE börja med "{säsong}:" — bågens städning raderar
+       allt annat format varje anrop (upptäckt i prov: scenen kom två
+       gånger för att nyckeln rensades mellan anropen). */
+    const nyckel = `${spel.säsong ?? 1}:kväll-${lopp.kortnamn}`;
+    if (!spel.bågeSkrivet[nyckel]) {
+      spel.bågeSkrivet[nyckel] = true;
+      const bild = lopp.banaNamn === "Kronvallen"
+        ? bildvariant("bana-kronvallen", spel.säsong ?? 1) : "bana-kvall";
+      köScen(spel, {
+        betydelse: 52, bild,
+        etikett: `${lopp.banaNamn ?? "BANAN"} · I MORGON`,
+        rubrik: "KVÄLLEN FÖRE",
+        ingress: `Strålkastarna släcks en efter en. I morgon körs ${lopp.kortnamn} här — `
+          + `${kvalade[0].namn} står i boxen hemma och vet ingenting. Det gör du åt er båda.`,
+        citat: "Sov nu. I morgon vet hela landet vad vi heter — åt ena eller andra hållet.",
+        citatVem: spel.förstaman?.namn ?? spel.stallnamn,
+      });
+    }
+  }
   spel.båge = {
     lopp: lopp.kortnamn, bana: lopp.banaNamn, vecka: nästa.vecka, veckorKvar,
     förstapris: lopp.pris?.[0] ?? 0,

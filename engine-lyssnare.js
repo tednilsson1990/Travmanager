@@ -19,6 +19,7 @@ import { skrivPress } from "./engine-vecka.js";
 import { klamp, kr, plock } from "./engine-util.js";
 import { köScen } from "./engine-scener.js";
 import { JOURNALISTER, TIDNINGSNAMN } from "./data-namnpaket.js";
+import { bildvariant } from "./data-bilder.js";
 
 /* ------------------------------------------------------------------ */
 /* Hjälpare                                                            */
@@ -148,7 +149,8 @@ påHändelse("storloppsseger", (spel, h) => {
   /* Helskärmsscenen — med segerintervjun som val. Samma text som
      uppslaget: en källa, två visningar. */
   köScen(spel, {
-    betydelse: h.betydelse, bild: "seger-storlopp", bildreserv: "seger", stil: "tidning",
+    betydelse: h.betydelse, bild: bildvariant("seger-storlopp", (spel.säsong ?? 1) * 100 + spel.vecka),
+    bildreserv: "seger", stil: "tidning",
     signatur: JOURNALISTER.krönikör,
     etikett: spel.huvudnyhet.etikett, rubrik: spel.huvudnyhet.rubrik,
     ingress: spel.huvudnyhet.ingress, fakta: spel.huvudnyhet.fakta,

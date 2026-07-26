@@ -17,6 +17,7 @@ import { uppdateraRekordEfterLopp, skrivSäsongskrönika } from "./engine-rekord
 import { mentornsNärvaro, efterMinneslopp } from "./engine-mentor.js";
 import { vidSkada, vidFavoritfall, vidFormsvacka } from "./engine-motgang.js";
 import { världensRöst } from "./engine-varldsrost.js";
+import { bildvariant } from "./data-bilder.js";
 import { köScen } from "./engine-scener.js";
 import { JOURNALISTER, BANOR } from "./data-namnpaket.js";
 
@@ -90,7 +91,8 @@ export function körVecka(spel) {
          stallvyn. Kortet ligger kvar som reserv: räcker inte kassan i
          scenen väntar erbjudandet där tills spelaren bestämt sig. */
       köScen(spel, {
-        slag: "banflytt", betydelse: 66, bild: `bana-${id}`, bildreserv: "bana-kvall",
+        slag: "banflytt", betydelse: 66,
+        bild: bildvariant(`bana-${id}`, spel.säsong ?? 1), bildreserv: "bana-kvall",
         etikett: "TELEFONEN RINGER",
         rubrik: `${bana.namn.toUpperCase()} VILL HA ER`,
         ingress: `${bana.karaktär ?? "En större bana."} Större lopp på hemmaplan — och hemmapubliken följer med. Flyttkostnad ${Math.round(krav.kostnad / 1000)} tkr.`,
@@ -255,6 +257,26 @@ export function körVecka(spel) {
     h.energi = 80;
     spel.stall.push(h);
     spel.logg.push(`<b>${h.namn}</b> är inkörd och redo att tävla.`);
+    /* FÖLVISNINGEN: en stilla sida i hagen när gårdens egen uppfödning
+       träder in i stallet. Förstamannen ger en FÖRSTA LEDTRÅD om
+       temperamentet — läst ur den starkaste egenskapen, utan siffror.
+       Det är så man lär känna en unghäst i verkligheten: på känn. */
+    const bäst = h.start >= h.fart && h.start >= h.styrka ? "start"
+      : h.fart >= h.styrka ? "fart" : "styrka";
+    const ledtråd = bäst === "start"
+      ? "Kvick ur vändningarna — den är med från första steget."
+      : bäst === "fart" ? "Det finns en växel till där bak. Man ser det på travet redan."
+      : "Stark som få. Den tröttnar inte — den blir sur på att andra gör det.";
+    köScen(spel, {
+      betydelse: 55, bild: bildvariant("hage", spel.säsong ?? 1),
+      bildreserv: "hage",
+      etikett: "HAGEN · GÅRDENS EGEN",
+      rubrik: h.namn.toUpperCase(),
+      ingress: `Uppfödd här${h.mor ? `, undan ${h.mor}` : ""}${h.far ? ` efter ${h.far}` : ""}. `
+        + `I dag togs ${h.kön === "sto" ? "hon" : "han"} in från hagen för första gången med sele på riktigt.`,
+      citat: ledtråd,
+      citatVem: spel.förstaman?.namn ?? "Förstamannen",
+    });
     return false;
   });
 

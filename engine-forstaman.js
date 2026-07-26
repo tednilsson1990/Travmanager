@@ -30,11 +30,26 @@ export function förstamanskandidater() {
     pådrivare: "»Form väntar man inte fram, den byggs. Ge mig ansvaret så levererar jag.«",
     taktiker: "»Rätt häst i rätt lopp slår bättre häst i fel lopp. Varje vecka.«",
   };
-  return FÖRSTAMANSPROFILER.map((p, i) => ({
+  const yttre = FÖRSTAMANSPROFILER.map((p, i) => ({
     namn: namn[i], ålder: 24 + Math.floor(slump() * 30),
     profil: p.id, profiltext: p.text, lön: löner[p.id] ?? 1000,
     pitch: pitch[p.id] ?? "",
   }));
+  /* KANDIDATEN FRÅN EGNA LED — designdokumentets egen mening: "min
+     första förstaman var en ung hästskötare." Hen är ung, billig och
+     känner redan varenda häst i stallet; profilen lottas (man vet inte
+     riktigt vem någon är förrän hen fått ansvar), men LOJALITETEN är
+     hens egenskap: ambitionen växer långsammare — den som fostrats på
+     gården drömmer inte bort sig lika fort. Avvägningen mot de yttre:
+     lägst lön mot minst erfarenhet. */
+  const egenProfil = FÖRSTAMANSPROFILER[Math.floor(slump() * FÖRSTAMANSPROFILER.length)];
+  yttre.push({
+    namn: namn[FÖRSTAMANSPROFILER.length], ålder: 19 + Math.floor(slump() * 5),
+    profil: egenProfil.id, profiltext: egenProfil.text,
+    lön: 600, urEgnaLed: true, bildId: "kandidat-egna-led",
+    pitch: "»Jag har mockat de här boxarna i tre år. Jag kan varenda häst — ge mig chansen.«",
+  });
+  return yttre;
 }
 
 /**

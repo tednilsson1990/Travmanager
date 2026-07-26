@@ -13,6 +13,32 @@ import { html } from "htm/preact";
 import { useState } from "preact/hooks";
 import { kr } from "./engine-util.js";
 import { Tom } from "./ui-delar.js";
+import { Bild } from "./ui-grafik.js";
+
+/* Albumets bildval: händelsetyp → motiv ur bildlagret. Bara ögonblick
+   som förtjänar en sida (betydelse ≥ 70) kommer med — albumet är de
+   STORA minnena, inte ett flöde. */
+const ALBUMBILD = {
+  storloppsseger: "seger-storlopp", arvet: "arv", minnesloppsseger: "krans",
+  eleven_slog_mästaren: "rivaler", mentorns_bortgång: "mentor",
+  tackade_nej_storbanan: "gard-hero", gårdsrekord: "rekord", stallrekord: "rekord",
+  pensionering: "avsked", banflytt: "bana-kvall", förstaman_lämnade: "avsked-forsteman",
+};
+const ALBUMRUBRIK = (h) => {
+  const d = h.data ?? {}; const namn = h.aktörer?.hästNamn;
+  switch (h.typ) {
+    case "storloppsseger": return `${namn} vann ${d.lopp}`;
+    case "arvet": return `Som sin mor — ${namn} i ${d.lopp}`;
+    case "minnesloppsseger": return `Kransen: ${namn} i ${d.lopp}`;
+    case "eleven_slog_mästaren": return `Eleven slog mästaren`;
+    case "mentorns_bortgång": return `Till minne: ${d.namn}`;
+    case "tackade_nej_storbanan": return `Nejet till ${d.bana}`;
+    case "pensionering": return `${namn} lämnade banorna`;
+    case "banflytt": return d.text ?? "Flytten";
+    case "förstaman_lämnade": return d.text ?? "Avskedet på kontoret";
+    default: return d.text ?? h.typ;
+  }
+};
 
 const kmt = (v) => v?.toFixed?.(1).replace(".", ",") ?? v;
 
@@ -74,7 +100,7 @@ export default function JournalVy({ spel }) {
 
   return html`
     <div class="flikar">
-      ${["krönika", "säsonger", "rekord", "troférum", "rivaler"].map((f) => html`
+      ${["krönika", "album", "säsonger", "rekord", "troférum", "rivaler"].map((f) => html`
         <button key=${f} class="flik" aria-selected=${flik === f}
           onClick=${() => sättFlik(f)}>${f}</button>`)}
     </div>
@@ -98,6 +124,24 @@ export default function JournalVy({ spel }) {
                 </div>
               </div>`)}
           </div>`}`}
+
+    ${flik === "album" && html`
+      <div class="hint">Gårdens fotoalbum — karriärens största ögonblick, nyast först.</div>
+      ${(() => {
+        const sidor = (spel.krönika ?? [])
+          .filter((h) => (h.betydelse ?? 0) >= 70 && ALBUMBILD[h.typ])
+          .slice(0, 24);
+        return sidor.length === 0
+          ? html`<${Tom}>Albumet väntar på sitt första stora ögonblick.<//>`
+          : sidor.map((h, i) => html`
+              <div key=${i} class="albumsida">
+                <${Bild} id=${ALBUMBILD[h.typ]} alt="" klass="albumbild" fallback=${null} />
+                <div class="albumtext">
+                  <div class="albumrubrik">${ALBUMRUBRIK(h)}</div>
+                  <div class="meta">Säsong ${h.säsong}${h.vecka ? ` · vecka ${h.vecka}` : ""}</div>
+                </div>
+              </div>`);
+      })()}`}
 
     ${flik === "säsonger" && html`
       <div class="hint">Krönikörens bokslut, år för år. Texterna skrevs när det hände.</div>

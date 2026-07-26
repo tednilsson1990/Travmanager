@@ -10,7 +10,7 @@ import { träningsråd } from "./engine-forstaman.js";
 import { rivalerFör } from "./engine-handelser.js";
 import { Mentorkort } from "./ui-prolog.js";
 import { säsongsHändelser } from "./engine-handelser.js";
-import { Bild, HästEllerFoto, Häst } from "./ui-grafik.js";
+import { pälsnamnFör, Bild, HästEllerFoto, Häst } from "./ui-grafik.js";
 import { BANOR } from "./data-namnpaket.js";
 
 /**
@@ -30,7 +30,7 @@ function Träningsplan({ spel, uppdatera }) {
       <div class="tplan">
         ${rader.map(({ häst, råd }) => html`
           <div class="tplan-rad" key=${häst.id}>
-            <${HästEllerFoto} namn=${häst.namn} dräkt=${spel.dräkt} storlek=${40} />
+            <${HästEllerFoto} namn=${häst.namn} skifte=${pälsskifte(spel, häst)} dräkt=${spel.dräkt} storlek=${40} />
             <div class="tplan-mitt">
               <div class="tplan-namn">${häst.namn}</div>
               <div class="tplan-mini">E ${Math.round(häst.energi)} · F ${Math.round(häst.form)}</div>
@@ -121,7 +121,7 @@ function HästSida({ häst, spel, uppdatera, tillbaka }) {
     <button class="tillbaka" onClick=${tillbaka}>‹ Stallet</button>
     <div class="kort">
       <div class="horse-topp">
-        <${HästEllerFoto} namn=${häst.namn} dräkt=${spel.dräkt} storlek=${92} />
+        <${HästEllerFoto} namn=${häst.namn} skifte=${pälsskifte(spel, häst)} dräkt=${spel.dräkt} storlek=${92} />
         <div>
           <div class="namn">${häst.namn}</div>
           <div class="meta">${häst.ålder} år · ${häst.kön} · ${status}</div>
