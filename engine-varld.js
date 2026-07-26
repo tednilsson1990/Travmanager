@@ -375,7 +375,9 @@ export function tränarliga(spel) {
   }));
   rader.push({
     namn: spel.stallnamn,
-    tränare: "du",
+    /* Karriären är någons: spelarens eget namn står i ligan som alla
+       andras. "du" blev anonymt så fort världen fick riktiga namn. */
+    tränare: spel.tränarnamn || "du",
     filosofi: "",
     hästar: spel.stall.length || 1,
     perHäst: Math.round(spel.intjänat / (spel.stall.length || 1)),

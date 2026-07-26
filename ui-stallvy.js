@@ -189,6 +189,7 @@ function HästSida({ häst, spel, uppdatera, tillbaka }) {
             </div>`)}`}`}
 
       ${flik === "dagbok" && html`
+        <${Bild} id="traning" alt="" klass="vytopp" fallback=${null} />
         <div class="hint">Veckans pass och vad hästen svarade. Nyast först.</div>
         ${(häst.dagbok ?? []).length === 0
           ? html`<div class="tom">Dagboken börjar nästa vecka du tränar.</div>`

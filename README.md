@@ -475,6 +475,58 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Bilderna på plats (v75)
+
+Teds första bildleverans: 72 källbilder varav 61 konverterade in i
+bilder/ (hela kärnan, alla dräktfoton, nio banor + Kronvallen,
+hästhuvuden i upp till tre varianter, journalisterna, ikonen).
+Pipelinen normaliserade tre fällor: VERSAL-ändelser och inledande
+blanksteg i filnamn (GitHub Pages är skiftlägeskänsligt), macOS
+NFD-teckenkodning (drakt-grön låg som g + kombinerande prickar och
+matchade ingenting förrän NFC-normalisering), och vikten — PNG på
+1,5–3 MB styck blev JPG i målstorlek, hela lagret 6,8 MB.
+
+Fem nya motiv fick platser: seger-storlopp (storloppssegerns
+tidningssida, reserv seger), malfoto (överst i facit — bilden domaren
+tittar på), traning (dagbokens topp), rekrytering och avsked-forsteman
+(personalscenerna, reserv kontor). Hästbilden delar nu hästarna i TRE
+varianthinkar via namnhashen med mjuk reserv till grundbilden för
+pälsar med färre foton.
+
+## Dräktsteget mot mockupen (v74)
+
+Teds mockup satte riktningen: fotorealistiska dräktfoton på ljus
+studiofond, stora visningen i ram med skugga, färgstreck under namnet,
+tumnaglar av SAMMA foton med marinblå ram och bockmärke på vald,
+infonotis ("din stallfärg syns överallt i spelet") och knappen med
+chevron. Byggt exakt så: fotokedjan provar drakt-{id}.jpg → .png i
+bilder/ och rot innan SVG-illustrationen tar vid, samma foto bär både
+stor visning och tumnagel (enhetligheten är premiumkänslan), och
+prologstegen fick en tillbakapil så att man kan ångra sig genom hela
+onboardingen. Fotospecen (800×1000 JPG, inbakad studiofond, exakt
+samma vinkel på alla åtta, promptstomme med färgtabell) står i
+bilder/LÄSMIG.md.
+
+## Dräkten som identitet och tränarnamnet (v73)
+
+**Dräktvalet gjordes om till onboardingens identitetsmoment.** I stället
+för åtta små platta ikoner: en stor halvkroppsillustration (DräktIllustration
+i ui-grafik.js — hjälm med mörkt visir, tröja med bröstband och
+manschetter i accentfärgen, antydda veck, ljussättning uppifrån vänster,
+tygstruktur som glest diagonalmönster, vit byxlinning; SAMMA geometri för
+alla åtta så att kameravinkeln är identisk per konstruktion), mjuk
+fade+scale när man byter (key-bytet startar animationen om),
+färgkombinationen som namn under, och tumnaglar i exakt samma stil med
+marinblå ram + pop på vald. Valfri bildöverstyrning per dräkt
+(bilder/drakt-{id}.png) för den stora visningen; tumnaglarna förblir SVG
+för enhetlighetens skull.
+
+**Tränarnamnet blev ett eget beslut** — onboardingen är nu fyra beslut
+(ditt namn, stallets namn, dräkten, hemmabanan) plus två berättelsesteg.
+Namnet står i tränarligan som alla andras ("du" blev anonymt så fort
+världen fick riktiga namn), lagras som spel.tränarnamn och migreras
+tomt i äldre karriärer där ligan visar "du" som förr.
+
 ## Kronvallen — storbanan och nejet (v72)
 
 Designdokumentets slutmål innehåller meningen "jag tackade nej till en
@@ -1091,4 +1143,5 @@ gårdens synliga historia (v65) samt motgången som berättelse (v66) och värld
 variationsbredden (v67) samt bildlagrets reservkedja (v68) och rätt ansikte med klippet på
 Hem (v69) samt hästhuvudena och extrabildernas platser (v70) och
 anropskontrollen efter minnesloppskraschen (v71) samt Kronvallen med
-storbanenejet (v72).
+storbanenejet (v72) och dräkten som identitet med tränarnamnet (v73) samt dräktsteget mot
+mockupen (v74) och bilderna på plats (v75).

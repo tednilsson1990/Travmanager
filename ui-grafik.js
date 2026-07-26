@@ -83,7 +83,12 @@ export function Häst({ namn, dräkt, storlek = 64 }) {
  */
 export function Hästbild({ namn, dräkt, storlek = 64 }) {
   const päls = pälsnamnFör(namn);
-  const variant = hash01((namn ?? "") + "•variant") < 0.5 ? "" : "-2";
+  /* Tre varianthinkar: hästarna delas i tredjedelar via namnhashen och
+     provar sin variant först, grundbilden sedan. Pälsar med färre foton
+     faller mjukt tillbaka — skimmeln har ett foto, alla skimlar delar
+     det, och det är ändå en oändlig förbättring mot ikonen. */
+  const h = hash01((namn ?? "") + "•variant");
+  const variant = h < 1 / 3 ? "" : h < 2 / 3 ? "-2" : "-3";
   const kedja = [
     `./bilder/hast-${päls}${variant}.jpg`, `./hast-${päls}${variant}.jpg`,
     ...(variant ? [`./bilder/hast-${päls}.jpg`, `./hast-${päls}.jpg`] : []),
@@ -119,6 +124,116 @@ export function HästEllerFoto({ namn, dräkt, storlek = 64 }) {
         <${Häst} namn=${namn} dräkt=${dräkt} storlek=${storlek} />
       </span>
     </span>`;
+}
+
+/**
+ * DRÄKTILLUSTRATIONEN — kuskdräkten som identitet, inte som ikon
+ *
+ * Halvkropp rakt framifrån: hjälm med mörkt visir (inga ansikten),
+ * tröja i stallets grundfärg med bröstband och ärmmanschetter i
+ * accentfärgen, antydda veck och en mjuk ljussättning uppifrån vänster,
+ * vit byxlinning nertill. SAMMA geometri för alla dräkter — kameravinkeln
+ * är identisk per konstruktion, bara färgerna byts. Tygstrukturen är ett
+ * glest diagonalt mönster med låg opacitet: känns i stor storlek, stör
+ * inte i tumnagel.
+ *
+ * Valfri överstyrning: ligger bilder/drakt-{id}.png i bildmappen används
+ * den i stället (samma reservtänk som allt annat bildlager).
+ */
+export function DräktIllustration({ dräkt, storlek = 240, bild = true }) {
+  const d = dräkt ?? { bg: "#7a1f2b", fg: "#e8c766", id: "vinröd" };
+  const mörk = skugga(d.bg, 0.72), ljus = skugga(d.bg, 1.18);
+  const fgMörk = skugga(d.fg, 0.8);
+  const b = Math.round(storlek * 0.78);
+  const svg = html`
+    <svg viewBox="0 0 200 250" width=${b} height=${storlek} aria-hidden="true">
+      <defs>
+        <linearGradient id=${"dr-ljus-" + d.id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color=${ljus} />
+          <stop offset="0.55" stop-color=${d.bg} />
+          <stop offset="1" stop-color=${mörk} />
+        </linearGradient>
+        <pattern id=${"dr-tyg-" + d.id} width="6" height="6"
+          patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
+          <rect width="6" height="6" fill="none" />
+          <line x1="0" y1="0" x2="0" y2="6" stroke="#000" stroke-opacity="0.05" stroke-width="1.4" />
+        </pattern>
+      </defs>
+
+      <!-- ärmar (bakom kroppen) -->
+      <path d="M42 108 Q28 122 24 168 Q23 186 30 196 L58 188 Q52 150 58 118 Z"
+        fill=${"url(#dr-ljus-" + d.id + ")"} stroke=${mörk} stroke-width="1.5" />
+      <path d="M158 108 Q172 122 176 168 Q177 186 170 196 L142 188 Q148 150 142 118 Z"
+        fill=${"url(#dr-ljus-" + d.id + ")"} stroke=${mörk} stroke-width="1.5" />
+      <!-- ärmveck -->
+      <path d="M36 130 Q31 152 32 176" stroke=${mörk} stroke-width="2" fill="none" opacity="0.55" />
+      <path d="M164 130 Q169 152 168 176" stroke=${mörk} stroke-width="2" fill="none" opacity="0.55" />
+      <!-- manschetter -->
+      <path d="M26 178 L58 171 L58 188 L30 196 Z" fill=${d.fg} stroke=${fgMörk} stroke-width="1.2" />
+      <path d="M174 178 L142 171 L142 188 L170 196 Z" fill=${d.fg} stroke=${fgMörk} stroke-width="1.2" />
+
+      <!-- bål -->
+      <path d="M58 112 Q100 96 142 112 L146 210 Q100 222 54 210 Z"
+        fill=${"url(#dr-ljus-" + d.id + ")"} stroke=${mörk} stroke-width="2" />
+      <path d="M58 112 Q100 96 142 112 L146 210 Q100 222 54 210 Z"
+        fill=${"url(#dr-tyg-" + d.id + ")"} />
+      <!-- bröstband -->
+      <path d="M56 138 Q100 126 144 138 L144 158 Q100 146 56 158 Z"
+        fill=${d.fg} stroke=${fgMörk} stroke-width="1.2" />
+      <!-- kragöppning + dragkedjeskugga -->
+      <path d="M84 108 Q100 118 116 108 L112 104 Q100 112 88 104 Z" fill=${mörk} opacity="0.8" />
+      <path d="M100 118 L100 208" stroke=${mörk} stroke-width="1.6" opacity="0.5" />
+      <!-- tygveck på bålen -->
+      <path d="M70 165 Q74 185 71 205" stroke=${mörk} stroke-width="2" fill="none" opacity="0.4" />
+      <path d="M130 165 Q126 185 129 205" stroke=${mörk} stroke-width="2" fill="none" opacity="0.4" />
+      <path d="M62 120 Q66 128 64 136" stroke=${ljus} stroke-width="2" fill="none" opacity="0.5" />
+
+      <!-- vit byxlinning -->
+      <path d="M54 210 Q100 222 146 210 L146 236 Q100 248 54 236 Z"
+        fill="#F4F1EA" stroke="#C9C4B8" stroke-width="1.5" />
+      <path d="M54 214 Q100 226 146 214" stroke="#D8D3C6" stroke-width="1.5" fill="none" />
+
+      <!-- hals -->
+      <path d="M88 92 Q100 100 112 92 L112 106 Q100 114 88 106 Z" fill="#C89A72" />
+
+      <!-- hjälm -->
+      <ellipse cx="100" cy="58" rx="36" ry="34" fill=${d.fg} stroke=${fgMörk} stroke-width="2" />
+      <path d="M64 58 A36 34 0 0 1 136 58 L136 52 A36 40 0 0 0 64 52 Z" fill=${ljus} opacity="0.35" />
+      <path d="M66 64 Q100 50 134 64 L134 78 Q100 88 66 78 Z" fill="#1B222B" />
+      <path d="M70 66 Q100 55 118 62" stroke="#3D4854" stroke-width="2.5" fill="none" opacity="0.8" />
+      <path d="M62 60 Q100 74 138 60 L138 66 Q100 80 62 66 Z" fill=${fgMörk} />
+      <ellipse cx="100" cy="26" rx="10" ry="4" fill=${fgMörk} />
+    </svg>`;
+  if (!bild) return svg;
+  /* Fotona är porträtt (4:5) med ljus studiofond inbakad — jpg först,
+     png som andrahand för den som exporterar så. Samma foto bär både
+     stora visningen och tumnaglarna: enhetligheten ÄR premiumkänslan. */
+  const kedja = [
+    `./bilder/drakt-${d.id}.jpg`, `./bilder/drakt-${d.id}.png`,
+    `./drakt-${d.id}.jpg`, `./drakt-${d.id}.png`,
+  ];
+  return html`
+    <span class="draktbild" style=${{ width: b + "px", height: storlek + "px" }}>
+      <img src=${kedja[0]} alt="" loading="lazy"
+        onError=${(e) => {
+          const img = e.target;
+          const steg = (Number(img.dataset.steg) || 0) + 1;
+          if (steg < kedja.length) { img.dataset.steg = String(steg); img.src = kedja[steg]; return; }
+          const ram = img.parentElement;
+          if (ram) ram.style.display = "none";
+          const f = ram?.nextElementSibling;
+          if (f) f.style.display = "";
+        }} />
+    </span>
+    <span style=${{ display: "none" }}>${svg}</span>`;
+}
+
+/** Ljusare/mörkare nyans av en hexfärg — för veck och ljussättning. */
+function skugga(hex, faktor) {
+  const n = parseInt(String(hex).replace("#", ""), 16);
+  const k = (v) => Math.max(0, Math.min(255, Math.round(v * faktor)));
+  return "#" + [k(n >> 16), k((n >> 8) & 255), k(n & 255)]
+    .map((v) => v.toString(16).padStart(2, "0")).join("");
 }
 
 /** Tävlingströjan — dräkten som plagg med ärmar, bröstrand och hjälm. */

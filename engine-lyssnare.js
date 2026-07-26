@@ -148,7 +148,7 @@ påHändelse("storloppsseger", (spel, h) => {
   /* Helskärmsscenen — med segerintervjun som val. Samma text som
      uppslaget: en källa, två visningar. */
   köScen(spel, {
-    betydelse: h.betydelse, bild: "seger", stil: "tidning",
+    betydelse: h.betydelse, bild: "seger-storlopp", bildreserv: "seger", stil: "tidning",
     signatur: JOURNALISTER.krönikör,
     etikett: spel.huvudnyhet.etikett, rubrik: spel.huvudnyhet.rubrik,
     ingress: spel.huvudnyhet.ingress, fakta: spel.huvudnyhet.fakta,

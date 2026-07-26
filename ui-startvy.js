@@ -20,7 +20,8 @@ import { slump } from "./engine-util.js";
 import { BANOR, DRÄKTER, JOURNALISTER, TIDNINGSNAMN, könAvFörnamn } from "./data-namnpaket.js";
 import { skrivPress } from "./engine-vecka.js";
 import { köScen } from "./engine-scener.js";
-import { Dräkt, Bild, GårdIRegn, Porträtt } from "./ui-grafik.js";
+import { Dräkt, DräktIllustration, Bild, GårdIRegn, Porträtt } from "./ui-grafik.js";
+import { FÖRSTAMANSNAMN } from "./data-namnpaket.js";
 
 const NAMNFÖRSLAG = [
   "Björkhaga", "Stall Norrsken", "Ekbackens Trav", "Stall Framåt",
@@ -28,11 +29,13 @@ const NAMNFÖRSLAG = [
   "Månskensstallet", "Stall Rimfrost",
 ];
 
-/** Gemensam ram för stegen: ljus helskärm, etikett, stor rubrik. */
-function Steg({ etikett, rubrik, barn, knapp, kan = true, påNästa, sekundär }) {
+/** Gemensam ram för stegen: ljus helskärm, tillbakapil, etikett, rubrik. */
+function Steg({ etikett, rubrik, barn, knapp, kan = true, påNästa, påTillbaka, sekundär }) {
   return html`
     <div class="helscen ljus">
       <div class="helscen-inre">
+        ${påTillbaka && html`
+          <button class="steg-tillbaka" aria-label="Tillbaka" onClick=${påTillbaka}>‹</button>`}
         <div class="scen-etikett">${etikett}</div>
         <div class="helscen-rubrik mörk">${rubrik}</div>
         ${barn}
@@ -47,6 +50,7 @@ export default function StartVy({ spel, uppdatera }) {
   /* ALLA hooks före första möjliga return — preact kräver samma
      hookordning i varje rendering, annars kraschar den. */
   const [steg, sättSteg] = useState(0);
+  const [tränarnamn, sättTränarnamn] = useState("");
   const [namn, sättNamn] = useState("Björkhaga");
   const [dräkt, sättDräkt] = useState(DRÄKTER[0].id);
   const [bana, sättBana] = useState(null);
@@ -106,14 +110,36 @@ export default function StartVy({ spel, uppdatera }) {
       </div>`;
   }
 
-  /* STEG 2 — namnet. Ett beslut, en skärm. */
+  /* STEG 2 — DITT namn. Karriären är någons; pressen ska kunna citera
+     dig, ligan lista dig och mentorn tilltala dig. */
   if (steg === 2) {
     return html`<${Steg}
-      etikett="Beslut 1 av 3"
-      rubrik="Vad ska det heta?"
+      etikett="Beslut 1 av 4"
+      rubrik="Vad heter du?"
+      kan=${!!tränarnamn.trim()}
+      knapp="Det är jag"
+      påNästa=${() => gå(3)}
+      påTillbaka=${() => gå(1)}
+      barn=${html`
+        <div class="helscen-ingress mörk">Namnet som ska stå i tränarligan,
+          i ${TIDNINGSNAMN}s citat och en dag — kanske — på ett minneslopp.</div>
+        <input class="startfält stor" value=${tränarnamn} maxlength="30"
+          placeholder="För- och efternamn"
+          onInput=${(e) => sättTränarnamn(e.target.value)} />
+        <button class="btn liten sekundär" onClick=${() =>
+          sättTränarnamn(FÖRSTAMANSNAMN[Math.floor(slump() * FÖRSTAMANSNAMN.length)])}>Slumpa</button>`}
+    />`;
+  }
+
+  /* STEG 3 — stallnamnet. */
+  if (steg === 3) {
+    return html`<${Steg}
+      etikett="Beslut 2 av 4"
+      rubrik="Vad ska stallet heta?"
       kan=${!!namn.trim()}
       knapp="Så ska det heta"
-      påNästa=${() => gå(3)}
+      påNästa=${() => gå(4)}
+      påTillbaka=${() => gå(2)}
       barn=${html`
         <div class="helscen-ingress mörk">Gården heter vad den heter tills du tar över.
           Men på kuskarnas anmälningar, i programbladen och en dag — kanske — i
@@ -125,24 +151,41 @@ export default function StartVy({ spel, uppdatera }) {
     />`;
   }
 
-  /* STEG 3 — dräkten. */
-  if (steg === 3) {
+  /* STEG 4 — DRÄKTEN. Onboardingens identitetsmoment: en stor halvkropps-
+     illustration som byts mjukt när man väljer, tumnaglar i samma stil
+     under, och färgkombinationen som namn. Dräkten är det publiken känner
+     igen på upploppet — valet ska kännas som att välja klubbfärger, inte
+     som att bocka i en ikon. */
+  if (steg === 4) {
+    const vald = DRÄKTER.find((d) => d.id === dräkt) ?? DRÄKTER[0];
     return html`<${Steg}
-      etikett="Beslut 2 av 3"
+      etikett="Beslut 3 av 4"
       rubrik="Stallets färger"
-      knapp="Sy upp dräkten"
-      påNästa=${() => gå(4)}
+      knapp="Sy upp dräkten ›"
+      påNästa=${() => gå(5)}
+      påTillbaka=${() => gå(3)}
       barn=${html`
-        <div class="helscen-ingress mörk">Dräkten följer stallet genom hela karriären.
-          Det är den publiken lär sig känna igen på upploppet — långt innan de
-          kan namnet.</div>
-        <div class="draktrad stor">
-          ${DRÄKTER.map((d) => html`
-            <button key=${d.id} class=${"drakt" + (dräkt === d.id ? " vald" : "")}
-              aria-label=${d.namn} title=${d.namn}
-              onClick=${() => sättDräkt(d.id)}><${Dräkt} dräkt=${d} storlek=${46} /></button>`)}
+        <div class="helscen-ingress mörk">Dräkten följer stallet genom hela
+          karriären. Den är det publiken känner igen på upploppet.</div>
+        <div class="draktscen" key=${vald.id}>
+          <${DräktIllustration} dräkt=${vald} storlek=${260} />
         </div>
-        <div class="meta" style=${{ textAlign: "center" }}>${DRÄKTER.find((d) => d.id === dräkt)?.namn}</div>`}
+        <div class="draktnamn">${vald.namn.replace("/", " / ").toUpperCase()}</div>
+        <div class="färgstreck" aria-hidden="true">
+          <span style=${{ background: vald.bg }} />
+          <span style=${{ background: vald.fg }} />
+        </div>
+        <div class="draktrad premium">
+          ${DRÄKTER.map((d) => html`
+            <button key=${d.id} class=${"draktval" + (dräkt === d.id ? " vald" : "")}
+              aria-label=${d.namn} title=${d.namn}
+              onClick=${() => sättDräkt(d.id)}>
+              <${DräktIllustration} dräkt=${d} storlek=${64} />
+              ${dräkt === d.id && html`<span class="draktbock" aria-hidden="true">✓</span>`}
+            </button>`)}
+        </div>
+        <div class="startnotis">Din stallfärg syns överallt i spelet och
+          representerar ditt stall i varje lopp.</div>`}
     />`;
   }
 
@@ -150,6 +193,7 @@ export default function StartVy({ spel, uppdatera }) {
   const små = Object.entries(BANOR).filter(([, b]) => b.storlek === 1);
   const öppna = () => uppdatera((s) => {
     s.stallnamn = namn.trim() || "Björkhaga";
+    s.tränarnamn = tränarnamn.trim() || "Tränaren";
     s.dräkt = DRÄKTER.find((d) => d.id === dräkt) ?? DRÄKTER[0];
     s.hemmabana = bana;
     s.uppstartKlar = true;
@@ -182,11 +226,12 @@ export default function StartVy({ spel, uppdatera }) {
   });
 
   return html`<${Steg}
-    etikett="Beslut 3 av 3"
+    etikett="Beslut 4 av 4"
     rubrik="Hemmabanan"
     kan=${!!bana}
     knapp="Öppna stallet"
     påNästa=${öppna}
+    påTillbaka=${() => gå(4)}
     barn=${html`
       <div class="helscen-ingress mörk">Bara de små banorna har plats för en okänd
         tränare — de stora får man förtjäna. Hemma slipper du resekostnader och

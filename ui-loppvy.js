@@ -371,6 +371,9 @@ function Facit({ körning, facit, onKlart }) {
   const { sim, häst, kusk } = körning;
   const min = facit.min;
   return html`
+    ${/* Målfotot — bilden domaren tittar på. Ligger överst i facit så
+        att resultatlistan känns som just ett facit, inte en tabell. */ ""}
+    <${Bild} id="malfoto" alt="" klass="vytopp" fallback=${null} />
     <${Segerartikel} körning=${körning} facit=${facit} />
     <table>
       <thead><tr><th>Pl</th><th>Sp</th><th>Häst</th><th>Kusk</th><th>%</th><th>Km</th><th>S400</th></tr></thead>

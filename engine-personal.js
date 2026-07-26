@@ -68,7 +68,7 @@ export function prövaAvgång(spel) {
   const nyLön = Math.round((fm.lön || 1000) * 1.6 / 100) * 100;
   köScen(spel, {
     slag: "förstaman_avgång",
-    betydelse: 78, bild: "kontor", bildreserv: "forstaman",
+    betydelse: 78, bild: "avsked-forsteman", bildreserv: "kontor",
     etikett: "STALLKONTORET",
     rubrik: `${förnamn(fm.namn).toUpperCase()} VILL VIDARE`,
     ingress: `${fm.namn} har varit din högra hand i ${fm.säsongerHosDig} säsong${fm.säsongerHosDig > 1 ? "er" : ""}. `
@@ -144,7 +144,7 @@ export function köRekrytering(spel) {
   const kandidater = förstamanskandidater();
   köScen(spel, {
     slag: "rekrytering",
-    betydelse: 70, bild: "kontor", bildreserv: "forstaman",
+    betydelse: 70, bild: "rekrytering", bildreserv: "kontor",
     etikett: "STALLKONTORET",
     rubrik: "STOLEN STÅR TOM",
     ingress: "Tre har sökt jobbet som förstaman. Profilen färgar råden genom hela karriären — fostraren bygger långsamt, pådrivaren pressar formen, taktikern läser loppen.",
