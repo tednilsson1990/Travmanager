@@ -6,6 +6,21 @@ import { rnd } from "./engine-util.js";
  * kuskens rykte och spår — aldrig på hästens sanna värden. Det är därför
  * spelaren kan äga information som marknaden saknar.
  */
+/**
+ * Öppningsprocenten: var marknaden STARTADE innan sena pengar kom in.
+ * Deterministisk förskjutning ur häst+lopp (hashad, ingen slump — samma
+ * lopp visar samma öppning hur ofta vyn än ritas): hypade hästar öppnar
+ * högre än de landar (tidiga pengar jagar rubriker), lågt spelade
+ * öppnar lägre. Skillnaden mot aktuell procent ÄR trenden spelarna
+ * läser — och spelet avslöjar aldrig någon "sann" chans: osäkerhet och
+ * felvärdering är travspelets kärna.
+ */
+function hash01Streck(text) {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return ((h >>> 0) % 10000) / 10000;
+}
+
 export function beräknaStreck(fält, spel, lopp) {
   /* Spelarna ser inte bara hästen utan hela stallet: hur det gått den
      senaste tiden, och om dina hästar brukar överträffa sina odds.
@@ -53,5 +68,15 @@ export function beräknaStreck(fält, spel, lopp) {
   const poäng = brusigt.map((v) => Math.exp(((v - medel) / spridning) * SKÄRPA));
   const summa = poäng.reduce((a, b) => a + b, 0);
   fält.forEach((h, i) => (h.streck = (poäng[i] / summa) * 100));
+  /* Öppningen läggs sist, när aktuell procent är färdignormaliserad —
+     och FÖRE return (första insticket hamnade efter return och blev död
+     kod: öppningen var undefined och determinismprovet "lyckades" på
+     undefined === undefined — därav dubbelkollen mot ett tal nedan i
+     provet). */
+  for (const h of fält) {
+    const drag = (hash01Streck(`${lopp?.id ?? ""}•${h.id}`) - 0.5) * 6;
+    const hypeskjuts = ((h.hype ?? 20) - 30) * 0.06;
+    h.öppningsstreck = Math.max(0.4, Math.min(96, (h.streck ?? 1) + drag + hypeskjuts));
+  }
   return fält;
 }

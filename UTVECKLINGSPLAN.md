@@ -1,7 +1,6 @@
 # UTVECKLINGSPLAN (Teds dokument efter v78)
 
-Källa: Travmanager_utvecklingsplan_v78.docx. Detta är arbetslistan
-framåt; bocka av med [KLART vNN] vartefter.
+Arbetslistan framåt; bocka av med [KLART vNN].
 
 - TRAVMANAGER
 - Samlad utvecklingsplan efter v78
@@ -44,7 +43,7 @@ framåt; bocka av med [KLART vNN] vartefter.
 - Kopiera felrapport.
 - Återgå till Hem.
 - Exportera sparfil för felsökning.
-## 2.5 Sparsäkerhet
+## 2.5 Sparsäkerhet [DELVIS v79 — indikator, export/import; kvar: sparplatser, autobackup]
 - Synlig sparindikator och tidpunkt för senaste lyckade sparning.
 - Varning om sparningen misslyckas.
 - Export och import av karriär.
@@ -54,7 +53,7 @@ framåt; bocka av med [KLART vNN] vartefter.
 - Ett managerspel som ska kunna spelas i flera decennier måste behandla sparfilen som något mycket värdefullt.
 ## 3. Travspelarens perspektiv
 - En travspelare kommer främst bedöma trovärdigheten i startlistor, spelprocent, utrustning, positioner, kuskarnas körsätt, lopptempo, taktiska beslut, galopper, propositioner och resultat över tid.
-## 3.1 Kompletta startlistor
+## 3.1 Kompletta startlistor [DELVIS v81 — utfällbara rader; utrustning saknas]
 - Startnummer och spår
 - Häst, ålder och kön
 - Kusk och tränare
@@ -65,7 +64,7 @@ framåt; bocka av med [KLART vNN] vartefter.
 - Spelprocent och trend
 - Galoppmarkeringar
 - På mobil visas en kompakt rad som kan fällas ut för detaljer.
-## 3.2 Levande spelprocent
+## 3.2 Levande spelprocent [KLART v81]
 - Öppningsprocent
 - Aktuell procent
 - Förändring över tid
@@ -73,7 +72,7 @@ framåt; bocka av med [KLART vNN] vartefter.
 - Mest spelad senaste perioden
 - Möjlig marknadsförklaring
 - Spelet ska inte avslöja en exakt sann vinstchans. Osäkerhet och felvärderingar är en central del av travspel.
-## 3.3 Varför marknaden spelar en häst
+## 3.3 Varför marknaden spelar en häst [KLART v81]
 - Bra spår
 - Toppkusk
 - Barfota för första gången
@@ -98,7 +97,7 @@ framåt; bocka av med [KLART vNN] vartefter.
 - Vilja att gå först i tredjespår
 - Galoppsäkerhet
 - Relation till hästen
-## 3.6 Bättre travspråk i loppkommentarerna [DELVIS v79 — utflyttningsrepliker]
+## 3.6 Bättre travspråk [DELVIS v79 — utflyttningsrepliker]
 - Den upprepade formuleringen “går ut och upp utvändigt” bör ersättas av situationsbaserade kommentarer:
 - Går först i tredjespår.
 - Hakar på i rygg.
@@ -369,7 +368,7 @@ framåt; bocka av med [KLART vNN] vartefter.
 - Ha fasta kontroller för paus, 1×, 3×, 10×, till 500 kvar, till upploppet och till mål.
 ## 14. Efterloppsanalys
 - Efter loppet ska spelaren förstå vad planen var, vad som hände, vilket beslut som blev avgörande, vad hästen gjorde bra och vad nästa steg bör vara.
-## 15. Storysystemet ska synliggöras
+## 15. Storysystemet ska synliggöras [DELVIS v82 — Pågående berättelser på Hem; avslutade/historiska finns i Albumet]
 ## Pågående berättelser
 - Satsningen mot finalen
 - Tränare under press

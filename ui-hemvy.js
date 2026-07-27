@@ -54,6 +54,31 @@ export default function HemVy({ spel, gåTill }) {
         som ligger kvar på Hem är URKLIPPET man sparar: etikett, rubrik i
         klippstorlek, en rad. Före v69 låg hela uppslaget kvar i scen-
         storlek och såg ut som en dubblett av helskärmen den just var. */ ""}
+    
+    ${/* PÅGÅENDE BERÄTTELSER (plan 15): trådarna som redan lever i
+        systemen, synliga på ett ställe. Ren läsning — varje rad pekar
+        på tillstånd som andra motorer äger. Max fyra; ett flöde av
+        allt vore brus, inte berättelse. */ ""}
+    ${(() => {
+      const trådar = [];
+      if (spel.båge?.lopp) trådar.push(`Satsningen: ${spel.båge.lopp.kortnamn} om ${spel.båge.veckorKvar} v`);
+      const comeback = (spel.stall ?? []).find((h) => h.skadenyhet && h.skada > 0);
+      if (comeback) trådar.push(`Comebacken: ${comeback.namn} åter om ${comeback.skada} v`);
+      const svacka = (spel.stall ?? []).find((h) => h.svackafråga);
+      if (svacka) trådar.push(`Frågetecknet: vad är det med ${svacka.namn}?`);
+      if ((spel.förstaman?.ambition ?? 0) >= 70 && !spel.förstaman.delägare)
+        trådar.push(`${spel.förstaman.namn.split(" ")[0]} funderar på framtiden`);
+      const rival = Object.values(spel.rivaliteter ?? {}).find((r) => (r.möten ?? 0) === 4);
+      if (rival) trådar.push(`Rivalitet på väg: ett möte kvar`);
+      const tf = (spel.tidigareFörstamän ?? []).find((f) => !f.segerMotDig && f.mötenMotDig > 0);
+      if (tf) trådar.push(`Eleven jagar: ${tf.namn} har ännu inte slagit dig`);
+      return trådar.length === 0 ? "" : html`
+        <div class="etikettrad" style=${{ marginTop: "14px" }}>Pågående berättelser</div>
+        <div class="kort trådar">
+          ${trådar.slice(0, 4).map((t, i) => html`<div key=${i} class="tråd">❧ ${t}</div>`)}
+        </div>`;
+    })()}
+
     ${storFärsk
       ? html`
         <div class="klipp" style=${{ marginTop: "12px" }}>

@@ -147,30 +147,65 @@ function Anmälan({ spel, onStart }) {
  * kusk, meriter och streck. Varje rad bär den data motståndaranalysen
  * behöver — som ATG:s listor, anpassade för en tränares öga.
  */
+/**
+ * MARKNADENS SKÄL (plan 3.3): varför spelarna tror på hästen — läst ur
+ * data som redan finns, aldrig ur den dolda sanningen. Max tre skäl,
+ * viktigast först. Ett travprogram förklarar procenten; det gör vi med.
+ */
+function marknadensSkäl(h, fält) {
+  const skäl = [];
+  if (h.kusk?.ryktbarhet >= 78) skäl.push(`toppkusk (${h.kusk.namn})`);
+  if ((h.spår ?? 9) <= 3) skäl.push("fint läge");
+  if ((h.svit ?? 0) >= 2) skäl.push(`${h.svit} raka segrar`);
+  if ((h.form ?? 50) > 66) skäl.push("stark form på träningen");
+  if ((h.hype ?? 0) >= 55) skäl.push("medialt uppmärksammad");
+  const snittform = fält.reduce((a, o) => a + (o.form ?? 50), 0) / fält.length;
+  if ((h.form ?? 50) > 55 && snittform < 48) skäl.push("svag form hos motståndet");
+  if (skäl.length === 0 && (h.streck ?? 0) < 4) skäl.push("marknaden ser hellre andra");
+  return skäl.slice(0, 3);
+}
+
 function Startlista({ fält, favorit, visaStreck }) {
   return html`
     <div class="kort">
       <div class="meta" style="margin-bottom:6px">
-        Startlista${visaStreck ? " och streckprocent" : ""}
+        Startlista${visaStreck ? " och streckprocent" : ""} · tryck på en rad för detaljer
       </div>
       <div class="startlista atg">
-        ${[...fält].sort((a, b) => a.spår - b.spår).map((h) => html`
-          <div key=${h.spår} class=${"atg-rad" + (h.egen ? " din" : "") + (h === favorit ? " favorit" : "")}>
-            <${Täcke} nr=${h.spår} />
-            <div class="atg-mitt">
-              <div class="atg-namn">${h.namn}
-                <span class="atg-kön">${h.ålder} år · ${(h.kön ?? "h")[0]}</span></div>
-              <div class="atg-data">${h.kusk.ryktbarhet >= 78 ? "★ " : ""}${h.kusk.namn}
-                · ${h.starter ?? 0} st ${h.segrar ?? 0} seg
-                · ${Math.round((h.intjänat ?? 0) / 1000)} tkr</div>
+        ${[...fält].sort((a, b) => a.spår - b.spår).map((h) => {
+          const trend = visaStreck && h.öppningsstreck != null
+            ? h.streck - h.öppningsstreck : 0;
+          return html`
+          <details key=${h.spår} class=${"atg-rad utfällbar" + (h.egen ? " din" : "") + (h === favorit ? " favorit" : "")}>
+            <summary class="atg-summering">
+              <${Täcke} nr=${h.spår} />
+              <div class="atg-mitt">
+                <div class="atg-namn">${h.namn}
+                  <span class="atg-kön">${h.ålder} år · ${(h.kön ?? "h")[0]}</span></div>
+                <div class="atg-data">${h.kusk.ryktbarhet >= 78 ? "★ " : ""}${h.kusk.namn}
+                  · ${h.starter ?? 0} st ${h.segrar ?? 0} seg
+                  · ${Math.round((h.intjänat ?? 0) / 1000)} tkr</div>
+              </div>
+              ${visaStreck && html`<span class="streckstapel">
+                <span class="streck">${h.streck.toFixed(1)} %</span>
+                ${Math.abs(trend) >= 0.8 && html`<span class=${"trend " + (trend > 0 ? "upp" : "ner")}>${trend > 0 ? "▲" : "▼"}${Math.abs(trend).toFixed(0)}</span>`}
+              </span>`}
+            </summary>
+            <div class="atg-detalj">
+              <div class="atg-detaljrad"><span>Tränare</span>${h.egen ? "Du" : h.stallNamn ?? "—"}</div>
+              <div class="atg-detaljrad"><span>Vinstprocent</span>${h.starter ? Math.round(100 * (h.segrar ?? 0) / h.starter) + " %" : "debutant"}</div>
+              ${visaStreck && h.öppningsstreck != null && html`
+                <div class="atg-detaljrad"><span>Spelöppning</span>${h.öppningsstreck.toFixed(1)} % → ${h.streck.toFixed(1)} %</div>`}
               ${h.egen && (h.resultat ?? []).length > 0 && html`
-                <span class="formrad">
-                  ${h.resultat.slice(0, 5).map((r, i) => html`
-                    <span key=${i} class=${"fp " + (r.plats === 1 ? "seger" : r.plats && r.plats <= 3 ? "pall" : r.plats ? "" : "ur")}>${r.plats ?? "d"}</span>`)}
-                </span>`}
+                <div class="atg-detaljrad"><span>Senaste fem</span>
+                  <span class="formrad">
+                    ${h.resultat.slice(0, 5).map((r, i) => html`
+                      <span key=${i} class=${"fp " + (r.plats === 1 ? "seger" : r.plats && r.plats <= 3 ? "pall" : r.plats ? "" : "ur")}>${r.plats ?? "d"}</span>`)}
+                  </span></div>`}
+              ${visaStreck && html`
+                <div class="atg-detaljrad skäl"><span>Marknaden</span>${marknadensSkäl(h, fält).join(" · ") || "inga tydliga signaler"}</div>`}
             </div>
-            ${visaStreck && html`<span class="streck">${h.streck.toFixed(1)} %</span>`}
-          </div>`)}
+          </details>`; })}
       </div>
       ${favorit && visaStreck && html`<div class="meta" style="margin-top:8px">
         Favorit: ${favorit.spår} ${favorit.namn} (${favorit.streck.toFixed(0)} %)</div>`}

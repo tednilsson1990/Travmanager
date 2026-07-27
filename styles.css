@@ -680,3 +680,25 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   color:#fff;background:var(--tegel);padding:2px 6px;border-radius:4px;
   align-self:center;animation:malfoto-puls 1.2s infinite}
 .fel-knappar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+/* ---- Kompletta startlistan (v81) ---- */
+.atg-rad.utfällbar{display:block}
+.atg-summering{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;width:100%}
+.atg-summering::-webkit-details-marker{display:none}
+.atg-rad.utfällbar[open]{background:rgba(30,58,95,.045)}
+.atg-detalj{padding:6px 4px 8px 40px;border-top:1px dotted var(--linje-mörk);margin-top:6px}
+.atg-detaljrad{display:flex;gap:10px;font-size:12px;padding:2.5px 0;align-items:baseline}
+.atg-detaljrad>span:first-child{font-family:'Roboto Mono',monospace;font-size:9px;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--dis);min-width:86px}
+.atg-detaljrad.skäl{color:#3A444F;font-style:italic}
+.streckstapel{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.trend{font-family:'Roboto Mono',monospace;font-size:9px;font-weight:700}
+.trend.upp{color:#1F5C33}.trend.ner{color:var(--tegel)}
+.atg-rad.din .atg-namn{color:var(--marin)}
+.atg-rad.din{box-shadow:inset 3px 0 0 var(--guld,#C99A2E)}
+
+/* ---- Pågående berättelser (v82) ---- */
+.kort.trådar{padding:8px 12px}
+.tråd{font-family:'Lora',Georgia,serif;font-size:13px;line-height:1.5;
+  padding:4px 0;border-bottom:1px dotted var(--linje-mörk);color:#2E3742}
+.tråd:last-child{border-bottom:0}
