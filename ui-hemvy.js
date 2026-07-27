@@ -55,6 +55,31 @@ export default function HemVy({ spel, gåTill }) {
         klippstorlek, en rad. Före v69 låg hela uppslaget kvar i scen-
         storlek och såg ut som en dubblett av helskärmen den just var. */ ""}
     
+    
+    ${/* FÖRSTAMANNENS KOMMENTAR (plan 12.2): vardagsrösten på Hem.
+        En rad, läst ur stalläget just nu — skador först (viktigast),
+        sedan formtopp, sedan storloppsblick, sist lugnet. Profilen
+        färgar orden precis som i träningsråden. */ ""}
+    ${spel.förstaman && (() => {
+      const fm = spel.förstaman;
+      const skadade = (spel.stall ?? []).filter((h) => h.skada > 0);
+      const topp = [...(spel.stall ?? [])].filter((h) => h.skada === 0)
+        .sort((a, b) => (b.form ?? 0) - (a.form ?? 0))[0];
+      const rad = skadade.length >= 2
+        ? `${skadade.length} hästar på boxvila. ${fm.profil === "pådrivare" ? "Vi tappar tempo — jag gillar det inte." : "Vi låter dem läka klart. Tålamod nu."}`
+        : skadade.length === 1
+          ? `${skadade[0].namn} är ${skadade[0].skada} v från comeback. Resten jobbar på.`
+          : topp && (topp.form ?? 0) > 68
+            ? `${topp.namn} känns ${fm.profil === "taktiker" ? "klar för rätt proposition — jag tittar i programmen" : "bättre än på länge. Dags att visa det"}.`
+            : spel.båge?.lopp
+              ? `Allt handlar om ${spel.båge.lopp.kortnamn} nu. ${spel.båge.veckorKvar} veckor.`
+              : `Lugn vecka i stallet. ${fm.profil === "fostrare" ? "Det är då man bygger." : "För lugn, om du frågar mig."}`;
+      return html`
+        <div class="fm-rad">
+          <span class="fm-namn">${fm.namn.split(" ")[0]}:</span> »${rad}«
+        </div>`;
+    })()}
+
     ${/* PÅGÅENDE BERÄTTELSER (plan 15): trådarna som redan lever i
         systemen, synliga på ett ställe. Ren läsning — varje rad pekar
         på tillstånd som andra motorer äger. Max fyra; ett flöde av

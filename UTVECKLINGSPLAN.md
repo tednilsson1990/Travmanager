@@ -332,7 +332,7 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Responsiv rubrikstorlek.
 - Mindre tom yta.
 - Konsekvent scenmall.
-## 12.2 Hemvyn
+## 12.2 Hemvyn [DELVIS v83 — förstamannens kommentar; kvar: väder/årstidsbild]
 - Gårdsbild som ändras med tid, väder och årstid
 - Huvudnyhet
 - Att göra

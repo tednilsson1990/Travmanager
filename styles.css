@@ -702,3 +702,9 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .tråd{font-family:'Lora',Georgia,serif;font-size:13px;line-height:1.5;
   padding:4px 0;border-bottom:1px dotted var(--linje-mörk);color:#2E3742}
 .tråd:last-child{border-bottom:0}
+
+/* ---- Förstamannens rad (v83) ---- */
+.fm-rad{margin-top:12px;padding:9px 12px;background:var(--ark);
+  border-left:3px solid var(--marin);border-radius:0 8px 8px 0;
+  font-family:'Lora',Georgia,serif;font-size:13px;font-style:italic;color:#2E3742}
+.fm-namn{font-style:normal;font-weight:700;font-family:inherit;color:var(--marin)}
