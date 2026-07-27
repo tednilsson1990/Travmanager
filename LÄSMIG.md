@@ -168,18 +168,19 @@ färgerna nedan.
 
 | Filnamn (EXAKT, med åäö) | Tröja (grund) | Band/manschett/hjälm |
 |--------------------------|---------------|----------------------|
-| drakt-vinröd.jpg   | Vinröd #7a1f2b | Guld #e8c766 |
-| drakt-kungsblå.jpg | Kungsblå #1d3f8f | Vit #f5f5f0 |
-| drakt-grön.jpg     | Skogsgrön #1f5c33 | Gul #f2d43d |
+| drakt-vinrod.jpg   | Vinröd #7a1f2b | Guld #e8c766 |
+| drakt-kungsbla.jpg | Kungsblå #1d3f8f | Vit #f5f5f0 |
+| drakt-gron.jpg     | Skogsgrön #1f5c33 | Gul #f2d43d |
 | drakt-svart.jpg    | Svart #191919 | Orange #f28c28 |
 | drakt-vit.jpg      | Vit #f2efe8   | Röd #b3252e |
 | drakt-lila.jpg     | Lila #4b2a6b  | Silver #cfcfd6 |
 | drakt-brun.jpg     | Kastanj #5c3a21 | Kräm #efe3c8 |
 | drakt-turkos.jpg   | Petrol #0f5a5f | Vit #f0f4f2 |
 
-Filnamnen följer dräkternas id och innehåller åäö — drakt-vinröd.jpg,
-drakt-kungsblå.jpg, drakt-grön.jpg. PNG fungerar också (provas som
-andrahand), men jpg med inbakad fond är enklast och minst.
+FILNAMNEN ÄR ASCII (vinrod, kungsbla, gron) — åäö i filnamn går
+sönder mellan macOS (NFD) och webben (NFC), det var därför tre av åtta
+dräkter visade SVG-reserven i stället för foto. Koden asciifierar id:t
+själv; döp aldrig bildfiler med åäö.
 
 ## IKONERNA — appens ansikte
 
