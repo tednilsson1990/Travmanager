@@ -4,6 +4,7 @@ import { KUSKAR, relation, svar } from "./data-kuskar.js";
 import { klamp, kr } from "./engine-util.js";
 import { tränarliga } from "./engine-varld.js";
 import { Tom } from "./ui-delar.js";
+import { förstasidan, statistikern, krönikan } from "./engine-travblad.js";
 
 export default function SfarVy({ spel }) {
   const externa = spel.stall.filter((h) => h.ägare);
@@ -76,14 +77,44 @@ export default function SfarVy({ spel }) {
       <div class="logg" style="margin-top:8px">${marknadsText}</div>
     </div>
 
-    <h2>Travmedia</h2>
-    ${spel.press.length === 0
-      ? html`<${Tom}>Ingen har skrivit om dig än.<//>`
-      : spel.press.map((p, i) => html`
-          <div key=${i} class=${"klipp " + (p.ton === "bra" ? "bra" : p.ton === "dålig" ? "dålig" : "")}>
-            <div class="rubrik">${p.rubrik}</div>
-            <div class="byline">Vecka ${p.vecka} · ${p.byline}${p.signatur ? html` · <span class="signatur">Text: ${p.signatur}</span>` : ""}</div>
+    ${(() => {
+      /* TRAVBLADET (kap 5): en riktig förstasida med nyhetsvärdering —
+         uppslaget är veckans tyngsta händelse, artiklarna pressens
+         laddade rubriker, notiserna resten. Statistikern räknar och
+         krönikören läser läget. Allt ur engine-travblad — vyn hittar
+         aldrig på. */
+      const sida = förstasidan(spel);
+      const stat = statistikern(spel);
+      const spalt = krönikan(spel);
+      return html`
+        <div class="travblad-huvud">TRAVBLADET<span> · säsong ${spel.säsong ?? 1} · vecka ${Math.min(spel.vecka, spel.veckor)}</span></div>
+        ${sida.uppslag && html`
+          <div class="klipp" style=${{ marginTop: "8px" }}>
+            <div class="klipp-etikett">${sida.uppslag.etikett}</div>
+            <div class="klipp-rubrik">${sida.uppslag.rubrik}</div>
+          </div>`}
+        ${sida.artiklar.map((p, i) => html`
+          <div key=${"a" + i} class=${"artikel " + (p.ton === "bra" ? "bra" : p.ton === "dålig" ? "dålig" : "")}>
+            <div class="artikel-rubrik">${p.rubrik}</div>
+            <div class="byline">Vecka ${p.vecka} · ${p.byline}${p.signatur ? ` · Text: ${p.signatur}` : ""}</div>
           </div>`)}
+        ${spel.båge && html`<div class="notis"><b>Kommande storlopp:</b> ${spel.båge.lopp} på ${spel.båge.bana} — ${spel.båge.veckorKvar === 0 ? "i veckan" : `om ${spel.båge.veckorKvar} v`}.</div>`}
+        ${sida.notiser.length > 0 && html`
+          <div class="kort" style=${{ marginTop: "10px" }}>
+            ${sida.notiser.map((p, i) => html`
+              <div key=${"n" + i} class="notis"><b>${p.rubrik}</b> — ${p.byline} <span class="signatur">(v${p.vecka})</span></div>`)}
+          </div>`}
+        ${sida.uppslag === null && sida.artiklar.length === 0 && sida.notiser.length === 0 && html`
+          <${Tom}>Ingen har skrivit om dig än.<//>`}
+        <div class="kort spalt">
+          <div class="meta">Siffrorna · ${stat.signatur}</div>
+          ${stat.rader.map((r, i) => html`<div key=${i} class="logg">${r}</div>`)}
+        </div>
+        <div class="kort spalt kronika">
+          <div class="meta">Krönikan · ${spalt.signatur}</div>
+          <div class="kronika-stycke">${spalt.text}</div>
+        </div>`;
+    })()}
 
     <h2>Kuskkåren</h2>
     <div class="hint">Kuskar du kört med, plus kårens mest ryktbara.</div>

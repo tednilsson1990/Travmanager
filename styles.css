@@ -287,6 +287,23 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .fk-linje{fill:none;stroke:var(--marin);stroke-width:2;stroke-linejoin:round}
 .fk-nu{fill:var(--tegel)}
 .förvänt.varning{border-color:var(--tegel)}
+
+/* ---- Travbladet (kap 5): förstasidan ---- */
+.travblad-huvud{font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:30px;
+  letter-spacing:.03em;text-transform:uppercase;color:var(--bläck);
+  border-top:3px solid var(--bläck);border-bottom:1px solid var(--bläck);
+  padding:6px 0 4px;margin-top:20px;display:flex;align-items:baseline;gap:8px}
+.travblad-huvud span{font-family:'Roboto Mono',monospace;font-weight:500;font-size:9px;
+  letter-spacing:.16em;color:var(--dis)}
+.spalt .logg{border-bottom:1px dotted var(--linje);padding:4px 0}
+.spalt .logg:last-child{border-bottom:0}
+.kronika{border-left:4px solid var(--tegel)}
+
+/* ---- Efterloppsanalysen (kap 14): tävlingsprogram i dagsljus ---- */
+.analys-kort{border-top:3px solid var(--marin)}
+.avgorande{font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:17px;
+  line-height:1.25;color:var(--bläck);border-left:3px solid var(--tegel);
+  padding:8px 10px;margin:12px 0 8px;background:#F7F4EC}
 .tr-kraft i.låg{background:var(--oxblod)}
 .kommentar{margin-top:12px;display:grid;gap:6px}
 .track .kommentar .k-rad,.banvy ~ .kommentar .k-rad{color:var(--nattdis)}

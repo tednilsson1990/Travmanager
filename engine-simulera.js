@@ -60,6 +60,9 @@ const KOSTNAD = {
 export function simulera(fält, lopp, ingripande = null) {
   const dist = lopp.dist;
   let ingripandeKvar = !!(ingripande && ingripande.order);
+  /* Efterloppsanalysen ska inte strängmatcha referatet: kuskens beslut
+     om rekommendationen rapporteras strukturerat. null = ingen order. */
+  let ingripandeUtfall = null;
   const bild = [];
   const kommentar = [];
   let t = 0;                       // loppets klocka, behövs redan i starten
@@ -457,9 +460,11 @@ export function simulera(fält, lopp, ingripande = null) {
       if (egen) {
         const förnamnet = (egen.kusk.namn || "Kusken").split(" ")[0];
         if (ingripande.order === "attack" && egen.kraft < 30) {
+          ingripandeUtfall = { order: ingripande.order, beslut: "vägrade", kraftDå: Math.round(egen.kraft) };
           säg(`${förnamnet} känner efter bakom <b>${egen.h.namn}</b> — det finns inget att attackera med. Kusken litar på känslan och väntar.`, "");
         } else {
           egen.order = ingripande.order;
+          ingripandeUtfall = { order: ingripande.order, beslut: "följde", kraftDå: Math.round(egen.kraft) };
           if (ingripande.order === "attack") {
             säg(`${förnamnet} går på med <b>${egen.h.namn}</b> — som det var sagt i stallbacken.`, "hot");
           }
@@ -953,5 +958,5 @@ export function simulera(fält, lopp, ingripande = null) {
       t: `<b>${resultat[0].häst.namn}</b> vinner på ${kmtid(resultat[0].km)}.`, k: "hot",
     });
   }
-  return { bild, resultat };
+  return { bild, resultat, ingripandeUtfall };
 }

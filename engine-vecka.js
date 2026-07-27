@@ -437,6 +437,31 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   /* Sponsorernas bokföring: kraven räknas och segerbonusen betalas ut. */
   sponsorEfterLopp(spel, { lopp, vann }).forEach((r) => spel.logg.push(r));
 
+  /* PRESSENS MINNE (kap 5.4): vad du sa före loppet arkiveras med hur
+     det gick — det är ur den historiken frågorna med udd ställs. */
+  häst.presshistorik = [{
+    val: häst.senastePressval ?? "neutral",
+    plats: min.ur ? null : min.plats, ur: !!min.ur,
+  }, ...(häst.presshistorik ?? [])].slice(0, 6);
+  delete häst.senastePressval;
+
+  /* FAVORITFACIT (kap 5.5): statistikern räknar, och krönikören slår
+     till först när facit motiverar det — tre favoritmissar i följd är
+     ett mönster, inte otur. En pallplats som favorit nollställer. */
+  if (varFavorit) {
+    spel.favoritfacit = [{ vann, plats: min.ur ? null : min.plats, ur: !!min.ur },
+      ...(spel.favoritfacit ?? [])].slice(0, 8);
+    if (pall) {
+      spel.favoritkritikSkriven = false;
+    } else if ((spel.favoritfacit.slice(0, 3).filter((f) => f.ur || (f.plats ?? 9) > 3).length >= 3)
+        && !spel.favoritkritikSkriven) {
+      spel.favoritkritikSkriven = true;
+      skrivPress(spel, `Tre spelarförtroenden — tre magplask för ${spel.stallnamn}`,
+        `Spelarna har gjort ${spel.stallnamn}s hästar till favoriter tre gånger i rad. Ingen av dem nådde pallen. Mönster har orsaker.`,
+        "dålig", null, 0, JOURNALISTER.krönikör);
+    }
+  }
+
   let renΔ = 0, relΔ = 0, hypeΔ = 0, troΔ = 0;
   const kortnamn = lopp.kortnamn || lopp.namn.split(",")[0];
 

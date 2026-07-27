@@ -475,6 +475,83 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Travbladet (v89)
+
+Journalisten dömer världen på om den producerar riktiga berättelser
+eller slumpmässiga rubriker (kap 5). engine-travblad.js är redaktionen —
+den värderar, räknar och frågar, men hittar aldrig på fakta.
+
+**Förstasidan i Sfären (5.3, designförslag 9).** Nyhetsvärderingen
+byggs av händelsemotorns betydelse: uppslaget är veckans TYNGSTA färska
+händelse (≥ 55 — en lunchseger får aldrig ett uppslag), artiklarna är
+pressens laddade rubriker från de två senaste veckorna i .artikel-mallen,
+notiserna resten. Pressmallarnas tre storlekar från v55 bär äntligen en
+hel förstasida, med TRAVBLADET-vinjett i tidningshuvudstil och kommande
+storlopp som notis ur bågen.
+
+**Statistikerns kolumn och krönikan (5.2, 5.5).** Janne Fyhr räknar
+bara tal som finns: ligaplaceringen, stallformen, favoritfacit ("2 av 3
+senaste favoritstarterna på pallen") och marknadsbilden. Cecilia Ramnek
+läser samma siffror kritiskt — och kritiken KRÄVER facit: mönsterkritik
+först vid tre favoritmissar i följd, kassakritik vid kris, formkritik
+under 38. Annars saklig, ibland varm. Sportjournalistik, inte dokusåpa.
+
+**Pressfrågan med minne (5.4).** Pressteget före loppet läser hästens
+presshistorik (skriven av efterLopp: valet arkiveras med resultatet).
+Prioriteringen följer nyhetsvärderingen: gamla förstamannen i fältet
+slår allt (»Kim Ek möter dig som tränare för favoriten — hur känns
+det?«), sedan det brutna löftet (»Förra gången lovade du seger och
+hästen blev 6:a«), sedan tre nedtoningar i rad — sist den vanliga
+frågan. Deterministiskt ur historiken, ingen slump.
+
+**Favoritfacit och krönikörens kritik i pressen (5.5).** efterLopp
+bokför varje favoritstart; tre missar i följd ger en kritikartikel av
+krönikören i pressflödet — EN gång per svit, och en pallplats som
+favorit nollställer. Statistikern och krönikan läser samma facit.
+
+Tolfte provsviten (prov-travblad.mjs): hierarkin håller, statistikern
+räknar rätt, kritiken kräver facit, frågeprioriteringen sitter och
+veckomotorn bygger minnet. Kvar i kap 5: berättelsetrådar som följetong
+(5.1 — Hem har trådarna, tidningen kunde följa upp dem) och fler
+journalistidentiteter (5.2 har tre av sex).
+
+## Efterloppsanalysen (v88)
+
+Kapitel 14 ordagrant: efter loppet ska spelaren förstå vad planen var,
+vad som hände, vilket beslut som blev avgörande, vad hästen gjorde bra
+och vad nästa steg bör vara. Allt läses ur simuleringen som redan körts
+(engine-analys.js) — bildrutorna och resultatet — med noll slump och
+noll motorpåverkan i analysen själv. Samma lopp ger samma analys.
+
+**Planen:** grundorder, din rekommendation och KUSKENS BESLUT — motorn
+rapporterar nu utfallet strukturerat (`sim.ingripandeUtfall`, satt i
+ingripande-branchen; omkalibrerad enligt järnregeln: identisk) i stället
+för att analysen skulle strängmatcha referatet.
+
+**Resan (plan 3.7):** position och läge vid 1 500/1 000/500 kvar,
+attackpunkten (sista gången hästen lämnade innerspåret), meter i
+ledningen/dödens/tredjespår, utan rygg (motorns sekundmått × 13),
+extra löpt väg, instängd på upploppet, tempot öppning → avslutning
+(ledarens fart som km-tid) och kraft kvar i mål. Skattningar ur
+bildrutorna — samma upplösning spelaren såg loppet i, vilket är rätt
+anspråksnivå, och rader under tröskelvärden visas inte alls.
+
+**Avgörandet:** EN sak, viktigast först — galopp, sen instängning med
+kraft kvar ("bittraste sortens förlust"), vägrad attack ("rätt beslut av
+kusken; frågan är varför tanken var tom"), dödensresan (som kostnad
+eller som bragd beroende på utfall), spetsen, tajmingen, eller ärligt:
+ingen enskild vändpunkt. **Att ta med:** max två saker hästen gjorde
+bra, lästa ur datat. **Nästa steg:** förstamannens rekommendation —
+beräknad EFTER efterLopp så att den ser hästens verkliga läge, inklusive
+en skada loppet just gav: vila vid tom tank, distansvarning ur
+passningen, klassråd ur strecket, offensivare resa efter instängning.
+Rollprincipen från v87 håller hela vägen: analysen är tränarens läsning
+och förstamannens råd — aldrig ett facit om vad kusken borde ha känt.
+
+prov-analys.mjs (elfte sviten): determinism över 60 lopp, fysiskt
+rimliga mått i 60/60, attackpunkt och positioner lästa ur rutorna,
+vägrad attack pekas ut i avgörandet och tom häst ger vilorekommendation.
+
 ## Kusken beslutar (v87)
 
 Teds princip, nu inbyggd: TRÄNAREN KAN BARA GE REKOMMENDATIONER — det
@@ -1374,4 +1451,5 @@ mockupen (v74) och bilderna på plats (v75), variantrotationen (v76) samt kandid
 från egna led (v77) och de fem bildidéerna (v78) samt beslutsfönstret med seedad
 omsimulering, stallmötets veckoslots, insats & risk i anmälan,
 hästsidans fem flikar, TV/analysläget, ägarsystemet, sponsorerna,
-Kontoret och Nästa steg-panelen (v84).
+Kontoret och Nästa steg-panelen (v84), kusksamtalets körorder i två
+delar (v86), kuskens vetorätt (v87) samt efterloppsanalysen (v88) och Travbladet (v89).

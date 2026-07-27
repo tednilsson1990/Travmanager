@@ -13,6 +13,8 @@ import { beräknaStreck } from "./engine-streck.js";
 import { simulera } from "./engine-simulera.js";
 import { efterLopp } from "./engine-vecka.js";
 import { resekostnad } from "./engine-sponsor.js";
+import { loppanalys } from "./engine-analys.js";
+import { pressfråga } from "./engine-travblad.js";
 import { blanda, klamp, kr, kmtid, tidText, plock, slump } from "./engine-util.js";
 import { Täcke, Tom, Rad } from "./ui-delar.js";
 import BanVy from "./ui-banvy.js";
@@ -271,15 +273,16 @@ const PRESSVAL = [
     hype: -11, förväntan: -1 },
 ];
 
-function Pressen({ häst, lopp, onVal }) {
+function Pressen({ spel, häst, lopp, fält, onVal }) {
+  /* PRESSEN MINNS (kap 5.4): frågan väljs ur historiken — nedtoningar,
+     brutna löften och gamla förstamän ger frågor med udd. Deterministiskt
+     ur engine-travblad; ingen slump, inget påhitt. */
+  const fråga = pressfråga(spel, häst, lopp, fält);
   return html`
     <h2>Pressen ringer</h2>
     <div class="samtal">
-      <div class="samtal-vem">Travronden</div>
-      <div class="samtal-text">
-        Vi skriver inför ${lopp.kortnamn || lopp.namn}. ${häst.namn} fick spår ${häst.spår} —
-        hur ser du på chansen?
-      </div>
+      <div class="samtal-vem">Travronden${fråga.typ !== "vanlig" ? " · med udd i rösten" : ""}</div>
+      <div class="samtal-text">${fråga.text}</div>
     </div>
     ${PRESSVAL.map((v) => html`
       <button key=${v.id} class="val" onClick=${() => onVal(v)}>
@@ -540,6 +543,51 @@ function Segerartikel({ körning, facit }) {
 }
 const spel_citat = (k) => k.kusk?.namn ? `${k.kusk.namn}, kusk` : "Stallet";
 
+/**
+ * EFTERLOPPSANALYSEN (kap 14) i tävlingsprogrammets språk: planen, resan
+ * i siffror (plan 3.7), avgörandet, det hästen gjorde bra och förstamannens
+ * nästa steg. Allt ur engine-analys — vyn hittar aldrig på.
+ */
+const SLUTORDERTEXT = { attack: "gå på vid 500 kvar", vänta: "spara till upploppet" };
+
+function Efterloppsanalys({ analys, körning }) {
+  if (!analys) return null;
+  const { plan, pos, tempo } = analys;
+  const p = (x) => x ? `${x.plats}:a — ${x.läge}` : "—";
+  return html`
+    <h2>Efter loppet</h2>
+    <div class="kort analys-kort">
+      <div class="meta">Planen</div>
+      <div class="prisrad"><span>Grundorder</span><span class="pris">${TAKTIKER[plan.taktik]?.namn ?? plan.taktik} · ${plan.kusk}</span></div>
+      <div class="prisrad"><span>Din rekommendation</span><span class="pris">${SLUTORDERTEXT[plan.slutorder] ?? "kuskens egen tajming"}</span></div>
+      ${analys.utfall && html`<div class="prisrad"><span>Kuskens beslut</span>
+        <span class="pris">${analys.utfall.beslut === "vägrade" ? "kände en tom häst — vägrade attackera" : "följde rekommendationen"}</span></div>`}
+
+      <div class="meta" style=${{ marginTop: "10px" }}>Resan</div>
+      ${pos.v1500 && html`<div class="prisrad"><span>1 500 kvar</span><span class="pris">${p(pos.v1500)}</span></div>`}
+      <div class="prisrad"><span>1 000 kvar</span><span class="pris">${p(pos.v1000)}</span></div>
+      <div class="prisrad"><span>500 kvar</span><span class="pris">${p(pos.v500)}</span></div>
+      ${analys.attack && html`<div class="prisrad"><span>Gick ut</span>
+        <span class="pris">${Math.round(analys.attack.kvar / 50) * 50} kvar — ${analys.attack.läge}</span></div>`}
+      ${analys.mLedning > 60 && html`<div class="prisrad"><span>I ledningen</span><span class="pris">ca ${analys.mLedning} m</span></div>`}
+      ${analys.mDödens > 40 && html`<div class="prisrad"><span>I dödens</span><span class="pris">ca ${analys.mDödens} m</span></div>`}
+      ${analys.mUtanRygg > 40 && html`<div class="prisrad"><span>Utan rygg totalt</span><span class="pris">ca ${analys.mUtanRygg} m</span></div>`}
+      ${analys.mTredje > 30 && html`<div class="prisrad"><span>I tredjespår</span><span class="pris">ca ${analys.mTredje} m</span></div>`}
+      ${analys.extraVäg > 5 && html`<div class="prisrad"><span>Extra löpt väg</span><span class="pris">ca ${analys.extraVäg} m</span></div>`}
+      ${analys.instängdSent > 20 && html`<div class="prisrad"><span>Instängd på upploppet</span><span class="pris">ca ${analys.instängdSent} m</span></div>`}
+      ${tempo.öppning && tempo.avslutning && html`<div class="prisrad"><span>Tempo öppning → avslutning</span>
+        <span class="pris">${tempo.öppning} → ${tempo.avslutning}</span></div>`}
+      ${analys.kraftKvar !== null && html`<div class="prisrad"><span>Kraft kvar i mål</span><span class="pris">${analys.kraftKvar} %</span></div>`}
+
+      <div class="avgorande">${analys.avgörande}</div>
+      <div class="logg">Att ta med: ${analys.bra.join(" · ")}.</div>
+    </div>
+    <div class="samtal">
+      <div class="samtal-vem">Nästa steg${analys.nästaStegAv ? ` · ${analys.nästaStegAv}` : ""}</div>
+      <div class="samtal-text">»${analys.nästaSteg}«</div>
+    </div>`;
+}
+
 function Facit({ körning, facit, onKlart }) {
   const { sim, häst, kusk } = körning;
   const min = facit.min;
@@ -607,6 +655,7 @@ function Facit({ körning, facit, onKlart }) {
       ${facit.ägartext && html`<div class=${facit.ägartext.ton === "dålig" ? "skada" : "logg"}>${facit.ägartext.text}</div>`}
       ${häst.skada > 0 && html`<div class="skada">Kom ur loppet ömmande — ${häst.skada} vecka(or) vila.</div>`}
     </div>
+    <${Efterloppsanalys} analys=${facit.analys} körning=${körning} />
     <button class="btn" onClick=${onKlart}>Klart</button>`;
 }
 
@@ -647,7 +696,11 @@ export default function LoppVy({ spel, uppdatera }) {
   const pressval = (val) => {
     /* Hästen i körningen ÄR samma objekt som i stallet, så ändringen får
        bara göras en gång — annars blev "tala upp" +28 i stället för +14. */
-    uppdatera(() => { körning.häst.hype = klamp(körning.häst.hype + val.hype); });
+    uppdatera(() => {
+      körning.häst.hype = klamp(körning.häst.hype + val.hype);
+      /* Pressen minns: valet arkiveras med resultatet i efterLopp (5.4). */
+      körning.häst.senastePressval = val.id;
+    });
     beräknaStreck(körning.fält, spel, körning.lopp);
     sättKörning({ ...körning, pressval: val });
     sättSteg("kusk");
@@ -690,7 +743,14 @@ export default function LoppVy({ spel, uppdatera }) {
         förväntan: pressval ? pressval.förväntan : 0,
       });
     });
-    sättFacit({ ...sammanfattning, min });
+    /* Efterloppsanalysen (kap 14): läses ur simuleringen som redan körts,
+       EFTER efterLopp så att nästa steg ser hästens verkliga läge —
+       inklusive en skada loppet just gav. */
+    const analys = loppanalys(körning.sim, lopp, {
+      häst, kusk, taktik: körning.taktik, slutorder: körning.slutorder,
+      förstaman: spel.förstaman,
+    });
+    sättFacit({ ...sammanfattning, min, analys });
     sättSteg("facit");
   };
 
@@ -729,7 +789,7 @@ export default function LoppVy({ spel, uppdatera }) {
   }
 
   if (steg === "press") {
-    return html`<${Pressen} häst=${häst} lopp=${lopp} onVal=${pressval} />`;
+    return html`<${Pressen} spel=${spel} häst=${häst} lopp=${lopp} fält=${fält} onVal=${pressval} />`;
   }
 
   if (steg === "kusk") {

@@ -111,7 +111,7 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Blir kvar invändigt.
 - Söker lucka.
 - Bromsas bakom trött häst.
-## 3.7 Kilometertid och analys efter loppet
+## 3.7 Kilometertid och analys efter loppet [KLART v88 — alla nio måtten i efterloppsanalysen]
 - Position vid 1 500, 1 000 och 500 meter kvar
 - Meter i ledningen och utan rygg
 - Meter i tredjespår
@@ -160,17 +160,17 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Flera hästar på samma tävlingsdag
 - Personalbehov
 - Propositioner måste konsekvent kontrollera ålder, kön, startprissumma, tillägg, klass, distans, startmetod och kvalificering. En tioårig debutant ska inte hamna i ett åldersbegränsat unghästlopp.
-## 5. Travjournalistens perspektiv
+## 5. Travjournalistens perspektiv [DELVIS v89 — förstasidan, rösterna, frågeminnet, favoritkritiken]
 - En travjournalist kommer bedöma om världen producerar riktiga berättelser eller bara slumpmässiga rubriker. Journalisten vill se sammanhang, historik, personer, konflikter, uppföljningar, statistik och citat.
-## 5.1 Berättelsetrådar över tid
-## 5.2 Journalister med identitet
+## 5.1 Berättelsetrådar över tid [DELVIS v82/v89 — trådarna på Hem; tidningens uppföljningar kvar]
+## 5.2 Journalister med identitet [DELVIS v62/v89 — tre röster med egna avdelningar; tre identiteter kvar]
 - Lokalreporter
 - Statistiker
 - Tidigare kusk
 - Kritisk krönikör
 - Sensationsreporter
 - Branschjournalist
-## 5.3 Nyhetsvärdering
+## 5.3 Nyhetsvärdering [KLART v89 — betydelsestyrd förstasida i tre storlekar]
 - Sportslig betydelse
 - Överraskning
 - Lokal relevans
@@ -179,11 +179,11 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Konflikt
 - Ekonomisk betydelse
 - En vanlig lunchseger ska inte få samma rubrikstorlek som stallets första storloppsseger.
-## 5.4 Pressfrågor med minne
+## 5.4 Pressfrågor med minne [KLART v89 — alla tre exempelfrågorna, deterministiskt ur historiken]
 - “Du har tonat ner hästen inför de tre senaste starterna. Är det försiktighet eller är du inte nöjd?”
 - “Förra gången lovade du seger och hästen blev sexa. Varför ska spelarna tro på dig nu?”
 - “Din tidigare förstaman möter dig som tränare för favoriten. Hur känns det?”
-## 5.5 Statistik och rimlig kritik
+## 5.5 Statistik och rimlig kritik [KLART v89 — favoritfacit, mönsterkritik med nollställning, saklig krönika]
 - Kritik bör främst uppstå efter upprepade favoritmisslyckanden, tveksam matchning, brutna löften, kuskkonflikt, svag stallform eller ekonomiska problem. Det ska kännas som sportjournalistik, inte dokusåpa.
 ## 6. Travmanager som verksamhetsspel
 - Spelet heter Travmanager. Därför måste spelaren hantera en riktig travverksamhet, inte bara träna och starta hästar.
@@ -366,7 +366,7 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Markera spelarens häst konsekvent.
 - Automatiskt gå från 3× till 1× vid viktiga händelser.
 - Ha fasta kontroller för paus, 1×, 3×, 10×, till 500 kvar, till upploppet och till mål.
-## 14. Efterloppsanalys
+## 14. Efterloppsanalys [KLART v88 — plan, resa, avgörande, det goda, nästa steg]
 - Efter loppet ska spelaren förstå vad planen var, vad som hände, vilket beslut som blev avgörande, vad hästen gjorde bra och vad nästa steg bör vara.
 ## 15. Storysystemet ska synliggöras [DELVIS v82 — Pågående berättelser på Hem; avslutade/historiska finns i Albumet]
 ## Pågående berättelser
