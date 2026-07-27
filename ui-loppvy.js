@@ -12,6 +12,7 @@ import { byggFält, rustaFält, bokför } from "./engine-varld.js";
 import { beräknaStreck } from "./engine-streck.js";
 import { simulera } from "./engine-simulera.js";
 import { efterLopp } from "./engine-vecka.js";
+import { resekostnad } from "./engine-sponsor.js";
 import { blanda, klamp, kr, kmtid, tidText, plock, slump } from "./engine-util.js";
 import { Täcke, Tom, Rad } from "./ui-delar.js";
 import BanVy from "./ui-banvy.js";
@@ -68,7 +69,7 @@ function Anmälan({ spel, onStart }) {
   /* Hemmaplan: ingen resa och hemmapubliken ger extra. Bortalopp kostar. */
   const hemmabana = spel.hemmabana && BANOR[spel.hemmabana];
   const hemma = hemmabana && lopp.banaNamn === hemmabana.namn;
-  const resa = hemmabana && !hemma ? 1200 : 0;
+  const resa = hemmabana && !hemma ? resekostnad(spel) : 0;
   const kanStarta = !förbud && villig(spel, kusk) && !bokad && spel.kassa >= kusk.arvode + resa;
 
   const matchning = spel.förstaman ? loppmatchning(spel.förstaman, häst, veckans) : null;
@@ -121,13 +122,15 @@ function Anmälan({ spel, onStart }) {
       <div><span>Prispengar</span> ${kr(lopp.förstapris)} kr till segraren · ${lopp.antalPris} pris · ${kr(lopp.garanterad)} kr garanterat</div>
       <div><span>Start</span> ${lopp.start === "volt" ? "voltstart" : "autostart"}</div>
       <div class=${passning.c}><span>Distans</span> ${passning.t}</div>
-      ${resa > 0 && html`<div><span>Resa</span> Bortalopp — ${kr(resa)} kr i resekostnad</div>`}
+      ${resa > 0 && html`<div><span>Resa</span> Bortalopp — ${kr(resa)} kr i resekostnad${resa < 1200 ? " (halverad av transportavtalet)" : ""}</div>`}
       ${hemma && html`<div><span>Hemmaplan</span> Ingen resa, och hemmapubliken ger extra prispengar</div>`}
       ${(häst.kuskbekant?.[kusk.namn] ?? 0) > 0 && html`<div><span>Ekipaget</span>
         ${kusk.namn} har kört ${häst.namn} ${häst.kuskbekant[kusk.namn]} ${häst.kuskbekant[kusk.namn] === 1 ? "gång" : "gånger"}
         — ${häst.kuskbekant[kusk.namn] >= 6 ? "kan hästen utan och innan" : "kännedomen växer för varje start"}</div>`}
       ${lopp.v85 && html`<div class="v85"><span>V85</span> hela landet spelar på omgången</div>`}
     </div>
+
+    <${InsatsOchRisk} spel=${spel} häst=${häst} lopp=${lopp} kusk=${kusk} resa=${resa} />
 
     <button class="btn" disabled=${!kanStarta} onClick=${() => onStart({ häst, lopp, kusk })}>
       Anmäl till lopp
@@ -138,6 +141,45 @@ function Anmälan({ spel, onStart }) {
         : bokad ? `${kusk.namn} kör för ett annat stall i det här loppet. Välj en annan kusk — eller ett annat lopp.`
         : "Kassan räcker inte till kuskarvodet."}
     </div>`}`;
+}
+
+/**
+ * INSATS & RISK (v84). Varje anmälan är ett åtagande, och det ska synas
+ * INNAN knappen trycks. Siffrorna hämtas ur samma formler som motorn och
+ * veckomotorn använder — travsäkerheten är simuleringens, skaderisken är
+ * efterLopps. Rutan hittar inget på: den läser vad spelet redan vet.
+ */
+function InsatsOchRisk({ spel, häst, lopp, kusk, resa }) {
+  const insats = kusk.arvode + resa;
+  /* Travsäkerheten — exakt simuleringens formel. */
+  const travsäkerhet = klamp(
+    0.902 + (häst.lynne / 100) * 0.088
+    - (häst.ålder <= 4 ? 0.028 : häst.ålder === 5 ? 0.012 : 0)
+    - (häst.starter < 8 ? 0.015 : 0),
+    0.85, 0.995
+  );
+  const springspår = lopp.start === "volt";
+  let galopp = travsäkerhet > 0.96 ? "låg" : travsäkerhet > 0.925 ? "märkbar" : "hög";
+  if (springspår && galopp === "låg") galopp = "märkbar — voltstart";
+  else if (springspår) galopp += " — och voltstart gör det värre";
+  /* Skaderisken efter lopp — efterLopps trösklar: låg energi 18 %, annars 5 %. */
+  const sliten = häst.energi < 32;
+  const gammal = häst.ålder > 8;
+  const skada = sliten ? "förhöjd — hästen är sliten"
+    : gammal ? "något förhöjd — åldern tar ut sin rätt" : "normal";
+  /* Ägarhästens krav: en start är också en förbrukad chans. */
+  const kravKvar = häst.krav ? häst.krav.antal - häst.kravStarter : null;
+  return html`
+    <div class="loppfakta insats">
+      <div><span>Insats</span>${kr(insats)} kr (arvode${resa ? " + resa" : ""}) — betalas oavsett resultat</div>
+      <div><span>Krafter</span>Loppet kostar 14–24 energi · hästen har ${Math.round(häst.energi)}</div>
+      <div><span>Uppsida</span>${kr(lopp.förstapris)} kr till segraren · ${kr(lopp.garanterad)} kr garanterat</div>
+      <div class=${galopp.startsWith("låg") ? "" : "dålig"}><span>Galopprisk</span>${galopp}</div>
+      <div class=${skada === "normal" ? "" : "dålig"}><span>Skaderisk</span>${skada}</div>
+      ${kravKvar !== null && html`
+        <div class=${kravKvar <= 2 ? "dålig" : ""}><span>Ägarens krav</span>
+          ${häst.krav.text} · ${Math.max(0, kravKvar)} ${kravKvar === 1 ? "start" : "starter"} kvar${kravKvar <= 2 ? " — den här räknas" : ""}</div>`}
+    </div>`;
 }
 
 /* ==================== Startlista ==================== */
@@ -296,43 +338,138 @@ function kuskensRåd(häst, lopp, kusk) {
 }
 
 function Kusksamtal({ häst, lopp, kusk, fält, onVal }) {
+  const [taktik, sättTaktik] = useState(null);
   const { råd, rekommenderad } = kuskensRåd(häst, lopp, kusk);
   const favorit = [...fält].sort((a, b) => b.streck - a.streck)[0];
+  /* Kuskens tempoläsning är ÄRLIG: motståndarnas körorder är redan satta
+     i rustaFält, så "tre vill till spets" är fältets verkliga plan — inte
+     en gissning som vyn hittar på. Exakt utfall vet ingen förrän bilen
+     släpper. */
+  const spetsvilja = fält.filter((h) => !h.egen && h.taktik === "ledning").length;
+  const tempoläsning = spetsvilja >= 4
+    ? `Minst ${spetsvilja} vill till spets — det kan bli en stenhård öppning.`
+    : spetsvilja >= 2
+    ? `Ett par stycken laddar för spets. Räkna med tempo första varvet.`
+    : `Ingen verkar het på att köra. Det kan bli billigt där framme.`;
+
+  /* Slutordern: NÄR avgörandet sätts in. Rekommendationen läses ur
+     hästen och kuskens stil — en spurtare med otålig kusk är en
+     klassisk konflikt, och den ska synas i samtalet. */
+  const spurtare = häst.fart >= 62 && häst.styrka < 58;
+  const rekSlut = spurtare ? "vänta" : häst.styrka >= 62 ? "attack" : "kusken";
+  const SLUTORDER = [
+    { id: "attack", rubrik: "Gå på vid 500 kvar",
+      citat: (kusk.tålamod ?? 50) < 45
+        ? "Så kör jag helst. När jag går, går jag för fullt."
+        : "Tidigt, men okej. Håller han hela vägen är loppet vårt.",
+      följd: "Avgörandet sätts in ett halvvarv från mål — men kusken känner hästen: är tanken tom vid punkten går hen på känsla i stället." },
+    { id: "vänta", rubrik: "Spara allt till upploppet",
+      citat: (kusk.tålamod ?? 50) >= 55
+        ? "Bra. Jag sitter still tills det öppnar sig — sen smäller det."
+        : "Jag ska försöka sitta på händerna. Men lovar inget om luckan kommer tidigt.",
+      följd: "Mer kvar i tanken sista 240 — men vägen fram måste öppna sig, och det gör den inte alltid." },
+    { id: "kusken", rubrik: `${kusk.namn.split(" ")[0]} avgör`,
+      citat: "Jag känner efter hur han svarar. Lita på mig.",
+      följd: "Kuskens egen tajming — avslutningsförmågan avgör hur rätt den sitter." },
+  ];
+
+  if (!taktik) {
+    return html`
+      <h2>Körordern — ${kusk.namn}</h2>
+      <div class="samtal">
+        <div class="samtal-vem">${kusk.namn} läser loppet</div>
+        <div class="samtal-text">
+          Vi har spår ${häst.spår}${lopp.start === "volt" ? " i volten" : ""}.
+          ${favorit === häst
+            ? " Vi är mest spelade, så de andra kommer att titta på oss."
+            : ` ${favorit.namn} ser ut att bli favoritspelad.`}
+          ${tempoläsning}
+        </div>
+      </div>
+      <div class="hint">Din rekommendation för resan — kusken är den som sitter bakom hästen</div>
+      ${råd.map((r) => html`
+        <button key=${r.taktik} class=${"val" + (r.taktik === rekommenderad ? " rek" : "")}
+          onClick=${() => sättTaktik(r.taktik)}>
+          <div class="val-rubrik">
+            ${TAKTIKER[r.taktik].namn}
+            ${r.taktik === rekommenderad && html`<span class="rek-marke">kuskens förslag</span>`}
+          </div>
+          <div class="val-citat">”${r.text}”</div>
+        </button>`)}`;
+  }
+
   return html`
-    <h2>Samtal med ${kusk.namn}</h2>
+    <h2>Slutordern — ${kusk.namn}</h2>
     <div class="samtal">
       <div class="samtal-vem">${kusk.namn}</div>
       <div class="samtal-text">
-        Vi har spår ${häst.spår}${lopp.start === "volt" ? " i volten" : ""}.
-        ${favorit === häst
-          ? " Vi är mest spelade, så de andra kommer att titta på oss."
-          : ` ${favorit.namn} ser ut att bli favoritspelad.`}
-        Hur vill du att jag kör?
+        ${TAKTIKER[taktik].namn} alltså. Sista frågan innan jag sätter mig:
+        när vill du se att jag går på? Jag lovar att väga in det — men där
+        ute är det jag som känner honom. ${spurtare
+          ? `${häst.namn} har en riktig avslutning — den ska användas rätt.`
+          : häst.styrka >= 62
+          ? `${häst.namn} orkar jobba länge. Det går att gå tidigt.`
+          : "Han är ingen maskin — tajmingen avgör."}
       </div>
     </div>
-    ${råd.map((r) => html`
-      <button key=${r.taktik} class=${"val" + (r.taktik === rekommenderad ? " rek" : "")}
-        onClick=${() => onVal(r.taktik)}>
-        <div class="val-rubrik">
-          ${TAKTIKER[r.taktik].namn}
-          ${r.taktik === rekommenderad && html`<span class="rek-marke">kuskens förslag</span>`}
-        </div>
-        <div class="val-citat">”${r.text}”</div>
-      </button>`)}`;
+    ${SLUTORDER.map((v) => html`
+      <button key=${v.id} class=${"val" + (v.id === rekSlut ? " rek" : "")}
+        onClick=${() => onVal({ taktik, slutorder: v.id === "kusken" ? null : v.id })}>
+        <div class="val-rubrik">${v.rubrik}
+          ${v.id === rekSlut && html`<span class="rek-marke">kuskens förslag</span>`}</div>
+        <div class="val-citat">”${v.citat}”</div>
+        <div class="val-följd">${v.följd}</div>
+      </button>`)}
+    <button class="tillbaka" onClick=${() => sättTaktik(null)}>‹ Ändra grundordern</button>`;
 }
 
 /* ==================== Loppet ==================== */
 
-function Tracking({ bild, dist }) {
+/**
+ * TV-LÄGET (plan 13.1): stor bana, kommentatorn och de främsta — mindre
+ * teknik. Bara tätgruppen och den egna hästen visas, som TV4:s tracking.
+ */
+function TVTopp({ bild }) {
+  if (!bild) return null;
+  const topp = bild.rader.slice(0, 4);
+  const egen = bild.rader.find((r) => r.egen);
+  const rader = egen && !topp.includes(egen) ? [...topp, egen] : topp;
+  return html`
+    <div class="track tv">
+      <div class="tr-bana"><i style=${{ width: Math.min(100, (bild.meter / (bild.dist || 1)) * 100) + "%" }} /></div>
+      ${rader.map((r) => {
+        const i = bild.rader.indexOf(r);
+        return html`
+          <div key=${r.spår} class=${"tr-rad" + (r.egen ? " din" : "")}>
+            <${Täcke} nr=${r.spår} />
+            <span><span class="tr-namn">${r.namn}</span><br />
+              <span class="tr-lage">${r.läge}</span></span>
+            <span class="tr-avst">${i === 0 ? "led" : "+" + r.avst.toFixed(1) + " l"}</span>
+          </div>`;
+      })}
+      ${bild.ur.map((r) => html`
+        <div key=${"ur" + r.spår} class="tr-rad ur">
+          <${Täcke} nr=${r.spår} /><span class="tr-namn">${r.namn}</span>
+          <span class="tr-avst">bortkörd</span>
+        </div>`)}
+    </div>`;
+}
+
+/**
+ * ANALYSLÄGET (plan 13.1): hela fältet, positioner, kraft, fart och
+ * ryggkedjorna. Kolumnfärgen visar var i banan raden ligger — innerspår,
+ * ytterrad eller tredjespår — så kedjorna framgår av tabellen själv.
+ */
+function Analystabell({ bild, dist }) {
   if (!bild) return null;
   return html`
-    <div class="track">
+    <div class="track analys">
       <div class="tr-bana"><i style=${{ width: Math.min(100, (bild.meter / dist) * 100) + "%" }} /></div>
       ${bild.rader.map((r, i) => {
         const lk = r.läge.includes("utvändigt") || r.läge.includes("spåret") ? "utv"
           : r.läge === "instängd" ? "instangd" : "";
         return html`
-          <div key=${r.spår} class=${"tr-rad" + (r.egen ? " din" : "")}>
+          <div key=${r.spår} class=${"tr-rad kol" + r.kol + (r.egen ? " din" : "")}>
             <${Täcke} nr=${r.spår} />
             <span>
               <span class="tr-namn">${r.namn}</span><br />
@@ -480,6 +617,9 @@ export default function LoppVy({ spel, uppdatera }) {
   const [körning, sättKörning] = useState(null);
   const [ruta, sättRuta] = useState(0);
   const [fart, sättFart] = useState(110);
+  /* Två sätt att se loppet (plan 13.1): TV-läget berättar, analysläget
+     visar hela fältet med positioner, fart och kraft. */
+  const [visning, sättVisning] = useState("tv");
   const [facit, sättFacit] = useState(null);
   const timer = useRef(null);
 
@@ -494,8 +634,8 @@ export default function LoppVy({ spel, uppdatera }) {
     beräknaStreck(fält, spel, lopp);
     uppdatera((s) => {
       const hemmaB = s.hemmabana && BANOR[s.hemmabana];
-      const resekostnad = hemmaB && lopp.banaNamn !== hemmaB.namn ? 1200 : 0;
-      s.kassa -= kusk.arvode + resekostnad;
+      const resa = hemmaB && lopp.banaNamn !== hemmaB.namn ? resekostnad(s) : 0;
+      s.kassa -= kusk.arvode + resa;
       if (s.inbjudan?.vecka === s.vecka && lopp.id.endsWith("-inbjudan")) s.inbjudan = null;
       s.startadeLopp = [...(s.startadeLopp || []), lopp.id];
     });
@@ -514,13 +654,17 @@ export default function LoppVy({ spel, uppdatera }) {
   };
 
   /* Steg 4: körorder vald — loppet körs */
-  const kör = (taktik) => {
+  const kör = ({ taktik, slutorder }) => {
     const { fält, lopp, häst } = körning;
     häst.taktik = taktik;
     const favorit = [...fält].sort((a, b) => b.streck - a.streck)[0];
     sättRuta(0);
     sättFacit(null);
-    sättKörning({ ...körning, taktik, favorit, sim: simulera(fält, lopp) });
+    /* Slutordern ur kusksamtalet följer med in i loppet: motorn lägger
+       den på hästen när ~500 meter återstår (engine-simulera). Ingen
+       radio finns i trav — allt är sagt innan bilen släpper. */
+    const sim = simulera(fält, lopp, slutorder ? { vid: 500, order: slutorder } : null);
+    sättKörning({ ...körning, taktik, slutorder, favorit, sim });
     sättSteg("lopp");
   };
 
@@ -607,7 +751,14 @@ export default function LoppVy({ spel, uppdatera }) {
       </div>`}
 
     <${BanVy} lopp=${lopp} fält=${fält} bild=${bild} />
-    <${Tracking} bild=${bild} dist=${lopp.dist} />
+
+    <div class="visning-växel">
+      <button aria-pressed=${visning === "tv"} onClick=${() => sättVisning("tv")}>TV</button>
+      <button aria-pressed=${visning === "analys"} onClick=${() => sättVisning("analys")}>Analys</button>
+    </div>
+    ${visning === "tv"
+      ? html`<${TVTopp} bild=${bild && { ...bild, dist: lopp.dist }} />`
+      : html`<${Analystabell} bild=${bild} dist=${lopp.dist} />`}
 
     ${steg === "lopp" && html`
       <div class="bv-knappar">

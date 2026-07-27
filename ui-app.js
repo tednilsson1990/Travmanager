@@ -9,6 +9,7 @@ import AvelVy from "./ui-avelvy.js";
 import MarknadVy from "./ui-marknadvy.js";
 import StartVy from "./ui-startvy.js";
 import GårdVy from "./ui-gardvy.js";
+import KontorVy from "./ui-kontorvy.js";
 import { ÖvertagandeVy, FörstamansvalVy } from "./ui-prolog.js";
 import { Dräkt } from "./ui-grafik.js";
 import HemVy from "./ui-hemvy.js";
@@ -24,6 +25,7 @@ const FLIKAR = [
 ];
 const MER = [
   { id: "gård", namn: "Gård" },
+  { id: "kontor", namn: "Kontor" },
   { id: "journal", namn: "Journal" },
   { id: "marknad", namn: "Marknad" },
   { id: "avel", namn: "Avel" },
@@ -93,6 +95,7 @@ export default function App() {
             onClick=${() => sättMerFlik(m.id)}>${m.namn}</button>`)}
         </div>
         ${merFlik === "gård" && html`<${GårdVy} spel=${spel} uppdatera=${uppdatera} />`}
+        ${merFlik === "kontor" && html`<${KontorVy} spel=${spel} uppdatera=${uppdatera} />`}
         ${merFlik === "journal" && html`<${JournalVy} spel=${spel} />`}
         ${merFlik === "marknad" && html`<${MarknadVy} spel=${spel} uppdatera=${uppdatera} />`}
         ${merFlik === "avel" && html`<${AvelVy} spel=${spel} uppdatera=${uppdatera} />`}`}

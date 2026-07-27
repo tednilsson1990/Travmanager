@@ -13,6 +13,9 @@ import { registreraHändelse, hästmilstolpar, säsongsHändelser, loppfakta,
 import "./engine-lyssnare.js";
 import { körStorloppsbåge } from "./engine-storlopp.js";
 import { uppdateraAmbition, prövaAvgång, gamlaBekanta, ägarrelation } from "./engine-personal.js";
+import { verkställVeckoslots } from "./engine-stallmote.js";
+import { ägarVecka, ägarSport, ägarEfterStart } from "./engine-agare.js";
+import { sponsorVecka, sponsorEfterLopp, sponsorSäsongsskifte, foderrabatt } from "./engine-sponsor.js";
 import { uppdateraRekordEfterLopp, skrivSäsongskrönika } from "./engine-rekord.js";
 import { mentornsNärvaro, efterMinneslopp } from "./engine-mentor.js";
 import { vidSkada, vidFavoritfall, vidFormsvacka } from "./engine-motgang.js";
@@ -109,6 +112,13 @@ export function körVecka(spel) {
   }
   spel.logg = [];
 
+  /* STALLMÖTETS VERKLIGHET (plan 4.1): fler krävande pass än veckans
+     slots verkställs inte — överskottet blir lugnt jobb, med besked. */
+  const slotsUtfall = verkställVeckoslots(spel);
+  if (slotsUtfall.nedflyttade.length) {
+    spel.logg.push(`Veckan räckte inte till alla hårda pass — <b>${slotsUtfall.nedflyttade.join(", ")}</b> fick lugnt jobb i stället (${slotsUtfall.slots} platser).`);
+  }
+
   spel.stall.forEach((h) => {
     h.hype = klamp(h.hype - 2.5);
     if (h.skada > 0) {
@@ -145,10 +155,24 @@ export function körVecka(spel) {
 
   const externa = spel.stall.filter((h) => h.ägare).length;
   const gård = gåraugifter(spel);
-  const kostnad = spel.stall.length * DRIFT_PER_HÄST + gård;
+  /* Fodersponsorns förmån sänker driften — ekonomi, aldrig loppmotorn. */
+  const rabatt = foderrabatt(spel);
+  const kostnad = spel.stall.length * DRIFT_PER_HÄST - rabatt + gård;
   const intäkt = externa * ARVODE_PER_VECKA;
   spel.kassa += intäkt - kostnad;
   if (gård) spel.logg.push(`Anläggning och personal: <b>−${kr(gård)} kr</b>`);
+  if (rabatt) spel.logg.push(`Foderavtalet sänkte driften: <b>+${kr(rabatt)} kr</b>`);
+
+  /* Sponsorveckan: ersättningen betalas ut och nya erbjudanden kan komma. */
+  sponsorVecka(spel).forEach((r) => spel.logg.push(r));
+
+  /* Ägarnas vecka: tystnad svalnar, och en riktigt missnöjd ägare
+     flyttar sin häst — med besked, aldrig i tysthet (kap 7.3). */
+  const lämnade = ägarVecka(spel, skrivPress);
+  if (lämnade.length) {
+    spel.stall = spel.stall.filter((h) => !lämnade.includes(h));
+    lämnade.forEach((h) => spel.logg.push(`<b>${h.namn}</b> hämtades av ${h.ägare}. Boxen står tom.`));
+  }
 
   /* Kassagolv. Utan det kan stallet driva hur långt som helst under noll
      utan att spelet säger något — och en karriär som tyst blivit omöjlig är
@@ -294,6 +318,9 @@ export function körVecka(spel) {
     }
     const rad = avslutaSäsong(spel);
     spel.säsongAvslutad = rad;
+    /* Sponsorernas bokslut: uppfyllda krav förnyar avtalet med bonus,
+       missade bryter det — med besked i pressen (kap 8). */
+    sponsorSäsongsskifte(spel, skrivPress);
     /* Krönikörens bokslut skrivs NU, medan säsongens händelser ligger
        färska i krönikan — och sparas på historikraden så att texten går
        att läsa år senare i Stalljournalen. */
@@ -376,9 +403,14 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   /* Motgången som berättelse: favoritfallet och formsvackan. */
   vidFavoritfall(spel, { häst, lopp, min, dåligDag });
   vidFormsvacka(spel, häst, min);
-  /* Ägaren minns vad hens häst gör hos dig. */
-  if (häst.ägare) ägarrelation(spel, häst.ägare,
-    min.ur ? -3 : vann ? 8 : pall ? 4 : -1);
+  /* Ägaren minns vad hens häst gör hos dig. Sporten skalas med ägar-
+     typens resultatkänsla (kap 7); starten i sig är också en kontakt.
+     ägarrelation(…, 0) behåller hästerbjudande-scenen vid ≥ 80. */
+  if (häst.ägare) {
+    ägarSport(spel, häst.ägare, min.ur ? -3 : vann ? 8 : pall ? 4 : -1);
+    ägarEfterStart(spel, häst);
+    ägarrelation(spel, häst.ägare, 0);
+  }
   if ((spel.säsong ?? 1) === 0 && spel.prolog)
     spel.prolog.sistaResultat = { häst: häst.namn, plats: min.ur ? null : min.plats, ur: !!min.ur };
   /* Hemmapubliken. På hemmabanan går folk och man får del av entrén —
@@ -401,6 +433,9 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   if (slump() < (häst.energi < 25 ? 0.18 : 0.05)) häst.skada = läkning(spel, int(1, 2));
   if (dåligDag && slump() < 0.35) häst.skada = Math.max(häst.skada, läkning(spel, int(1, 2)));
   if (häst.skada > 0 && skadaFöre === 0) vidSkada(spel, häst, häst.skada);
+
+  /* Sponsorernas bokföring: kraven räknas och segerbonusen betalas ut. */
+  sponsorEfterLopp(spel, { lopp, vann }).forEach((r) => spel.logg.push(r));
 
   let renΔ = 0, relΔ = 0, hypeΔ = 0, troΔ = 0;
   const kortnamn = lopp.kortnamn || lopp.namn.split(",")[0];
@@ -506,14 +541,15 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
 
     if (uppfyllt) {
       ägartext = { ton: "bra", text: `${häst.ägare} är nöjd — kravet "${k.text}" är uppfyllt.` };
-      ägarrelation(spel, häst.ägare, 10);
+      ägarSport(spel, häst.ägare, 10);
+      ägarrelation(spel, häst.ägare, 0);
       häst.krav = plock(ÄGARKRAV);
       häst.kravStarter = 0;
       spel.renommé = klamp(spel.renommé + 2);
       skrivPress(spel, `${häst.ägare} förlänger med Björkhaga`, `Ägaren nöjd med ${häst.namn}.`, "bra");
     } else if (häst.kravStarter >= k.antal) {
       ägartext = { ton: "dålig", text: `${häst.ägare} drar tillbaka ${häst.namn} — kravet missades.` };
-      ägarrelation(spel, häst.ägare, -18);
+      ägarSport(spel, häst.ägare, -18);
       skrivPress(spel, `${häst.ägare} lämnar Björkhaga`, `Kravet på ${häst.namn} infriades aldrig.`, "dålig");
       spel.renommé = klamp(spel.renommé - 4);
       spel.stall = spel.stall.filter((x) => x !== häst);

@@ -475,6 +475,161 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Kusken beslutar (v87)
+
+Teds princip, nu inbyggd: TRÄNAREN KAN BARA GE REKOMMENDATIONER — det
+är kusken som sitter bakom hästen, tar besluten och känner hur mycket
+krafter som finns kvar. Slutordern är därför en rekommendation kusken
+väger mot känslan: en attack följs bara om det finns något att attackera
+med (kraft ≥ 30 vid punkten, kuskens känsla — spelaren ser aldrig
+siffran). Är tanken tom vägrar kusken driva hästen och kör sin egen
+tajming, och REFERATET berättar det: »Kim känner efter bakom Rimfrost
+Bris — det finns inget att attackera med.« Följs rekommendationen syns
+även det: »— som det var sagt i stallbacken.« Bedömningen är
+deterministisk (noll nya slumpdragningar; branchen körs bara med
+ingripande, aldrig i kalibreringen — omkalibrerad ändå enligt
+järnregeln: identisk). prov-beslut.mjs fick tre nya prov: varje
+rekommendation vid punkten lämnar exakt ett spår i referatet, kusken
+vägrar ibland (22 av 77 attacklopp), och aldrig båda spåren i samma
+lopp. Kusksamtalets språk följer med: "din rekommendation för resan",
+och kusken lovar att väga in den — inte att lyda. Grundordern har alltid
+fungerat så i motorn (taktiken är en ambitionsterm, inte ett skript);
+nu säger spelet det högt.
+
+## Allt sägs i stallbacken (v86)
+
+Beslutsfönstret från v84 pausade loppet vid 500 kvar — men i trav finns
+ingen radio, och tränaren pratar inte med kusken mitt i loppet. Teds
+beslut: ALLT sker före loppet. Så pausen är borta och kusksamtalet blev
+större — en riktig körorder i två delar:
+
+**Kuskens läsning.** Samtalet öppnar med spåret, favoriten och en ÄRLIG
+tempoläsning: motståndarnas körorder är redan satta i rustaFält, så
+"minst tre vill till spets" är fältets verkliga plan, inte en påhittad
+replik. Exakt utfall vet ingen förrän bilen släpper — läsningen är
+kuskens, inte facit.
+
+**Grundordern** — resan, som förut (spets, rygg, utvändigt, skydd,
+spurt) med kuskens motiverade förslag.
+
+**Slutordern** — NÄR avgörandet sätts in: "Gå på vid 500 kvar", "Spara
+allt till upploppet", eller "kusken avgör" (ingen order — kuskens egen
+tajming via avslutningsförmågan, som alltid). Rekommendationen läses ur
+hästen (spurtare → vänta, orkeshäst → tidigt) och kuskens stil färgar
+replikerna: en otålig kusk ÄLSKAR ordern att gå tidigt och lovar inget
+om att sitta still — den klassiska konflikten spurtare/otålig kusk ska
+SYNAS i samtalet. Ordern följer med in i motorn som `ingripande` — samma
+mekanik som v84, applicerad vid ~500 kvar, noll nya slumpdragningar,
+kalibreringen orörd, prov-beslut.mjs oförändrat grönt. Ingen paus, ingen
+omsimulering, ingen seed: loppet körs en gång med allt bestämt, precis
+som i verkligheten. Att ändra grundordern går med en tillbakaknapp innan
+slutordern låses.
+
+## Beslutet, mötet och kontoret (v84)
+
+Spelkänslelyftet plus verksamhetsspelets grund — fyra system i en batch,
+med loppmotorn rörd på EN punkt och omkalibrerad till identisk siffra.
+
+**Slutordern** (byggd som beslutsfönster i v84, flyttad före loppet i
+v86 — se det avsnittet). Motormekaniken: `simulera(fält, lopp, { vid:
+500, order })` lägger ordern som en flagga på spelarens häst när gränsen
+passeras, UTAN en enda slumpdragning. "Attack" tvingar spurten, höjer
+utflyttningschansen (×2,6), öppnar tredjespåret och sänker kraftspärren
+till 14 — avgörandet kommer vid punkten, och håller inte krafterna står
+man still på upploppet. "Vänta" sitter still till 240 kvar — mer i
+tanken, men vägen måste öppna sig. KALIBRERINGSLÖFTET: utan ingripande
+ändras ingen kodväg — `node kalibrering.mjs` gav IDENTISK utskrift till
+decimalen mot baslinjen (diffad, inte skattad). prov-beslut.mjs låser
+löftena: determinism, identiskt prefix före ordern (6/6 lopp), verklig
+effekt (attack ändrar utfallet i 38 % av loppen, vänta i 23 %) — och att
+attack INTE är en vinstknapp (snittplacering ±0,24). Ordern läggs bara
+på spelarens häst; världen och kalibreringen ser den aldrig.
+
+**TV-läget och analystabellen (plan 13.1).** En växel över trackingen:
+TV visar tätgruppen plus den egna hästen — banan och rösten bär. Analys
+visar hela fältet med läge, avstånd, fart och kraft, och kolumnfärgen
+till vänster ÄR ryggkedjan: benvit rand innerspåret, tegel ytterraden,
+guld tredjespår. Båda läser samma bildrutor; ingen ny data i motorn.
+
+**Stallmötet och veckoslotsen (plan 4.1, engine-stallmote.js).** En
+tränares vecka är inte oändlig: snabbjobb, intervaller och startjobb är
+KRÄVANDE pass, och organisationen orkar 3 per vecka + 1 för rakbanan,
++ 1 för backen, + 1 för förstamannen. Gränsen verkställs i körVecka —
+överskott (i stallordning) flyttas ned till lugnt jobb med besked i
+rapporten, så äldre sparfiler aldrig kraschar — och gränssnittet stänger
+chipsen när veckan är full (samma komponent i hästkort och hästsida).
+Stallmöteskortet visar slotsläget och källorna, och "Låt förstamannen
+lägga planen" går genom `läggPlanMedSlots`: lägst form prioriteras till
+de hårda passen. Designgränsen från v51 står: slotsen påverkar VECKAN,
+aldrig loppmotorn.
+
+**Insats & risk i anmälan.** En guldkantad ruta före Anmäl-knappen:
+insatsen (arvode + resa — betalas oavsett), kraftkostnaden (14–24 energi
+mot hästens aktuella), uppsidan (förstapris/garanterat), galopprisken
+(EXAKT simuleringens travsäkerhetsformel plus voltstartens påslag),
+skaderisken (efterLopps trösklar: sliten häst, ålder) och ägarkravets
+nedräkning. Rutan hittar inget på — den läser vad motorn redan vet.
+
+**Hästsidans fem flikar (designförslaget).** Översikt (staplarna,
+personligheten läst ur lynnet, rekordet, senaste fem, träningen),
+Karriär (siffrorna, loppfacit och milstolpstidslinjen), Form (formkurvan
+— en SVG-tidningsgraf ur dagboken — plus dagbokstabellen), Mål (nästa
+start via förstamannens riktiga loppmatchning, ägarkravet, närmaste
+milstolpe härledd ur karriärläget) och Relationer (ägaren med relationen
+ur ägarboken, kuskarna som kan hästen ur kuskbekant-datat, rivalerna).
+Hästen som individ med historia — inte en rad värden.
+
+**Ägarsystemet (kap 7, engine-agare.js).** Fem ägartyper i data-agare.js
+— småägaren, uppfödaren, företagaren, storsatsaren, travfamiljen — och
+typen avgörs av namnets hash: samma ägare är samma person i varje
+karriär. Nöjdheten har TVÅ dimensioner (man kan vara nöjd sportsligt men
+trött på tystnaden): sporten byggs av loppen, där efterLopps delta
+skalas med typens resultatkänsla (storsatsaren glömmer aldrig en floppad
+favorit), kommunikationen svalnar 1,2/tyst vecka och lyfts av möten och
+av att ägarens häst kommer till start. Sammanvägningen skrivs till
+`r.relation`, så ALLT befintligt (hästerbjudandet vid ≥ 80 i
+engine-personal, kravlogiken i engine-vecka) fungerar orört — och äldre
+sparfiler migreras i säkraÄgarprofil utan att tappa byggd relation.
+Konsekvensen: under relation 18 flyttas hästen, med presskritik, aldrig
+i tysthet. Mötet är Kontorets viktigaste knapp: "lyssna" värmer
+kommunikationen, "be om tålamod" förlänger kravet två starter (EN gång
+per krav) och tas emot efter typ — småägaren nickar, storsatsaren suckar
+och drar av på sporten.
+
+**Sponsorerna (kap 8, engine-sponsor.js).** Sex sponsortyper från lokal
+företagspartner till nationell huvudsponsor, med namnpooler i
+data-agare.js (namnregeln). Avtalet: fast veckoersättning, segerbonus,
+ett säsongskrav och ibland en FÖRMÅN som är verklig, inte kosmetisk —
+transportsponsorn halverar resekostnaden (anmälan läser resekostnad()),
+fodersponsorn sänker driften 400 kr/häst/vecka (körVecka läser
+foderrabatt()). Konflikten ur 8.3 bor i kravtyperna: den lokala vill se
+hemmastarter, den nationella segrar var de än sker. Erbjudanden kommer
+med renommét (max ett avtal, två från renommé 55), ligger tre veckor och
+förfaller. Vid säsongsskiftet utvärderas kraven i körVecka: uppfyllt ger
+fyra veckoersättningar i bonus och förnyat avtal med tio procent bättre
+villkor; missat bryter avtalet offentligt och kostar två renommé.
+Designgränsen igen: sponsorerna rör ekonomin och veckan — aldrig
+loppmotorn.
+
+**Kontoret (ui-kontorvy.js, under Mer).** Verksamhetens vy i dagsljus:
+ekonomin som konsekvenser (fast veckonetto, "kassan räcker N veckor",
+vad de tomma boxarna kostar — designförslagets punkt 6 i lättversion),
+ägarna som personer (typ, vad de VILL, båda nöjdhetsstaplarna, hästarna,
+senaste mötet, mötesknapparna) och sponsorerna (aktiva avtal med
+kravläget, erbjudanden med hela avvägningen på bordet).
+
+**Nästa steg på Hem (kap 16.5).** "I dag"-panelen döptes om och fick
+verksamhetens rekommendationer: sponsorerbjudande som väntar (guldprick),
+missnöjd ägare (tegel), kassaprognosen ur kontorets veckonetto ("fler
+externa hästar skulle förbättra kassaflödet"), och sponsorkrav som
+hänger löst sista fyra veckorna. Härlett ur spelläget, aldrig påhittat,
+aldrig tvingande — öppna mål, inte uppdrag.
+
+Nya filer: engine-stallmote.js, engine-agare.js, engine-sponsor.js,
+ui-kontorvy.js, prov-beslut.mjs, prov-verksamhet.mjs. Provsviterna är nu
+tio. Alla nya UI-val är deterministiska eller ur befintliga slumpflöden —
+inga nya slump()-anrop i loppmotorns flöde (beslutspunkten drar noll).
+
 ## Fem idéer ur bilderna (v78)
 
 Bildleveransen föreslog berättelser som systemen ännu inte gjorde.
@@ -1216,4 +1371,7 @@ Hem (v69) samt hästhuvudena och extrabildernas platser (v70) och
 anropskontrollen efter minnesloppskraschen (v71) samt Kronvallen med
 storbanenejet (v72) och dräkten som identitet med tränarnamnet (v73) samt dräktsteget mot
 mockupen (v74) och bilderna på plats (v75), variantrotationen (v76) samt kandidaten
-från egna led (v77) och de fem bildidéerna (v78).
+från egna led (v77) och de fem bildidéerna (v78) samt beslutsfönstret med seedad
+omsimulering, stallmötets veckoslots, insats & risk i anmälan,
+hästsidans fem flikar, TV/analysläget, ägarsystemet, sponsorerna,
+Kontoret och Nästa steg-panelen (v84).

@@ -39,8 +39,27 @@ const KOSTNAD = {
  * Placering, avstånd och km/h läses ur meter och m/s. Ingen separat
  * placeringsformel finns.
  */
-export function simulera(fält, lopp) {
+/**
+ * SLUTORDERN (v84, omgjord v86). `ingripande = { vid: 500, order }` är
+ * körorderns andra halva, given i KUSKSAMTALET före loppet — ingen radio
+ * finns i trav, kusken är ensam från startbilen till mållinjen, så allt
+ * är sagt i stallbacken. Motorn lägger ordern på spelarens häst när
+ * loppet når `vid` meter kvar:
+ *   "attack" — avgörandet sätts in vid punkten: hästen söker fri väg och
+ *              driver, även om krafterna inte räcker hela vägen hem.
+ *   "vänta"  — kusken sitter still och sparar allt till de sista 240
+ *              metrarna. Mer i tanken — men risk att fastna eller komma
+ *              för sent.
+ * KALIBRERINGSLÖFTET: utan ingripande dras inte ett enda extra slumptal
+ * och ingen kodväg ändras (verifierat: identisk kalibreringsutskrift).
+ * Även med ingripande dras inga extra slumptal — flaggan sätts torrt vid
+ * gränsen, så alla dragningar före punkten är identiska med och utan
+ * order (prov-beslut.mjs). Ordern läggs bara på spelarens häst —
+ * världens hästar och kalibreringen berörs aldrig.
+ */
+export function simulera(fält, lopp, ingripande = null) {
   const dist = lopp.dist;
+  let ingripandeKvar = !!(ingripande && ingripande.order);
   const bild = [];
   const kommentar = [];
   let t = 0;                       // loppets klocka, behövs redan i starten
@@ -424,6 +443,30 @@ export function simulera(fält, lopp) {
     const kvar = dist - (främst ? främst.d : 0);
     const upplopp = kvar < 320;
 
+    /* Beslutspunkten. Ingen slump dras här — bara en flagga på spelarens
+       häst, så att prefixet före punkten är identiskt mellan körningar. */
+    /* TRÄNAREN REKOMMENDERAR — KUSKEN BESLUTAR (v87, Teds princip).
+       Det är kusken som sitter bakom hästen och känner krafterna. En
+       attackrekommendation följs bara om det finns något att attackera
+       med (kraft ≥ 30 vid punkten); annars litar kusken på känslan och
+       kör sin egen tajming — och referatet berättar det. Bedömningen är
+       deterministisk: samma lopp, samma känsla, samma beslut. */
+    if (ingripandeKvar && kvar <= (ingripande.vid ?? 500)) {
+      ingripandeKvar = false;
+      const egen = H.find((s) => s.h.egen && !s.ur);
+      if (egen) {
+        const förnamnet = (egen.kusk.namn || "Kusken").split(" ")[0];
+        if (ingripande.order === "attack" && egen.kraft < 30) {
+          säg(`${förnamnet} känner efter bakom <b>${egen.h.namn}</b> — det finns inget att attackera med. Kusken litar på känslan och väntar.`, "");
+        } else {
+          egen.order = ingripande.order;
+          if (ingripande.order === "attack") {
+            säg(`${förnamnet} går på med <b>${egen.h.namn}</b> — som det var sagt i stallbacken.`, "hot");
+          }
+        }
+      }
+    }
+
     if (led && !led.tempoplan) led.tempoplan = väljTempoplan(led);
     if (led && led !== förraLedare && t > 3) {
       säg(förraLedare
@@ -505,7 +548,11 @@ export function simulera(fält, lopp) {
         const gårVid = 480 + (100 - tålamod) * 8.5;
         const attackfönster = kvar < gårVid;
         const långspurt = kvar < gårVid * 0.8 && s.kraft > 58 && s.ambition > 0.58;
-        const villFram = (upplopp || långspurt) ? true : iRygg
+        /* Ordern från beslutsfönstret väger tyngst: "attack" vill alltid
+           fram, "vänta" sitter still tills upploppet öppnar sig. */
+        const villFram = s.order === "attack" ? true
+          : s.order === "vänta" && !upplopp ? false
+          : (upplopp || långspurt) ? true : iRygg
           ? (ledarenTappar && kvar < 900)
           : (s.taktik === "ledning" && s !== led) ||
             (s.taktik === "utv" && kvar > dist * 0.5) ||
@@ -592,6 +639,7 @@ export function simulera(fält, lopp) {
                : s.målsättning === "placering" ? (s.harSpurt || s.stark ? 0.85 : 0.5)
                : 1)
             * (0.65 + s.kusk.taktik / 180)
+            * (s.order === "attack" ? 2.6 : 1)
           : 0;
 
         /* Man går aldrig ut utan skäl. Ledaren har fri väg och har inget
@@ -612,6 +660,7 @@ export function simulera(fält, lopp) {
            är tredje spåret däremot ett dyrt övergångsläge. */
         const maxKol = upplopp ? 6 : 2;
         const fårTaTredje = upplopp || s.kol === 0 || långspurt || lämnaRyggen || hakarPå ||
+          s.order === "attack" ||
           (blockerad && s.ambition > 0.6 && s.kraft > 48);
         /* Är platsen rakt utanför upptagen kan man ändå gå ut — men då får
            man vänta in luckan och hamnar bakom den som redan ligger där.
@@ -630,7 +679,7 @@ export function simulera(fält, lopp) {
         const bakom = blockerad && !upptaget(s.kol + 1, s.d0 - 5.5, 0.8, 4.2);
         /* På upploppet fäller man ut för att få fri väg, inte för att man
            har krafter kvar. Kraftspärren gäller därför bara under resan. */
-        const orkar = upplopp ? s.kraft > 4 : s.kraft > 28;
+        const orkar = upplopp ? s.kraft > 4 : s.kraft > (s.order === "attack" ? 14 : 28);
         if (fårGåUtAlls && orkar && slump() < chans && s.kol < maxKol &&
             fårTaTredje && (rakt || bakom)) {
           s.kol++;
@@ -684,7 +733,11 @@ export function simulera(fält, lopp) {
       const bekant = Math.min(s.h.kuskbekant?.[s.kusk.namn] ?? 0, 6);
       const tajmingsfel = s.spurtFel * (1 - s.kusk.avslutning / 100) * 260
         * (1 - bekant * 0.05);   /* kuskkännedom: vet när hästen svarar */
-      const spurtNu = kvar < idealSpurt + tajmingsfel;
+      /* Ordern tar över kuskens egen tajming: attack driver från beslutet,
+         vänta håller igen till de sista 240 metrarna — kom vad som vill. */
+      const spurtNu = s.order === "attack" ? true
+        : s.order === "vänta" ? kvar < 240
+        : kvar < idealSpurt + tajmingsfel;
 
       if (spurtNu) {
         mål = s.vmax * 1.05;

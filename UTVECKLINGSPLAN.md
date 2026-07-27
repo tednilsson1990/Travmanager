@@ -123,7 +123,7 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Tempo första och sista varvet
 ## 4. Travtränarens perspektiv
 - En travtränare kommer framför allt bedöma vardagen: träningsplanering, hälsa, återhämtning, matchning, personal, hästägare, ekonomi, resor, anläggning och långsiktiga mål.
-## 4.1 Veckoplanering och stallmöte
+## 4.1 Veckoplanering och stallmöte [KLART v84 — veckoslots, stallmöteskort, slot-medveten plan; fler passtyper kvar]
 - Vila och återhämtning
 - Lugnt jobb och intervaller
 - Snabbjobb och backträning
@@ -197,8 +197,8 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Kundrelationer
 - Varumärke
 - Långsiktig strategi
-## 7. Hästägare som kärnsystem
-## 7.1 Ägarprofiler
+## 7. Hästägare som kärnsystem [DELVIS v84 — profiler, tvådimensionell nöjdhet, möten, konsekvenser]
+## 7.1 Ägarprofiler [KLART v84 — fem typer, deterministiska ur namnet; andelsstallet kvar]
 - Namn och ägartyp
 - Ekonomi och investeringsvilja
 - Tålamod och riskvilja
@@ -213,7 +213,7 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Storsatsaren: Köper dyrt och kräver resultat.
 - Travfamiljen: Har traditioner, kontakter och tydliga åsikter.
 - Andelsstallet: Många delägare, mer administration och större medial potential.
-## 7.2 Ägaravtal och möten
+## 7.2 Ägaravtal och möten [DELVIS v84 — möten med tålamodsförhandling; avtalsvillkoren kvar]
 - Träningsavgift
 - Provision på prispengar
 - Vem som bestämmer kusk och försäljning
@@ -221,7 +221,7 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Kostnadsansvar
 - Kommunikationskrav
 - Inför säsongen eller viktiga beslut kan ägaren vilja diskutera huvudmål, budget, kusk, utrustning, försäljning, avel, vila eller tränarbyte.
-## 7.3 Ägarnöjdhet
+## 7.3 Ägarnöjdhet [KLART v84 — sport + kommunikation, typskalat, hästen flyttas vid bristning]
 - Resultat jämfört med förväntningar
 - Kommunikation
 - Hästens utveckling och välmående
@@ -230,8 +230,8 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Hållna löften
 - Medial synlighet
 - En nöjd ägare kan lämna fler hästar, rekommendera stallet, köpa en bättre häst eller bidra till en investering. En missnöjd ägare kan kräva möte, byta kusk, stoppa en start, sälja eller flytta hästen.
-## 8. Sponsringssystem
-## 8.1 Sponsortyper
+## 8. Sponsringssystem [KLART v84 grund — sex typer, krav, verkliga förmåner, säsongsutvärdering]
+## 8.1 Sponsortyper [KLART v84 — sex av nio typerna]
 - Lokal företagspartner
 - Foderleverantör
 - Transportföretag
@@ -241,7 +241,7 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Regionalt varumärke
 - Nationell huvudsponsor
 - Tävlingspartner
-## 8.2 Erbjudanden och krav
+## 8.2 Erbjudanden och krav [DELVIS v84 — ersättning, bonus, transport-/foderförmån; byggbidrag och representationsdagar kvar]
 - Fast säsongsersättning
 - Seger- och storloppsbonus
 - Utrustningsrabatt
@@ -249,7 +249,7 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Byggnadsbidrag
 - Synlighet och renommé
 - Sponsorer kan samtidigt kräva visst antal starter, lokal närvaro, intervjuer, goda resultat, representationsdagar eller professionell nivå på gården.
-## 8.3 Förhandling och konflikt
+## 8.3 Förhandling och konflikt [DELVIS v84 — konflikten bor i kravtyperna hemmastarter mot segrar; förhandling kvar]
 - En lokal sponsor kan vilja att stallet tävlar mer på hemmabanan, medan en nationell sponsor vill se storlopp och större synlighet. Sponsring ska ge pengar, men också relationer, krav och strategiska val.
 ## 9. Gårdens faciliteter och utveckling
 ## 9.1 Stall och kapacitet
@@ -303,7 +303,7 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Anläggningsdrift
 - Lån och byggnation
 - Utrustning, försäkringar och administration
-## 10.3 Prognos och kostnad per box
+## 10.3 Prognos och kostnad per box [DELVIS v84 — Kontorets ekonomi: fast veckonetto, veckor kvar, tomma boxars kostnad]
 - Kassa
 - Fasta veckokostnader
 - Kostnad per häst
@@ -341,10 +341,10 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Ekonomisk sammanfattning
 - Förstamannens kommentar
 - Nyheter från världen
-## 12.3 Navigation och topprad
+## 12.3 Navigation och topprad [DELVIS v84 — Kontor tillagt under Mer]
 - Komprimera toppraden i lopp och artiklar. Förtydliga “Spelarna” till “Spelförtroende”. Överväg att byta “Mer” mot “Verksamhet”, med Gård, Ekonomi, Marknad, Avel, Sponsorer och Historik.
 ## 13. Loppresentationen
-## 13.1 Två lägen
+## 13.1 Två lägen [KLART v84]
 - TV-läge: Stor bana, kommentator, främsta hästarna och mindre teknisk information.
 - Analystläge: Hela fältet, positioner, kraft, fart, ryggkedjor och attackdata.
 ## 13.2 Tydliga händelsenivåer
@@ -362,7 +362,7 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Får lucka
 - Detalj
 - Mindre positionsjusteringar
-## 13.3 Kontroller och dramaturgi
+## 13.3 Kontroller och dramaturgi [DELVIS v84/v86 — slutordern ges i kusksamtalet före loppet och verkställs vid 500 kvar; autosänkning och fler farter kvar]
 - Markera spelarens häst konsekvent.
 - Automatiskt gå från 3× till 1× vid viktiga händelser.
 - Ha fasta kontroller för paus, 1×, 3×, 10×, till 500 kvar, till upploppet och till mål.

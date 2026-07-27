@@ -12,6 +12,8 @@ import { BANOR } from "./data-namnpaket.js";
 import { träningsråd } from "./engine-forstaman.js";
 import { gåraugifter, boxplats } from "./engine-gard.js";
 import { ARVODE_PER_VECKA } from "./data-agare.js";
+import { veckonetto } from "./ui-kontorvy.js";
+import { kravläge } from "./engine-sponsor.js";
 
 export default function HemVy({ spel, gåTill }) {
   /* Huvudnyheten. Är veckans stora händelse registrerad i händelsemotorn
@@ -47,6 +49,27 @@ export default function HemVy({ spel, gåTill }) {
       { text: `${skadade} ${skadade === 1 ? "häst" : "hästar"} på skadelistan`, flik: "stall" },
     boxplats(spel) === 0 &&
       { text: "Stallet är fullt — inga nya ägarförfrågningar kommer", flik: "mer" },
+    /* NÄSTA STEG (kap 16.5): rekommendationerna ur verksamheten.
+       Härledda ur spelläget, aldrig påhittade — och aldrig tvingande. */
+    (spel.sponsorerbjudanden ?? []).length > 0 &&
+      { text: `${spel.sponsorerbjudanden[0].namn} vill sponsra stallet — svara på Kontoret`, ton: "gul", flik: "mer" },
+    (() => {
+      const sur = Object.entries(spel.ägarrelationer ?? {})
+        .find(([namn, r]) => r.relation < 35 && spel.stall.some((h) => h.ägare === namn));
+      return sur && { text: `${sur[0]} är missnöjd — boka ett möte på Kontoret`, akut: true, flik: "mer" };
+    })(),
+    (() => {
+      const n = veckonetto(spel);
+      const veckor = n.netto < 0 ? Math.floor(spel.kassa / -n.netto) : 99;
+      return veckor < 8 && { text: `Kassan räcker ${veckor} veckor — fler externa hästar skulle förbättra kassaflödet`, akut: veckor < 4, ton: veckor < 4 ? undefined : "gul", flik: "mer" };
+    })(),
+    (() => {
+      const sent = (spel.sponsorer ?? []).find((a) => !kravläge(a).klar) && spel.vecka >= spel.veckor - 4;
+      if (!sent) return null;
+      const a = spel.sponsorer.find((x) => !kravläge(x).klar);
+      const l = kravläge(a);
+      return { text: `Sponsorkravet hänger löst: ${l.text} — ${l.mål - l.nu} kvar`, ton: "gul", flik: "lopp" };
+    })(),
   ].filter(Boolean);
 
   return html`
@@ -133,7 +156,7 @@ export default function HemVy({ spel, gåTill }) {
           <div class="logg">Ingen av dina hästar når propositionen den här gången.</div>`}
       </div>`}
 
-    <h2>I dag</h2>
+    <h2>Nästa steg</h2>
     <div class="kort">
       ${uppgifter.length === 0
         ? html`<div class="logg">Inga beslut väntar. En bra dag att kika på träningen — eller på marknaden.</div>`
@@ -141,7 +164,7 @@ export default function HemVy({ spel, gåTill }) {
             ${uppgifter.map((u, i) => html`
               <button key=${i} class="idag-rad" style=${{ background: "none", border: "none", borderBottom: "1px dotted var(--linje-mörk)", cursor: "pointer", textAlign: "left", font: "inherit", color: "inherit", width: "100%" }}
                 onClick=${() => gåTill(u.flik)}>
-                <span class=${"idag-punkt" + (u.akut ? "" : " lugn")} />${u.text}
+                <span class=${"idag-punkt" + (u.akut ? "" : u.ton === "gul" ? " gul" : " lugn")} />${u.text}
               </button>`)}
           </div>`}
     </div>

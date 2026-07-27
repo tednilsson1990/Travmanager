@@ -249,6 +249,44 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .tr-fart{text-align:right;color:#5B8FC7}
 .tr-kraft{height:4px;background:#000;border-radius:1px;overflow:hidden}
 .tr-kraft i{display:block;height:100%;background:#4FA372}
+
+/* ---- TV- och analysläget (plan 13.1) ----
+   TV berättar: tätgruppen och rösten. Analys visar hela fältet, och
+   kolumnfärgen till vänster ÄR ryggkedjan: benvit rand = innerspåret,
+   tegel = ytterraden, guld = tredjespår. */
+.visning-växel{display:flex;gap:6px;justify-content:flex-start;padding:8px 2px 0}
+.visning-växel button{background:#131C25;border:1px solid var(--nattlinje);color:var(--nattdis);
+  border-radius:7px;font-family:'Roboto Mono',monospace;font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;padding:5px 12px;cursor:pointer}
+.visning-växel button[aria-pressed="true"]{border-color:var(--strålkastare);color:var(--strålkastare)}
+.track.tv .tr-rad{grid-template-columns:23px 1fr 52px}
+.track.analys .tr-rad{border-left:3px solid transparent;padding-left:4px}
+.track.analys .tr-rad.kol0{border-left-color:rgba(233,230,223,.45)}
+.track.analys .tr-rad.kol1{border-left-color:rgba(217,113,75,.75)}
+.track.analys .tr-rad.kol2,.track.analys .tr-rad.kol3{border-left-color:rgba(242,177,52,.75)}
+
+/* ---- Insats & risk i anmälan ---- */
+.loppfakta.insats{border-left:3px solid var(--guld)}
+
+/* ---- Stallmötet (plan 4.1): veckans hårda pass ---- */
+.slotsrad{display:flex;justify-content:space-between;align-items:baseline;
+  font-family:'Roboto Mono',monospace;font-size:12px;color:var(--bläck);
+  border-bottom:1px solid var(--linje);padding:6px 0 4px}
+.slotsrad b{font-size:16px;color:var(--marin)}
+.slotsrad.över b{color:var(--tegel)}
+.slotskälla{font-family:'Roboto Mono',monospace;font-size:9px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--dis);margin:4px 0 8px}
+.chip:disabled{opacity:.35;cursor:not-allowed}
+.chips-hint{font-family:'Roboto Mono',monospace;font-size:9px;color:var(--guld);
+  align-self:center;letter-spacing:.06em;text-transform:uppercase}
+
+/* ---- Formkurvan på hästsidan ---- */
+.formkurva{width:100%;height:64px;display:block;margin:8px 0 4px;
+  background:#F7F4EC;border:1px solid var(--linje);border-radius:4px}
+.fk-mitt{stroke:var(--linje-mörk);stroke-width:1;stroke-dasharray:3 3}
+.fk-linje{fill:none;stroke:var(--marin);stroke-width:2;stroke-linejoin:round}
+.fk-nu{fill:var(--tegel)}
+.förvänt.varning{border-color:var(--tegel)}
 .tr-kraft i.låg{background:var(--oxblod)}
 .kommentar{margin-top:12px;display:grid;gap:6px}
 .track .kommentar .k-rad,.banvy ~ .kommentar .k-rad{color:var(--nattdis)}
@@ -291,6 +329,7 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .idag-rad:last-child{border-bottom:0}
 .idag-punkt{width:8px;height:8px;border-radius:99px;background:var(--tegel);flex:0 0 8px}
 .idag-punkt.lugn{background:var(--form)}
+.idag-punkt.gul{background:var(--guld)}
 .mer-meny{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0 4px}
 .mer-meny button{background:var(--ark);border:1px solid var(--linje-mörk);border-radius:10px;
   padding:12px 4px;font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:16px;
