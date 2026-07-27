@@ -213,9 +213,17 @@ export function DräktIllustration({ dräkt, storlek = 240, bild = true }) {
   /* Fotona är porträtt (4:5) med ljus studiofond inbakad — jpg först,
      png som andrahand för den som exporterar så. Samma foto bär både
      stora visningen och tumnaglarna: enhetligheten ÄR premiumkänslan. */
+  /* ASCII-FILNAMN: dräkternas id innehåller åäö, men åäö i filnamn är
+     ett minfält — macOS/git lagrar tecknen dekomponerade (NFD) medan
+     kodens URL:er är komponerade (NFC), och på GitHub Pages blir det
+     404 för exakt de filerna. Symtomet var Teds "mix": fem dräkter som
+     foto, tre (vinröd/kungsblå/grön) som SVG-reserv. Filerna heter
+     därför drakt-vinrod/kungsbla/gron.jpg och id:t asciifieras här. */
+  const fil = "drakt-" + String(d.id)
+    .replace(/å/g, "a").replace(/ä/g, "a").replace(/ö/g, "o");
   const kedja = [
-    `./bilder/drakt-${d.id}.jpg`, `./bilder/drakt-${d.id}.png`,
-    `./drakt-${d.id}.jpg`, `./drakt-${d.id}.png`,
+    `./bilder/${fil}.jpg`, `./bilder/${fil}.png`,
+    `./${fil}.jpg`, `./${fil}.png`,
   ];
   return html`
     <span class="draktbild" style=${{ width: b + "px", height: storlek + "px" }}>
