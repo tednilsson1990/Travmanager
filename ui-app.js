@@ -1,6 +1,6 @@
 import { useState } from "preact/hooks";
 import { html } from "htm/preact";
-import { useSpel } from "./state-spel.js";
+import { useSpel, senasteSparning } from "./state-spel.js";
 import { kr } from "./engine-util.js";
 import StallVy from "./ui-stallvy.js";
 import LoppVy from "./ui-loppvy.js";
@@ -71,7 +71,13 @@ export default function App() {
         <div>Vecka<b>${Math.min(spel.vecka, spel.veckor)}/${spel.veckor}</b></div>
         <div>Kassa<b>${kr(spel.kassa)}</b></div>
         <div>Renommé<b>${Math.round(spel.renommé)}</b></div>
-        <div>Spelarna<b>${Math.round(spel.spelförtroende)}</b></div>
+        <div>Spelförtr.<b>${Math.round(spel.spelförtroende)}</b></div>
+        ${(() => { const sp = senasteSparning();
+          return sp.ok === false
+            ? html`<div class="sparvarning" title="Sparningen misslyckades!">SPARFEL!</div>`
+            : sp.när
+              ? html`<div class="sparokej" title="Senast sparad">✓ ${new Date(sp.när).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}</div>`
+              : ""; })()}
         <div>Hästar<b>${spel.stall.length}</b></div>
       </div>
     </header>

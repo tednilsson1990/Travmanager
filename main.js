@@ -19,10 +19,34 @@ function visaFel(fel) {
       <div class="fel-rubrik">Något gick fel</div>
       <div class="fel-text">${text.replace(/</g, "&lt;")}</div>
       <div class="fel-hjalp">
-        Din karriär är sparad och ligger kvar. Ladda om sidan — eller skicka
-        meddelandet ovan vidare, det räcker för att hitta felet.
+        Din karriär är sparad och ligger kvar. Skicka meddelandet ovan
+        vidare — det räcker för att hitta felet.
+      </div>
+      <div class="fel-knappar">
+        <button id="fel-omladdning" class="btn">Ladda om</button>
+        <button id="fel-kopiera" class="btn sekundär">Kopiera felet</button>
+        <button id="fel-exportera" class="btn sekundär">Exportera sparfil</button>
       </div>
     </div>`;
+  /* Verktygen kopplas EFTER innerHTML — inline-onclick sväljs av vissa
+     webbläsares säkerhetsläge, riktiga lyssnare gör det inte. */
+  document.getElementById("fel-omladdning")?.addEventListener("click",
+    () => location.reload());
+  document.getElementById("fel-kopiera")?.addEventListener("click",
+    () => navigator.clipboard?.writeText(text).catch(() => {}));
+  document.getElementById("fel-exportera")?.addEventListener("click", () => {
+    /* Sparfilen som nedladdningsbar fil: kraschfelsökningens guldgruva —
+       med den kan exakt samma läge återskapas där felet uppstod. */
+    try {
+      const rå = localStorage.getItem("travmanager.sparfil.v1") ?? "{}";
+      const blob = new Blob([rå], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "travmanager-sparfil.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch { /* utan sparfil finns inget att exportera */ }
+  });
 }
 
 window.addEventListener("error", (e) => visaFel(e.error || e));

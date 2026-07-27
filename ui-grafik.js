@@ -1,3 +1,4 @@
+import { HÄSTVARIANTER } from "./data-bilder.js";
 /**
  * GRAFIKEN
  *
@@ -9,6 +10,7 @@
  *   Dräkt       tävlingströjan — stallets färger som plagg, inte ruta
  *   Gårdskarta  gården som växer: varje bygge syns när det är byggt
  */
+
 import { html } from "htm/preact";
 
 /* Deterministisk 0–1 ur text — samma häst har samma päls varje gång. */

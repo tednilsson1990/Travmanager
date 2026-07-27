@@ -48,8 +48,38 @@ export function spara(spel) {
     spel.nästaId = idRäknare();
     spel.nästaHändelseId = händelseRäknare();
     localStorage.setItem(NYCKEL, JSON.stringify(spel));
+    /* Sparstatus utanför sparfilen (annars sparar vi tidsstämpeln om
+       sparningen som skrev den — hönan och ägget). Indikatorn i toppraden
+       läser den här: ett managerspel som ska levas i decennier måste
+       visa att karriären faktiskt ligger säkert. */
+    sparstatus = { när: Date.now(), ok: true };
     return true;
-  } catch { return false; }
+  } catch {
+    sparstatus = { när: Date.now(), ok: false };
+    return false;
+  }
+}
+
+let sparstatus = { när: null, ok: true };
+export const senasteSparning = () => sparstatus;
+
+/** Exportera karriären som JSON-text (för fil eller urklipp). */
+export function exporteraSparfil() {
+  return localStorage.getItem(NYCKEL) ?? "";
+}
+
+/**
+ * Importera en karriär från JSON-text. Valideras HÅRT innan något
+ * skrivs: en trasig import får aldrig förstöra den sparfil som redan
+ * ligger — den gamla röres inte förrän den nya bevisat sig parsbar och
+ * versionsmigrerbar.
+ */
+export function importeraSparfil(text) {
+  const data = JSON.parse(text);            // kastar vid trasig JSON — bra
+  if (!data || typeof data !== "object" || !Array.isArray(data.stall))
+    throw new Error("Filen ser inte ut som en Travmanager-karriär.");
+  localStorage.setItem(NYCKEL, text);
+  return true;
 }
 
 export function ladda() {

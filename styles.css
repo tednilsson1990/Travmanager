@@ -672,3 +672,11 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .albumtext{padding:9px 12px 11px;border-top:3px solid var(--tegel)}
 .albumrubrik{font-family:'Big Shoulders Display',sans-serif;font-weight:900;
   text-transform:uppercase;font-size:17px;line-height:1.05;color:var(--marin)}
+
+/* ---- Sparsäkerheten (v79) ---- */
+.sparokej{font-family:'Roboto Mono',monospace;font-size:9px;color:var(--dis);
+  align-self:center;white-space:nowrap}
+.sparvarning{font-family:'Roboto Mono',monospace;font-size:10px;font-weight:700;
+  color:#fff;background:var(--tegel);padding:2px 6px;border-radius:4px;
+  align-self:center;animation:malfoto-puls 1.2s infinite}
+.fel-knappar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}

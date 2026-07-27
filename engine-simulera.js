@@ -647,8 +647,21 @@ export function simulera(fält, lopp) {
              rygg och får längre väg medan den framför redan är i rullning. */
           if (upplopp) { s.tapp += 1.8; s.kraft -= 3; }
           const nyPlats = platsIKolumn(s);
+          /* TRAVSPRÅKET (v79): kommentaren läses ur situationen som redan
+             är beräknad — kolumn, plats i kolumnen, upplopp, om rycket
+             följer en annan attack. INGEN extra slump: samma frö ger
+             samma lopp OCH samma referat, och kalibreringen rörs inte.
+             Formuleringarna är sportens egna: tredjespår, hakar på,
+             söker sig ut, dödens. */
           if (s.kol === 1 && nyPlats === 1) säg(`<b>${s.h.namn}</b> går ut i dödens.`, "hot");
-          else if (s.kol === 1) säg(`<b>${s.h.namn}</b> går ut och upp utvändigt.`, "");
+          else if (s.kol === 1 && hakarPå) säg(`<b>${s.h.namn}</b> hakar på utvändigt.`, "");
+          else if (s.kol === 1 && upplopp) säg(`<b>${s.h.namn}</b> söker sig ut på upploppet.`, "");
+          else if (s.kol === 1 && nyPlats === 2) säg(`<b>${s.h.namn}</b> når fram till andra utvändigt.`, "");
+          else if (s.kol === 1) säg(`<b>${s.h.namn}</b> lämnar innerspåret och söker fri väg.`, "");
+          else if (s.kol === 2 && nyPlats === 1) säg(`<b>${s.h.namn}</b> går först i tredjespår!`, "hot");
+          else if (s.kol === 2 && hakarPå) säg(`<b>${s.h.namn}</b> följer med i tredjespår.`, "");
+          else if (s.kol === 2) säg(`<b>${s.h.namn}</b> provar i tredjespår.`, "");
+          else if (s.kol >= 3) säg(`<b>${s.h.namn}</b> tvingas ända ut i fjärdespår.`, "");
           const trångt = H.filter((o) => !o.ur && Math.abs(o.d0 - s.d0) < 6).length;
           const bytfaktorer = [0.15];                       // positionsbyte
           if (trångt >= 4) bytfaktorer.push(0.25);          // trängsel

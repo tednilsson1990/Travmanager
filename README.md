@@ -475,6 +475,38 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Utvecklingsplanen och första betsen (v79)
+
+Ted levererade en samlad utvecklingsplan (fyra perspektiv: travspelaren,
+tränaren, journalisten, managern) — den ligger i UTVECKLINGSPLAN.md och
+är arbetslistan framåt. Byggt direkt ur den:
+
+**HÄSTVARIANTER-kraschen (2.1):** ui-grafik använde konstanten utan
+import — v76-patchens insticksankare hade tyst missat. Fixad, och
+verifieraren fångar nu klassen: konstantstilade namn (versaler, ≥8
+tecken) som ANVÄNDS utan import larmar även utan anropsparentes;
+gemena ord kräver anrop (svensk löptext i template-strängar får inte
+trigga — "på marknaden" är prosa tills det anropas). Regressionstestat.
+
+**Felrutan beväpnad (2.4):** Ladda om, Kopiera felet, Exportera sparfil
+(kraschfelsökningens guldgruva — exakt läget där felet uppstod).
+
+**Sparsäkerhet (2.5, första skiktet):** sparindikator i toppraden
+(✓ klockslag; pulserande SPARFEL! om localStorage misslyckas), och
+export/import av karriären som JSON-fil under Gården → Sparfilen.
+Importen validerar HÅRT innan något skrivs — en trasig fil får aldrig
+förstöra karriären som ligger. Kvar ur 2.5: sparplatser, autobackup.
+
+**Travspråket (3.6, första passet):** utflyttningsreplikerna läses ur
+situationen som redan är beräknad — "går först i tredjespår!", "hakar
+på utvändigt", "söker sig ut på upploppet", "tvingas ända ut i
+fjärdespår" — med NOLL nya slumpdragningar: samma frö ger samma lopp
+och samma referat. Kalibreringen omkörd: total avvikelse ~15,4 (förr
+15,7); det lilla skiftet kom i v72 när storloppen flyttade till
+Kronvallen med annan bangeometri, inte av texterna.
+
+**Etiketten (12.3):** toppradens "Spelarna" heter nu "Spelförtr."
+
 ## Fem idéer ur bilderna (v78)
 
 Bildleveransen föreslog berättelser som systemen ännu inte gjorde.
@@ -1216,4 +1248,4 @@ Hem (v69) samt hästhuvudena och extrabildernas platser (v70) och
 anropskontrollen efter minnesloppskraschen (v71) samt Kronvallen med
 storbanenejet (v72) och dräkten som identitet med tränarnamnet (v73) samt dräktsteget mot
 mockupen (v74) och bilderna på plats (v75), variantrotationen (v76) samt kandidaten
-från egna led (v77) och de fem bildidéerna (v78).
+från egna led (v77) och de fem bildidéerna (v78) samt utvecklingsplanens första bets (v79).

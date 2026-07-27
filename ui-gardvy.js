@@ -7,6 +7,7 @@
  * en ikon.
  */
 import { html } from "htm/preact";
+import { exporteraSparfil, importeraSparfil } from "./state-spel.js";
 import { kr } from "./engine-util.js";
 import { BYGGEN, ANSTÄLLDA, bygg, anställ, sägUpp, gåraugifter, boxplats } from "./engine-gard.js";
 import { Tom } from "./ui-delar.js";
@@ -28,6 +29,40 @@ export default function GårdVy({ spel, uppdatera }) {
         ${spel.prolog?.mentor?.borta ? ` · minneseken vid staketet` : ""}
         — allt i Journalen under Mer
       </div>`}
+
+    ${/* SPARSÄKERHETEN. Karriären är det värdefullaste spelet har —
+        export ger en fil att lägga i säkerhet, import tar tillbaka den.
+        Importen validerar hårt INNAN något skrivs över. */ ""}
+    <details class="kort" style=${{ marginTop: "14px" }}>
+      <summary><b>Sparfilen</b> — exportera eller återställ karriären</summary>
+      <div class="knapprad" style=${{ marginTop: "10px" }}>
+        <button class="btn liten" onClick=${() => {
+          const blob = new Blob([exporteraSparfil()], { type: "application/json" });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = `travmanager-s${spel.säsong}-v${spel.vecka}.json`;
+          a.click(); URL.revokeObjectURL(a.href);
+        }}>Exportera till fil</button>
+        <button class="btn liten sekundär" onClick=${() => {
+          const inmatning = document.createElement("input");
+          inmatning.type = "file"; inmatning.accept = ".json,application/json";
+          inmatning.onchange = () => {
+            const fil = inmatning.files?.[0];
+            if (!fil) return;
+            fil.text().then((text) => {
+              try {
+                importeraSparfil(text);
+                alert("Karriären importerad. Sidan laddas om.");
+                location.reload();
+              } catch (fel) { alert("Importen stoppades: " + fel.message); }
+            });
+          };
+          inmatning.click();
+        }}>Importera från fil</button>
+      </div>
+      <div class="meta" style=${{ marginTop: "8px" }}>Importen skriver aldrig
+        över din karriär förrän filen bevisat sig läsbar.</div>
+    </details>
     <div class="kort">
       <div class="meta">Kapacitet</div>
       <div class="namn">${a.boxar} boxar · ${spel.stall.length} hästar</div>

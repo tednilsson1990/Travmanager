@@ -67,7 +67,20 @@ for (const f of js) {
       m[1].split(",").forEach((x) => importerat.add(x.split(" as ").pop().trim()));
     for (const [namn, filer] of Object.entries(ägare)) {
       if (filer.length !== 1 || filer[0] === f || namn.length < 5) continue;
-      if (!new RegExp(`(?<![.\\w])${namn}\\s*\\(`).test(s2)) continue;
+      /* HÄSTVARIANTER-läxan (v79): konstanter ANVÄNDS utan att anropas —
+         HÄSTVARIANTER[päls] kraschar lika hårt som ett saknat funktions-
+         anrop. Därför räcker en ren identifierarträff för långa namn;
+         korta namn kräver fortfarande anropsparentesen (färre falsklarm). */
+      /* Objektnycklar ("relation: 50"), strängar och egenskaper är inte
+         användning av exporten — bara fria identifierare räknas. */
+      const anrop = new RegExp(`(?<![.\\w])${namn}\\s*\\(`).test(s2);
+      /* Identifierare utan anrop räknas BARA för konstantstilade namn
+         (versaler/understreck, ≥8 tecken): HÄSTVARIANTER[päls] fångas,
+         medan svensk löptext i template-strängar ("på marknaden") inte
+         kan trigga — gemena ord är prosa tills de anropas. */
+      const konstantstil = namn.length >= 8 && /^[A-ZÅÄÖ_]+$/.test(namn);
+      const somNamn = konstantstil && new RegExp(`(?<![.\\w"'\`])${namn}\\b(?!\\s*:)`).test(s2);
+      if (!anrop && !somNamn) continue;
       if (importerat.has(namn)) continue;
       if (new RegExp(`(function|const|let|var)\\s+${namn}\\b`).test(s2)) continue;
       /* Parametern räknas som deklaration: körStorloppsbåge(spel, skrivPress)
