@@ -799,3 +799,99 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .inkorgs-knapp { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0; font: inherit; color: inherit; }
 .inkorgs-kropp { margin-top: 8px; border-top: 1px solid rgba(29, 47, 78, 0.15); padding-top: 8px; }
 .rad-klipp { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+
+
+/* ==================== Inkorgen per typ (v102) ==================== */
+/* SMS — chattbubblan */
+.sms-rad { display: flex; gap: 8px; margin: 8px 0; cursor: pointer; align-items: flex-start; }
+.sms-initial {
+  flex: 0 0 30px; height: 30px; border-radius: 50%;
+  background: var(--marin, #1d2f4e); color: var(--benvit, #f4efe6);
+  font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center;
+}
+.sms-bubbla {
+  background: rgba(29, 47, 78, 0.08); border-radius: 3px 14px 14px 14px;
+  padding: 8px 12px; font-size: 14px; flex: 1;
+}
+.sms-vem { font-size: 11px; font-weight: 700; color: var(--marin, #1d2f4e); margin-bottom: 2px; }
+
+/* SAMTAL — luren */
+.tel-kort {
+  border: 1px solid rgba(29, 47, 78, 0.25); border-radius: 6px;
+  padding: 10px 12px; margin: 10px 0; cursor: pointer;
+  background: linear-gradient(180deg, rgba(29,47,78,0.04), transparent);
+}
+.tel-topp { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tegel, #a63a2b); }
+.tel-ikon { font-size: 13px; }
+.tel-vem { font-size: 19px; font-weight: 800; color: var(--marin, #1d2f4e); margin: 2px 0; }
+.tel-citat { font-style: italic; font-size: 14px; }
+
+/* MEJL — brevet */
+.brev-kort {
+  border: 1px solid rgba(29, 47, 78, 0.2); border-radius: 3px;
+  padding: 8px 12px; margin: 8px 0; cursor: pointer; background: rgba(255,255,255,0.5);
+}
+.brev-rad { font-size: 13px; padding: 2px 0; }
+.brev-rad span { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; margin-right: 8px; }
+.brev-rad.ämne { border-top: 1px solid rgba(29,47,78,0.15); font-weight: 700; }
+
+/* RAPPORT — trycksaken */
+.rapport-kort {
+  border-top: 3px double var(--marin, #1d2f4e); border-bottom: 1px solid rgba(29,47,78,0.25);
+  padding: 8px 4px; margin: 10px 0; cursor: pointer;
+}
+.rapport-etikett { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.65; }
+
+/* NYHET — urklippet återanvänder .klipp; bara marginal och pekare */
+.inkorgs-klipp { margin: 10px 0; cursor: pointer; }
+
+/* Gemensamt */
+.sms-rad.läst, .tel-kort.läst, .brev-kort.läst, .rapport-kort.läst, .inkorgs-klipp.läst { opacity: 0.55; }
+.tel-kort.tegel-kant, .brev-kort.tegel-kant, .rapport-kort.tegel-kant, .sms-bubbla.tegel-kant { border-left: 3px solid var(--tegel, #a63a2b); }
+.tel-kort.guld-kant, .brev-kort.guld-kant, .rapport-kort.guld-kant, .sms-bubbla.guld-kant { border-left: 3px solid var(--guld, #c9a227); }
+
+/* Detaljviket i anmälan (v102) */
+.detaljer { margin: 8px 0; }
+.detaljer summary {
+  cursor: pointer; font-size: 12px; letter-spacing: 0.06em;
+  color: var(--marin, #1d2f4e); opacity: 0.75; padding: 6px 0;
+}
+.detaljer[open] summary { opacity: 1; font-weight: 700; }
+
+
+/* ==================== Förhand och helskärm (v103) ==================== */
+.förhand {
+  border: 1px solid rgba(29,47,78,0.3); border-radius: 4px;
+  background: rgba(255,255,255,0.65); padding: 12px 14px; margin: 0 0 14px;
+  box-shadow: 0 2px 10px rgba(29,47,78,0.12);
+}
+.förhand-topp { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.förhand-vem { font-weight: 700; color: var(--marin, #1d2f4e); font-size: 13px; }
+.förhand-vem.stor { font-size: 15px; }
+.förhand-knappar { margin-left: auto; display: flex; gap: 4px; }
+.ikonknapp {
+  background: none; border: 1px solid rgba(29,47,78,0.3); border-radius: 4px;
+  font: inherit; font-size: 13px; padding: 2px 8px; cursor: pointer; color: var(--marin, #1d2f4e);
+}
+.förhand-rubrik { font-size: 17px; font-weight: 800; color: var(--marin, #1d2f4e); margin-bottom: 6px; }
+.stor-rubrik { font-size: 20px; }
+.förhand-text { font-size: 15px; line-height: 1.55; }
+.förhand-text p { margin: 0 0 10px; }
+
+.helskärm {
+  position: fixed; inset: 0; z-index: 60; overflow-y: auto;
+  background: var(--papper, #efe9dc);
+}
+.helskärm-topp {
+  position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px; background: var(--papper, #efe9dc);
+  border-bottom: 1px solid rgba(29,47,78,0.25);
+}
+.helskärm-inre { max-width: 640px; margin: 0 auto; padding: 18px 16px 60px; }
+.helskärm-rubrik {
+  font-size: 27px; line-height: 1.15; color: var(--marin, #1d2f4e);
+  margin: 6px 0 14px; font-weight: 900;
+}
+.helskärm-inre .förhand-text { font-size: 17px; line-height: 1.65; }
+
+.kompakt.vald { outline: 2px solid var(--marin, #1d2f4e); outline-offset: 1px; }

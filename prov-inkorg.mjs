@@ -10,7 +10,7 @@
  * ger arrangörsmejl.
  */
 import { sättRng, seedad } from "./engine-util.js";
-import { byggInkorg, inkorgsläge, synligInkorg, verkställBeslut } from "./engine-inkorg.js";
+import { byggInkorg, inkorgsläge, synligInkorg, verkställBeslut, berättelsetrådar } from "./engine-inkorg.js";
 import { nyHäst } from "./engine-hast.js";
 
 let fel = 0;
@@ -34,6 +34,9 @@ function byggSpel() {
     sponsorer: [], sponsorerbjudanden: [{ namn: "Provbolaget", typId: "foder", typnamn: "Foderpartner",
       perVecka: 1500, segerbonus: 4000, gällerTill: 8, krav: { text: "en seger", mål: 1, nu: 0 } }],
     kassa2: 0, inkorgLästa: [], inkorgBeslutade: [],
+    huvudnyhet: { säsong: 2, vecka: 6, etikett: "Storloppssöndag", rubrik: "Provrubriken över uppslaget",
+      ingress: "Ingressen som sätter tonen.", brödtext: "Brödtexten som bara helskärmen visar i sin helhet." },
+    båge: { lopp: "Provpokalen", veckorKvar: 3 },
   };
 }
 
@@ -86,6 +89,22 @@ console.log("PROV: inkorgen\n");
   ok(före.antal === alla.length && efter.antal === alla.length - 1,
     `lästmarkeringen räknas: ${före.antal} → ${efter.antal} olästa`);
   ok(före.beslut >= 1, `${före.beslut} händelse(r) kräver beslut — märket i flikraden har underlag`);
+}
+
+/* ---------- Storyn i inkorgen (v103) ---------- */
+{
+  const spel = byggSpel();
+  const alla = byggInkorg(spel);
+  const uppslag = alla.find((h) => h.rubrik === "Provrubriken över uppslaget");
+  ok(!!uppslag && uppslag.typ === "nyhet" && uppslag.etikett === "Storloppssöndag",
+    "huvudnyheten blir ett urklipp med sin etikett");
+  ok(uppslag.lång?.includes("Brödtexten") && !uppslag.text.includes("Brödtexten"),
+    "långa texten bär brödtexten — listraden nöjer sig med ingressen");
+  ok(alla.some((h) => h.etikett === "Följetongen" && h.rubrik === "Satsningen"),
+    "följetongens trådar landar som notiser");
+  ok(berättelsetrådar(spel).length >= 1
+    && berättelsetrådar(spel).every((t) => t.rubrik && t.text.length > 20),
+    "trådkällan är delad och bär riktig prosa — Sfären och inkorgen berättar samma sak");
 }
 
 /* ---------- Beslut i raden (v100) ---------- */

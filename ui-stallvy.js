@@ -1,7 +1,7 @@
 import { html } from "htm/preact";
 import { useState } from "preact/hooks";
 import { TRÄNING } from "./engine-hast.js";
-import { körVecka } from "./engine-vecka.js";
+import { nästaStopp, hoppaFram } from "./engine-klocka.js";
 import { nySäsong, säsongstext } from "./engine-sasong.js";
 import { kr, klamp } from "./engine-util.js";
 import { ARVODE_PER_VECKA } from "./data-agare.js";
@@ -498,12 +498,14 @@ export default function StallVy({ spel, uppdatera, nystart, efterVecka }) {
     ${spel.stall.map((h) => html`<${Hästkort} key=${h.id} häst=${h} spel=${spel} uppdatera=${uppdatera} dräkt=${spel.dräkt}
       öppna=${() => sättValdHäst(h.id)} />`)}
     <button class="btn" disabled=${slut} onClick=${() => {
-      uppdatera((s) => { körVecka(s); });
-      /* Veckoskiftet landar i inkorgen (kap 19 etapp B): den nya veckan
-         börjar med "vad har hänt, vad bör jag göra" — inte i en lista. */
-      if (efterVecka) efterVecka();
+      /* KLOCKAN (v101, 20.1): hoppet går till nästa stopp med innehåll —
+         onsdag (besked), helgen (loppdag) eller ny vecka. Veckoskiftet
+         landar i inkorgen, mellanstoppen i loppfliken. */
+      let mål;
+      uppdatera((s) => { mål = hoppaFram(s); });
+      if (efterVecka) efterVecka(mål);
       window.scrollTo({ top: 0, behavior: "smooth" });
-    }}>${slut ? "Säsongen är slut" : "Kör veckan"}</button>
+    }}>${slut ? "Säsongen är slut" : nästaStopp(spel).etikett}</button>
 
     ${spel.logg.length > 0 && html`
       <h2>Rapport</h2>

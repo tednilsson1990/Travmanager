@@ -90,7 +90,7 @@ export default function App() {
     <div class="wrap">
       ${flik === "hem" && html`<${HemVy} spel=${spel} gåTill=${(f) => sättFlik(f)} />`}
       ${flik === "inkorg" && html`<${InkorgVy} spel=${spel} uppdatera=${uppdatera} gåTill=${(f) => sättFlik(f)} />`}
-      ${flik === "stall" && html`<${StallVy} spel=${spel} uppdatera=${uppdatera} nystart=${nystart} efterVecka=${() => sättFlik("inkorg")} />`}
+      ${flik === "stall" && html`<${StallVy} spel=${spel} uppdatera=${uppdatera} nystart=${nystart} efterVecka=${(mål) => sättFlik(mål === "vecka" ? "inkorg" : "lopp")} />`}
       ${flik === "lopp" && html`<${LoppVy} spel=${spel} uppdatera=${uppdatera} />`}
       ${flik === "sfar" && html`<${SfarVy} spel=${spel} />`}
       ${flik === "mer" && html`

@@ -1,4 +1,5 @@
 import { html } from "htm/preact";
+import { berättelsetrådar } from "./engine-inkorg.js";
 import { Bild } from "./ui-grafik.js";
 import { KUSKAR, relation, svar } from "./data-kuskar.js";
 import { klamp, kr } from "./engine-util.js";
@@ -111,25 +112,13 @@ export default function SfarVy({ spel }) {
           ${stat.rader.map((r, i) => html`<div key=${i} class="logg">${r}</div>`)}
         </div>
         ${(() => {
-          /* PÅGÅENDE BERÄTTELSER — hitflyttade från Hem i v98 (Teds
-             princip: story på egna sidor). Ren läsning av tillstånd som
-             andra motorer äger; max fyra, ett flöde vore brus. */
-          const trådar = [];
-          if (spel.båge?.lopp) trådar.push(`Satsningen: ${spel.båge.lopp} om ${spel.båge.veckorKvar} v`);
-          const comeback = (spel.stall ?? []).find((h) => h.skadenyhet && h.skada > 0);
-          if (comeback) trådar.push(`Comebacken: ${comeback.namn} åter om ${comeback.skada} v`);
-          const svacka = (spel.stall ?? []).find((h) => h.svackafråga);
-          if (svacka) trådar.push(`Frågetecknet: vad är det med ${svacka.namn}?`);
-          if ((spel.förstaman?.ambition ?? 0) >= 70 && !spel.förstaman.delägare)
-            trådar.push(`${spel.förstaman.namn.split(" ")[0]} funderar på framtiden`);
-          const rival = Object.values(spel.rivaliteter ?? {}).find((r) => (r.möten ?? 0) === 4);
-          if (rival) trådar.push(`Rivalitet på väg: ett möte kvar`);
-          const tf = (spel.tidigareFörstamän ?? []).find((f) => !f.segerMotDig && f.mötenMotDig > 0);
-          if (tf) trådar.push(`Eleven jagar: ${tf.namn} har ännu inte slagit dig`);
+          /* Följetongen (v103): DELAD källa med inkorgen — engine-inkorg
+             äger trådarna så tidningen och posten aldrig berättar olika. */
+          const trådar = berättelsetrådar(spel);
           return trådar.length === 0 ? "" : html`
             <div class="kort trådar">
               <div class="meta">Pågående berättelser</div>
-              ${trådar.slice(0, 4).map((t, i) => html`<div key=${i} class="tråd">❧ ${t}</div>`)}
+              ${trådar.slice(0, 4).map((t, i) => html`<div key=${i} class="tråd">❧ <b>${t.rubrik}:</b> ${t.text}</div>`)}
             </div>`;
         })()}
         <div class="kort spalt kronika">

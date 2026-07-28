@@ -35,6 +35,7 @@ import { loppläge, bedömningsnivå } from "./engine-proposition.js";
 import { veckansLopp } from "./data-kalender.js";
 import { kr } from "./engine-util.js";
 import { teckna, tackaNej } from "./engine-sponsor.js";
+import { stoppFör } from "./engine-klocka.js";
 import { träningsråd } from "./engine-forstaman.js";
 
 /** Stabil innehållshash — lästmarkeringens ankare. */
@@ -162,6 +163,29 @@ export function byggInkorg(spel) {
     });
   }
 
+  /* ---- Klockans stoppnotiser (v101, 20.1): onsdagens besked och
+     helgens loppdag som händelser — inkorgen känner veckans rytm. ---- */
+  const stopp = stoppFör(spel);
+  const obesvarade = (spel.anmälningar ?? []).filter((a) => !a.status).length;
+  if (stopp === "onsdag" && obesvarade > 0) {
+    lägg({
+      avsändare: "Arrangörerna", typ: "mejl", prioritet: "beslut",
+      rubrik: `Uttagningsbeskeden har kommit (${obesvarade})`,
+      text: "Kom hästen med? Öppna loppfliken och ta beskeden — bekräfta, byt lopp eller avstå.",
+      flik: "lopp",
+    });
+  }
+  const helgstarter = (spel.anmälningar ?? []).filter((a) => a.status === "med"
+    && !(spel.startadeLopp ?? []).includes(a.loppId));
+  if (stopp === "helg" && helgstarter.length > 0) {
+    lägg({
+      avsändare: fmNamn, typ: "sms", prioritet: "rekommendation",
+      rubrik: `Loppdag — ${helgstarter.length} ${helgstarter.length === 1 ? "start" : "starter"} i helgen`,
+      text: `»${helgstarter.map((a) => spel.stall.find((h) => h.id === a.hästId)?.namn).filter(Boolean).join(" och ")} är klara. Selarna hänger framme.«`,
+      flik: "lopp",
+    });
+  }
+
   /* ---- Travbladet → veckans nyheter (senaste tre pressnotiserna). ---- */
   (spel.press ?? []).slice(0, 3).forEach((n) => {
     lägg({
@@ -170,8 +194,53 @@ export function byggInkorg(spel) {
     });
   });
 
+  /* ---- STORYN IN I INKORGEN (v103, Teds riktning): huvudnyheten som
+     stort urklipp med lång text för helskärmsläsning, och följetongens
+     trådar som notiser. Sfären behåller sina — "också", inte "i
+     stället". ---- */
+  const stor = spel.huvudnyhet;
+  if (stor && stor.säsong === (spel.säsong ?? 1) && spel.vecka - stor.vecka <= 1) {
+    lägg({
+      avsändare: "Travbladet", typ: "nyhet", prioritet: "info",
+      etikett: stor.etikett, rubrik: stor.rubrik, text: stor.ingress,
+      lång: [stor.ingress, stor.brödtext, stor.citat ? `»${stor.citat}«` : null]
+        .filter(Boolean).join("\n\n"),
+      flik: "sfar",
+    });
+  }
+  berättelsetrådar(spel).slice(0, 2).forEach((t) => {
+    lägg({
+      avsändare: "Travbladet", typ: "nyhet", prioritet: "info",
+      etikett: "Följetongen", rubrik: t.rubrik, text: t.text, flik: "sfar",
+    });
+  });
+
   return händelser.sort((a, b) =>
     PRIORITETSORDNING[a.prioritet] - PRIORITETSORDNING[b.prioritet]);
+}
+
+/**
+ * FÖLJETONGENS TRÅDAR (v103): samma läsning som Sfärens "Pågående
+ * berättelser" — tillstånd andra motorer äger, aldrig något eget.
+ * Delad källa så inkorgen och Sfären aldrig berättar olika.
+ */
+export function berättelsetrådar(spel) {
+  const trådar = [];
+  if (spel.båge?.lopp) trådar.push({ rubrik: "Satsningen",
+    text: `${spel.båge.lopp} om ${spel.båge.veckorKvar} ${spel.båge.veckorKvar === 1 ? "vecka" : "veckor"} — hela stallet vet vad som gäller.` });
+  const comeback = (spel.stall ?? []).find((h) => h.skadenyhet && h.skada > 0);
+  if (comeback) trådar.push({ rubrik: "Comebacken",
+    text: `${comeback.namn} åter i träning om ${comeback.skada} ${comeback.skada === 1 ? "vecka" : "veckor"}. Frågan är vilken häst som kommer tillbaka.` });
+  const svacka = (spel.stall ?? []).find((h) => h.svackafråga);
+  if (svacka) trådar.push({ rubrik: "Frågetecknet",
+    text: `Vad är det med ${svacka.namn}? Formen pekar nedåt och ingen i stallet har svaret ännu.` });
+  if ((spel.förstaman?.ambition ?? 0) >= 70 && !spel.förstaman.delägare)
+    trådar.push({ rubrik: "Förstamannens framtid",
+      text: `${spel.förstaman.namn.split(" ")[0]} funderar. Ambitionen är större än rollen — frågan är vad som händer härnäst.` });
+  const tf = (spel.tidigareFörstamän ?? []).find((f) => !f.segerMotDig && f.mötenMotDig > 0);
+  if (tf) trådar.push({ rubrik: "Eleven jagar",
+    text: `${tf.namn} har mött dig ${tf.mötenMotDig} ${tf.mötenMotDig === 1 ? "gång" : "gånger"} — och ännu inte vunnit. Alla vet vad den segern skulle betyda.` });
+  return trådar;
 }
 
 /**

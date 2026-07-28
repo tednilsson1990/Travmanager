@@ -475,6 +475,92 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Förhandsfönstret, helskärmen och storyn i posten (v103)
+
+Teds riktning: nu när typerna sitter kan storydelarna flytta in i
+inkorgen — men då behövs ett STORT förhandsfönster för valt meddelande
+och möjlighet att öppna helskärm, för meddelanden kan vara långa och
+storyn blir bättre av utrymme.
+
+**Tre läsdjup.** Listan: kompakta rader per typ, en rad text, snabb
+att skumma. Förhandet: valt meddelande öppnas stort överst i typens
+formspråk — hela texten i styckad prosa, detaljraderna, besluten, och
+helskärmsknappen. Helskärmen: hela sidan blir meddelandet — tidnings-
+sida för nyheter (etikett, stor rubrik, långläsningstypografi med
+640 px spaltbredd), fullformat för samtal och brev — och BESLUTEN
+FÖLJER MED: man skriver på ett sponsoravtal från helskärmen.
+
+**Långtexterna.** Händelseformatet bär nu ett valfritt lång-fält:
+listraden nöjer sig med text (ingressen), förhand och helskärm visar
+lång (hela brödtexten, styckad på tomrad).
+
+**Storyn i posten.** Huvudnyheten blir ett urklipp med sin etikett,
+ingress som listtext och hela brödtexten i långfältet — och
+följetongens trådar (satsningen, comebacken, frågetecknet,
+förstamannens framtid, eleven jagar) landar som notiser med riktig
+prosa. Trådkällan flyttade till motorn (berättelsetrådar i
+engine-inkorg) och DELAS med Sfären, så tidningen och posten aldrig
+berättar olika. Sfären behåller sina — Teds ord var "också", inte
+"i stället".
+
+## Klockan synlig, inkorgen per typ, anmälan läsbar (v102)
+
+Teds tre träffar efter v101 — alla rättvisa:
+
+**"Vart hoppar man fram i tiden?"** Klockan fanns men syntes inte.
+Headerns veckoruta visar nu VAR i veckan man står — »Vecka 6/18 ·
+onsdag« — och inkorgens metarad likaså. Hoppa fram har ett synligt NU.
+
+**"Inkorgen är inte alls som vi pratade om."** Rätt: dokumentets kärna
+är att allt samlas i EN inkorg men PRESENTERAS OLIKA — och v99–v100
+byggde en uniform lista med små typetiketter. Omgjord: sms är
+chattbubblor med avsändarinitial, samtal är samtalskort (»Inkommande
+samtal · väntar på svar«, stor avsändare, citatet i kursiv, svaren som
+knappar — man BESVARAR ett samtal), mejl är brevkort med Från/Ämne
+över en linjal, rapporter är trycksaker med dubbellinje, nyheter är
+Travbladets urklipp (samma klipp-klass som tidningen). Besluten i
+meddelandet och prioritetskanterna består.
+
+**"Extremt mycket text i loppanmälan."** Bantad till fyra synliga
+rader: kuskvarning och bedömning (bara när de avviker), distans-
+varning (bara när den är dålig) och EN sammanfattningsrad (distans,
+bana, förstapris, insats). Allt annat — proposition, klassläge,
+startpoäng, bana/pris i detalj, resa, ekipaget, stängda lopp,
+drömkuskar, insats- och riskrutan — bor under »Visa detaljer«, ett
+tryck bort. Beslutet syns; fördjupningen väntar.
+
+## Klockan (v101 — kap 20.1, Teds tidsidé)
+
+"Det behöver inte vara nästa vecka man hoppar fram." Veckan förblir
+motorernas ryggrad — allt är veckonycklat, och det rör vi inte — men
+veckan har fått STOPP, och knappen är inte längre »Kör veckan« utan
+HOPPA FRAM, till nästa stopp som har något åt dig:
+
+**Måndag** — veckans start i inkorgen: träningen, mötena, marknaden,
+och anmälningarna är ÖPPNA. Du skickar in (flera hästar går bra),
+det kostar ingenting, hästen försvinner ur väljaren och kvittot säger
+det viktiga: beskedet kommer onsdag. **Onsdag** — uttagningsbeskeden,
+en anmälan i taget: kom ni med? struken? delat? kuskens bekräftelse
+eller avhopp med reservval. Bara utfallet sparas — loppet väntar.
+**Helgen** — loppdagarna: de bekräftade starterna körs i tur och
+ordning genom det befintliga flödet (lottning, press, kusksamtal,
+loppet, efteranalysen), med delningens avdelning återskapad ur samma
+deterministiska uttagning som onsdagens besked.
+
+Tomma stopp slås ihop: en vecka utan anmälningar hoppar måndag → ny
+vecka direkt, och ett hopp som låter obesvarade besked eller okörda
+lopp förfalla VARNAR PÅ KNAPPEN (»väntande starter förfaller«) — inget
+upptäcks efteråt. Hoppknappen finns i stallet och i inkorgen;
+veckoväxlingen landar i inkorgen, mellanstoppen i loppfliken, och
+inkorgen känner rytmen: onsdagens »Uttagningsbeskeden har kommit« är
+en beslutshändelse, helgens »Loppdag« ett sms från förstamannen.
+
+Det här löser den gamla skavanken att anmälan → uttagning → lopp
+skedde i en enda sittning: spänningen i beskedet bor i väntan nu.
+Artonde provsviten (prov-klocka.mjs) låser sammanslagningen,
+övergångarna, förfallovarningen och att veckoväxlingen körs exakt en
+gång — med injicerbar växling så logiken provas utan spelbygge.
+
 ## Inkorgen som beslutsrum (v100 — kap 19 etapp B+C)
 
 Teds precisering efter v99: ALL kommunikation i spelet går genom
@@ -1794,4 +1880,9 @@ v98: avviker-lagningen, verifierans stackmaskin, avplottrade väljare,
 storyflytten till Sfären och förstamannens förslag i anmälan, samt
 inkorgens etapp A — händelseformatet och det egna rummet (v99) — och
 v100: inkorgen som beslutsrum där all kommunikation bor och notiserna
-expanderas och besvaras i raden.
+expanderas och besvaras i raden, samt v101: klockan — veckans stopp
+och Hoppa fram-knappen (Teds tidsidé, kap 20.1) — och v102: klockan
+synlig i headern, inkorgen presenterad per meddelandetyp och
+loppanmälan bantad till läsbarhet. v103 ger inkorgen tre läsdjup —
+lista, stort förhandsfönster och helskärm — och flyttar in storyn:
+huvudnyheten och följetongens trådar ur en delad källa.

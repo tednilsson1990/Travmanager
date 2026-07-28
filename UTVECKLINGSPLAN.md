@@ -472,5 +472,112 @@ komprimeras till milstolpar (max ~40 rader/säsong).
 ## 19.5 Etappordning
 A [KLART v99]: händelseformatet + inkorgsvyn (läsa, prioritetsmärken, genvägar) —
 befintliga källor adapterade. B [KLART v100]: veckoskiftet landar i inkorgen; Nästa steg-panelen och förstamansraderna migrerade in.
-C [PÅBÖRJAD v100]: beslutsformatet + verkställBeslut; sponsorerbjudandet och träningsjusteringen besvaras i raden. Kvar: ägarfrågor, veterinärförslag, hästköpsbud. D: historiken och dagboken. Story-principen från v98
+C [PÅBÖRJAD v100, förhand/helskärm v103]: beslutsformatet + verkställBeslut; sponsorerbjudandet och träningsjusteringen besvaras i raden; tre läsdjup med långtextfält och storyn i posten (huvudnyheten + följetongen ur delad källa). Kvar: ägarfrågor, veterinärförslag, hästköpsbud. D: historiken och dagboken. Story-principen från v98
 gäller: inkorgen är ett EGET rum, inte insprängd i andra vyer.
+
+
+# 20. FM-INSPIRATIONEN — karriärberättelsen (Teds dokument 2, juli 2026)
+
+Teds slutsats är kapitlets ledstjärna: det största att ta från Football
+Manager är ingen enskild funktion utan att spelet SKAPAR EN BERÄTTELSE
+OM KARRIÄREN. Efter tio säsonger ska spelaren minnas ögonblicken —
+"kommer du ihåg när Rimfrost Bris vann Derbyt fast ingen trodde på
+henne?" Allt nedan tjänar det målet.
+
+## 20.0 Ärlig lägesbild mot Teds 17 punkter
+FINNS REDAN (helt eller i grunden): efteranalysen (kap 14, v88 — Teds
+punkt 8 nästan ordagrant), inför lopp (kusksamtalet, spårtrappan,
+Travbladets förhandstext — punkt 7), inbox-nivåerna 🟢🟡🔴 (punkt 16 =
+inkorgens tre prioriteter, v99), personligheter (ägartyperna,
+tränarfilosofierna med synfel, förstamansprofilerna — punkt 4),
+relationer i grunden (kuskrelationen med spelmekanisk tyngd v97,
+ägarnas tvådimensionella nöjdhet — punkt 3), nyhetsvärld i grunden
+(Travbladet, krönikan, statistikern — punkt 5/13), viss historik
+(presshistoriken, rivaliteterna, tidigare förstamän — punkt 1 i frö).
+STÖRSTA GAPEN: kontinuitetsminnet (punkt 1 — spelet VET mycket men
+REFERERAR sällan), statistiklagret (punkt 2 — data finns i resultat-
+raderna men aggregeras inte), världens utveckling över säsonger
+(punkt 17 — pensioneringar/generationsskiften finns för hästar,
+inte för tränare/kuskar/journalister), milstolpar/Hall of Fame/
+ikoner (9–11), rykten (12), scouting (14), hästägargruppen som
+styrelse (15), veckomötet (6 — stallmötet finns men är slots, inte
+genomgång).
+
+## 20.1 Händelsestyrd klocka (Teds tidsidé — bygger direkt på inkorgen)
+"Det behöver inte vara nästa vecka man hoppar fram — kanske några
+timmar, en dag, en vecka, beroende på vad som händer och vilka
+notiser som kommer."
+ARKITEKTUR: veckan FÖRBLIR motorernas ryggrad (allt är veckonycklat —
+en riktig dygnsklocka vore en omskrivning). Men veckan får STOPP:
+en händelsekö per vecka (måndag: veckobrevet i inkorgen · tisdag:
+anmälningarna stänger · onsdag: uttagningsbeskeden · torsdag:
+kuskbekräftelserna · fredag–söndag: loppdagar · söndag kväll:
+efteranalys + Travbladet). Knappen är inte "Kör veckan" utan "HOPPA
+FRAM" — till nästa stopp som har något åt dig. Tomma stopp slås ihop
+(inget åt dig ons+tors ⇒ hoppet går direkt till loppdagen). Det ger
+FM-känslan av levd tid utan att röra motorernas veckologik, och löser
+en verklig skavank: i dag sker anmälan → uttagning → lopp i en enda
+sittning. Etapp: A [KLART v101 — tre stopp (måndag/onsdag/helg), hoppknapp i
+stall+inkorg med sammanslagning och förfallovarning, anmälan som
+inlämning, beskedskö på onsdagen, loppdagskö på helgen, stoppnotiser
+i inkorgen], B) loppdagar utspridda över fler dagar, C) notiser
+tidsstämplade per stopp i historiken.
+
+## 20.2 Kontinuitetsminnet (punkt 1 — "allt kommer ihåg")
+En referensmotor (engine-minnen.js): ren läsning av det som redan
+sparas, som producerar KONTEXTRADER överallt: "din 100:e seger om ni
+vinner" (räknat ur facithistoriken), "ni möttes i våras — Stormvind
+med nos" (rivaliteterna), "du vann det här loppet förra säsongen"
+(loppnamn i facit). Raderna injiceras i kusksamtalet, Travbladet,
+inkorgen och efteranalysen. Kräver att facit sparas per säsong med
+loppnamn — kontrollera sparfilstaket.
+
+## 20.3 Statistiklagret (punkt 2 — "grotta ner sig i timmar")
+Aggregat ur befintliga resultatrader: tränarstatistik (starter,
+seger-%, plats-%, bästa bana/kusk, rekordår, snittintjäning) och
+häststatistik (per bana, volt/auto, distans, position: ledning/
+dödens/rygg — positionsdata finns i analysens bildrutor men sparas
+inte per start i dag → börja spara position kompakt per resultatrad).
+Egen vy under Mer: "Statistiken", Travbladets tabellestetik.
+
+## 20.4 Veckomötet (punkt 6) — ersätter/utvidgar stallmötets ram
+Förstamannens "veckans genomgång" som inkorgens första notis varje
+vecka (rapport-typ, expanderad: ekonomi, form, kommande starter,
+personal, sponsorläge, problem, rekommendationer). Stallmötets slots
+blir mötets BESLUTSDEL. Passar 20.1:s måndagsstopp.
+
+## 20.5 Milstolpar, Hall of Fame, ikoner (9–11)
+Milstolpsmotor (räknare + trösklar: segrar 1/50/100, starter 500,
+miljonen, första storloppet, tränarår) → inkorgshändelse + dagboken
+(19.4). Hall of Fame-vy efter säsong 3+: bästa hästar/kuskar/ägare
+genom tiderna ur statistiklagret (20.3). Ikonstatus för hästar:
+trösklar på segrar/storlopp → ⭐/⭐⭐, journalisterna refererar.
+
+## 20.6 Rykten och medieröster (12–13)
+Ryktesnotiser i Travbladet/inkorgen med SANNINGSHALT (hash-avgjord,
+avslöjas senare — "inte alltid sant, precis som verkligheten").
+Fler medieröster ovanpå krönikören: expertpanelen och podden som
+återkommande format med egna personligheter (journalistprofiler:
+positiv/skeptisk/sensationslysten — punkt 4).
+
+## 20.7 Hästägargruppen som styrelse (15) + scouting (14)
+Ägarnas samlade förtroende som styrelsemått (resultat, ekonomi,
+kommunikation, utveckling — de två sista finns redan i ägarmotorns
+nöjdhet). Högt förtroende ⇒ fler hästar, större investeringar,
+tålamod. Scoutrapporter som inkorgshändelser: unghästar (finns i
+marknaden), men även kuskar, personal, sponsorer och ägare.
+
+## 20.8 Världens utveckling (17 — "viktigast")
+Generationsskiften för MÄNNISKORNA, inte bara hästarna: tränare
+lägger av (stall tas över/läggs ner), kuskar pensioneras och nya
+lärlingar kliver in (knyter till lärlingslicenserna 18.6), journalister
+byts, sponsorer försvinner ur sfären, banor renoveras. Säsongsskiftets
+motor får en världsutvecklingsfas. Efter tio säsonger ska världen
+vara HELT annorlunda — och dagboken (19.4) ska kunna visa vägen dit.
+
+## 20.9 Byggordning (förslag)
+1) 20.1 A — händelsestyrda klockan (förstärker inkorgen omedelbart,
+   löser anmälan-i-en-sittning). 2) 20.2 — kontinuitetsminnet (störst
+   berättelseeffekt per rad kod: datat finns). 3) 20.4 veckomötet.
+   4) 20.3 statistiklagret + börja spara positionsdata direkt (ju
+   tidigare desto längre historik). 5) 20.5–20.8 i säsongstakt.
