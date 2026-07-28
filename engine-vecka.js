@@ -14,6 +14,8 @@ import "./engine-lyssnare.js";
 import { körStorloppsbåge } from "./engine-storlopp.js";
 import { uppdateraAmbition, prövaAvgång, gamlaBekanta, ägarrelation } from "./engine-personal.js";
 import { verkställVeckoslots } from "./engine-stallmote.js";
+import { veckansAnmälningar, taUtVärldsfält } from "./engine-aitranare.js";
+import { arrangörenKör, delaFält } from "./engine-anmalan.js";
 import { ägarVecka, ägarSport, ägarEfterStart } from "./engine-agare.js";
 import { sponsorVecka, sponsorEfterLopp, sponsorSäsongsskifte, foderrabatt } from "./engine-sponsor.js";
 import { uppdateraRekordEfterLopp, skrivSäsongskrönika } from "./engine-rekord.js";
@@ -219,7 +221,7 @@ export function körVecka(spel) {
 
   /* Världen lever vidare oavsett vad du gör. AI-stallen kör sina lopp,
      deras hästar tjänar pengar och flyttas mellan klasserna. */
-  const världensNyheter = körVärldensVecka(spel);
+  const världensNyheter = körVärldensVecka(spel, veckansAnmälningar(spel), taUtVärldsfält, arrangörenKör, delaFält);
   skötVärlden(spel.värld);
   handelIVärlden(spel.värld).forEach((a) => {
     if (slump() < 0.4) {

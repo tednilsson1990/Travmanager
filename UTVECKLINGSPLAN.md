@@ -394,3 +394,40 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Travjournalisten: “Världen producerar riktiga berättelser med sammanhang, statistik och människor.”
 - Managerspelaren: “Jag bygger en verksamhet, hanterar ekonomi, personal, ägare, sponsorer och en gård som växer över tid.”
 - Den långsiktiga spelaren: “Min karriär är unik och spelet kommer ihåg vad jag har gjort.”
+
+## 17. Öppen värld med tydlig riktning (Teds tillägg, juli 2026) [DELVIS v84/v90]
+
+Spelet ska kännas öppet men aldrig lämna spelaren undrande: två frågor ska
+alltid gå att besvara — vad KAN jag göra, och vad BÖR jag göra härnäst?
+Öppna mål i stället för uppdrag: alla val är rätt, inget bockas av för
+belöning. (Ur separat designdokument; fullständig text hos Ted.)
+
+## 17.1 Kortsiktiga mål [DELVIS v90 — härledda veckouppgifter i vägvisaren, angelägnast först]
+## 17.2 Långsiktiga mål [DELVIS v90 — närmaste milstolparna med progress i Längre fram-blocket]
+## 17.3 Mentor och förstaman som vägvisare [DELVIS v82 — förstamansraden på Hem; mentorns korta råd kvar]
+## 17.4 Verksamhetsmål (stallinriktning: unghäst/elit/bredd/familj/avel/storlopp) [EJ PÅBÖRJAT]
+## 17.5 Dynamiska rekommendationer [DELVIS v84/v90 — verksamhet, ekonomi, form och relationer täcks i Nästa steg]
+## 17.6 Öppna mål i stället för uppdrag [PRINCIP — styr 17.1–17.5; inget belönas för avbockning]
+## 17.7 Säsongsplan från förstamannen [EJ PÅBÖRJAT — presenteras som förstamannens ÅSIKT i löptext, inte som mätbar kravtabell (beslut efter v84-diskussionen)]
+
+
+## 18. Tävlingssystem, klasser och anmälan (Teds designmanual v1, juli 2026) [EJ PÅBÖRJAT — dokumentet är källan; detta är lägesindex]
+
+Kärnbeslutet: VAR ska hästen starta, NÄR, och vilket lopp balanserar
+vinstchans, utveckling, ekonomi och långsiktigt mål? Propositionen avgör
+behörighet — klassetiketten är bara vägledning. Fastställda spelregler:
+autostart högst 12 (spår 1–8 + 9–12, aldrig tredje led), voltstart högst
+15 varav högst 12 per distans, monté auto högst 10. Föränderliga gränser
+i säsongsdata; taken är centrala valideringsgränser. Transparenskravet
+gäller allt: spelaren får alltid en konkret förklaring.
+
+## 18.1 Proposition och behörighet (dok kap 2, 4) [DELVIS v92 — behörighet med exakta sifferorsaker ur befintliga krav; segergränser, kvalstatus och licenser kvar]
+## 18.2 Klasspyramid och nivåetikett (dok kap 3) [DELVIS v92 — nivåetikett med pengafönster + klassklättringsvarningen före anmälan; hela pyramiden 0–7 och STL-divisionerna kvar]
+## 18.3 Loppväljaren i fyra grupper (dok kap 6.2–6.3) [KLART v96 — fyra grupper med orsak (v92) + bedömningsnivåer 0/1/2 efter organisationen med gränsminne (v96)]
+## 18.4 Anmälan som process (dok kap 6–7) [KLART v96 i grunden — uttagning (v93) + delning i jämna avdelningar även i världsveckan (v96); anmälningsfönster över veckor och mörk anmälan kvar som fördjupning]
+## 18.5 Startfält och spår (dok kap 5, 8) [KLART v94 i grunden — taken (v92), tillägg/andra volten (fanns), spårtrappa och spårkaraktär synliga i lottning och kusksamtal; situationsberoende bakspårsdjup som förfining]
+## 18.6 Kuskbokning och licenser (dok kap 9) [EJ PÅBÖRJAT — bokningsstatus intresse/preliminär/bekräftad/reserv; kuskensRåd är embryot]
+## 18.7 Tävlingsplanering och matchningsassistent (dok kap 10) [DELVIS — loppmatchning + vägvisaren är embryon; personalens OENIGA röster kvar]
+## 18.8 Startens verkliga kostnad (dok kap 11) [DELVIS v84 — insats/risk-rutan täcker arvode+resa+risk; personal, övernattning och chansprocent kvar]
+## 18.9 AI-tränarnas loppval (dok kap 12) [KLART v95 — sex profiler, viktad nytta, synfel, klassklättringsmedvetenhet, gemensam anmälningskarta för spelaruttagning och världsvecka]
+## 18.10 STL, serier, försök/final och årgångsvägar (dok kap 3.3–3.4, 4.7) [EJ PÅBÖRJAT — storloppsbågen är embryot till årgångsvägen]

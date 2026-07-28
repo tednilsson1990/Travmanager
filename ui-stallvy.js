@@ -10,10 +10,27 @@ import { träningsråd, loppmatchning } from "./engine-forstaman.js";
 import { veckansLopp } from "./data-kalender.js";
 import { veckoslots, slotsAnvända, ärKrävande, läggPlanMedSlots } from "./engine-stallmote.js";
 import { rivalerFör } from "./engine-handelser.js";
+import { klassEtikett, startpoäng, startpoängText } from "./engine-proposition.js";
 import { Mentorkort } from "./ui-prolog.js";
 import { säsongsHändelser } from "./engine-handelser.js";
 import { pälsnamnFör, Bild, HästEllerFoto, Häst } from "./ui-grafik.js";
 import { BANOR } from "./data-namnpaket.js";
+
+/**
+ * PÄLSSKIFTET (v90-lagningen). Hästbildens dokumentation har hela tiden
+ * beskrivit den här funktionen — "stallvyn räknar hästens plats bland
+ * stallkamrater med samma päls, så att två bruna hästar i samma stall
+ * garanterat får olika foton" — men den skrevs aldrig, och anropet
+ * kraschade stallvyn med "Can't find variable". Nu finns den, exakt som
+ * lovat: hästens index bland stallkamrater med samma pälsnamn.
+ * Deterministisk (hash, ingen slump) enligt UI-regeln.
+ */
+function pälsskifte(spel, häst) {
+  const päls = pälsnamnFör(häst.namn);
+  const ix = spel.stall.filter((h) => pälsnamnFör(h.namn) === päls)
+    .findIndex((h) => h.id === häst.id);
+  return Math.max(0, ix);
+}
 
 /**
  * Träningsplanen — skissernas panel 6, i ärlig veckoform. Ett rutnät över
@@ -229,6 +246,9 @@ function HästSida({ häst, spel, uppdatera, tillbaka }) {
           : html`<${Träningschips} häst=${häst} spel=${spel} uppdatera=${uppdatera} />`}`}
 
       ${flik === "karriär" && html`
+        <div class="prisrad"><span>Klassläge</span><span class="pris">${klassEtikett(häst).etikett} · ${kr(häst.intjänat)} kr</span></div>
+        ${(() => { const sp = startpoäng(häst);
+          return html`<div class="prisrad"><span>Startpoäng</span><span class="pris">${sp.poäng} — ${startpoängText(sp)}</span></div>`; })()}
         <div class="prisrad"><span>Starter</span><span class="pris">${häst.starter}</span></div>
         <div class="prisrad"><span>Segrar · pallplatser</span><span class="pris">${häst.segrar} · ${häst.pallplatser}</span></div>
         <div class="prisrad"><span>Insprunget</span><span class="pris">${kr(häst.intjänat)} kr</span></div>

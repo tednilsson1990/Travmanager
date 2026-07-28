@@ -133,6 +133,80 @@ for (const f of js) {
   fs.rmSync(stub, { recursive: true, force: true });
 }
 
+/* ANROP AV OBEFINTLIGA FUNKTIONER — pälsskifteläxan (v90). Stallvyn
+   anropade pälsskifte() som varken var importerad, deklarerad eller
+   exporterad NÅGONSTANS — ägarkontrollen ovan kräver att namnet
+   exporteras av en modul och såg den aldrig, och modulladdningen nedan
+   ser den inte heller (referensen ligger i en komponentkropp och körs
+   först vid rendering). Kontrollen: varje ANROPAT namn måste vara
+   deklarerat i filen (funktion, konstant, parameter, destrukturering,
+   metod eller import) eller exporterat av någon modul.
+
+   Strängar och kommentarer blankas med en riktig teckenskanner — inte
+   regex — så att htm-mallarnas prosa försvinner men koden i ${...}
+   behålls: det är ju precis där kraschen bodde. */
+{
+  const skalaKod = (src) => {
+    let ut = "", läge = "kod", mall = [];
+    for (let i = 0; i < src.length; i++) {
+      const c = src[i], c2 = src[i + 1];
+      if (läge === "kod") {
+        if (c === "/" && c2 === "/") { läge = "rad"; ut += "  "; i++; continue; }
+        if (c === "/" && c2 === "*") { läge = "block"; ut += "  "; i++; continue; }
+        if (c === '"' || c === "'") { läge = c; ut += " "; continue; }
+        if (c === "`") { läge = "mall"; ut += " "; continue; }
+        if (c === "}" && mall.length) { läge = "mall"; mall.pop(); ut += " "; continue; }
+        ut += c; continue;
+      }
+      if (läge === "rad") { if (c === "\n") { läge = "kod"; ut += c; } else ut += " "; continue; }
+      if (läge === "block") { if (c === "*" && c2 === "/") { läge = "kod"; ut += "  "; i++; } else ut += c === "\n" ? c : " "; continue; }
+      if (läge === '"' || läge === "'") {
+        if (c === "\\") { ut += "  "; i++; continue; }
+        if (c === läge) { läge = "kod"; ut += " "; } else ut += " ";
+        continue;
+      }
+      /* mall: prosa blankas, ${ öppnar kod igen (med djup för nästlade mallar) */
+      if (c === "\\") { ut += "  "; i++; continue; }
+      if (c === "$" && c2 === "{") { mall.push(1); läge = "kod"; ut += "  "; i++; continue; }
+      if (c === "`") { läge = "kod"; ut += " "; continue; }
+      ut += c === "\n" ? c : " ";
+    }
+    return ut;
+  };
+  const KÄNT = new Set(("if for while switch catch return typeof new await async function super " +
+    "Math JSON Object Array String Number Boolean Date Promise Set Map RegExp Symbol Error " +
+    "TypeError RangeError parseInt parseFloat isNaN isFinite structuredClone console fetch " +
+    "setTimeout clearTimeout setInterval clearInterval requestAnimationFrame URL URLSearchParams " +
+    "Blob File FileReader Intl crypto CustomEvent atob btoa encodeURIComponent decodeURIComponent " +
+    "alert confirm prompt localStorage navigator document window addEventListener dispatchEvent " +
+    "Audio Image Uint8Array ArrayBuffer TextEncoder TextDecoder Proxy Reflect WeakMap WeakSet " +
+    "BigInt queueMicrotask performance import").split(" "));
+  const allaExporter = new Set();
+  for (const e of Object.values(exporter)) for (const n of e) allaExporter.add(n);
+  for (const f of js) {
+    const s2 = skalaKod(fs.readFileSync(f, "utf8"));
+    const kända = new Set(KÄNT);
+    for (const m of s2.matchAll(/\b(?:function|const|let|var|class)\s+([\wÅÄÖåäö$]+)/g)) kända.add(m[1]);
+    for (const m of s2.matchAll(/import\s+([^;]+?)\s+from/g))
+      for (const w of m[1].matchAll(/[\wÅÄÖåäö$]+/g)) kända.add(w[0]);
+    /* Parametrar och destruktureringar — brett hellre än falsklarm:
+       (a, b), ({ häst }), [steg, sättSteg] = useState(...) */
+    for (const m of s2.matchAll(/\(([^()]*)\)/g))
+      for (const w of m[1].matchAll(/[\wÅÄÖåäö$]+/g)) kända.add(w[0]);
+    for (const m of s2.matchAll(/[\[{]([^\[\]{}]*)[\]}]\s*=[^=]/g))
+      for (const w of m[1].matchAll(/[\wÅÄÖåäö$]+/g)) kända.add(w[0]);
+    /* Metoddefinitioner i objektlitteraler: namn(args) { */
+    for (const m of s2.matchAll(/([\wÅÄÖåäö$]+)\s*\([^()]*\)\s*\{/g)) kända.add(m[1]);
+    for (const m of s2.matchAll(/(?<![.\wÅÄÖåäö$])([A-Za-zÅÄÖåäö_$][\wÅÄÖåäö$]*)\s*\(/g)) {
+      const namn = m[1];
+      if (kända.has(namn) || allaExporter.has(namn)) continue;
+      if (namn.length < 5 && !/[ÅÄÖåäö]/.test(namn)) continue;
+      console.log(`${f}: anropar ${namn}() som varken är deklarerad, importerad eller exporterad någonstans`);
+      fel++;
+    }
+  }
+}
+
 const vHtml = (html.match(/\?v=(\d+)/) || [])[1];
 const vAlla = new Set([...html.matchAll(/\?v=(\d+)/g)].map((m) => m[1]));
 const vSw = (sw.match(/const VERSION = (\d+)/) || [])[1];

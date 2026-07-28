@@ -24,22 +24,14 @@ import { html } from "htm/preact";
 import { useState } from "preact/hooks";
 import { kr } from "./engine-util.js";
 import { ARVODE_PER_VECKA, ÄGARTYPER } from "./data-agare.js";
-import { gåraugifter, boxplats } from "./engine-gard.js";
+import { boxplats } from "./engine-gard.js";
+import { veckonetto } from "./engine-vagvisare.js";
 import { ägarlista, hållMöte, MÖTESVAL } from "./engine-agare.js";
-import { säkraSponsorer, teckna, tackaNej, kravläge, foderrabatt } from "./engine-sponsor.js";
+import { säkraSponsorer, teckna, tackaNej, kravläge } from "./engine-sponsor.js";
 import { Stapel } from "./ui-delar.js";
 import { Bild } from "./ui-grafik.js";
 
-const DRIFT_PER_HÄST = 3200;
 
-/** Veckans förutsägbara netto — samma poster som körVecka bokför. */
-export function veckonetto(spel) {
-  const externa = spel.stall.filter((h) => h.ägare).length;
-  const sponsor = (spel.sponsorer ?? []).reduce((a, s) => a + s.perVecka, 0);
-  const intäkter = externa * ARVODE_PER_VECKA + sponsor;
-  const kostnader = spel.stall.length * DRIFT_PER_HÄST - foderrabatt(spel) + gåraugifter(spel);
-  return { intäkter, kostnader, netto: intäkter - kostnader, sponsor };
-}
 
 function Ekonomi({ spel }) {
   const { intäkter, kostnader, netto, sponsor } = veckonetto(spel);

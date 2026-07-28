@@ -36,12 +36,27 @@ const TRÄNAREFTER = ["Kilberg", "Sandvall", "Ryhd", "Norrman", "Tollner", "Bran
  * Tränarfilosofier. De styr hur AI-stallen sköter och startar sina hästar,
  * och gör att stallen skiljer sig åt över en säsong.
  */
+/**
+ * TRÄNARPROFILERNA (utökade v95, manualen kap 12). Vila/träning som
+ * förut — plus LOPPVALSVIKTERNA: hur tränaren väger vinstchans,
+ * prispengar, utveckling (att möta hårdare) och försiktighet (bland
+ * annat klassklättringen), samt SYNFELET: hur mycket tränaren
+ * systematiskt över- eller undervärderar sina egna hästar. Ofullständig
+ * information och rimliga misstag är en del av modellen, inte en bugg.
+ */
 export const FILOSOFIER = [
-  { namn: "startar ofta", vilaTröskel: 42, träning: "intervall", startvilja: 0.85 },
-  { namn: "vilar mycket", vilaTröskel: 74, träning: "lugnt", startvilja: 0.45 },
-  { namn: "hårda jobb", vilaTröskel: 58, träning: "kvalitet", startvilja: 0.7 },
-  { namn: "tålmodig", vilaTröskel: 66, träning: "lugnt", startvilja: 0.55 },
-  { namn: "startsnabb skola", vilaTröskel: 55, träning: "start", startvilja: 0.7 },
+  { namn: "startar ofta", vilaTröskel: 42, träning: "intervall", startvilja: 0.85,
+    vikt: { vinst: 0.5, pengar: 0.3, utveckling: 0.1, försiktighet: 0.1 }, synfel: 6 },
+  { namn: "vilar mycket", vilaTröskel: 74, träning: "lugnt", startvilja: 0.45,
+    vikt: { vinst: 0.3, pengar: 0.2, utveckling: 0.1, försiktighet: 0.4 }, synfel: 3 },
+  { namn: "hårda jobb", vilaTröskel: 58, träning: "kvalitet", startvilja: 0.7,
+    vikt: { vinst: 0.3, pengar: 0.1, utveckling: 0.4, försiktighet: 0.2 }, synfel: 5 },
+  { namn: "tålmodig", vilaTröskel: 66, träning: "lugnt", startvilja: 0.55,
+    vikt: { vinst: 0.3, pengar: 0.3, utveckling: 0.0, försiktighet: 0.4 }, synfel: 2 },
+  { namn: "startsnabb skola", vilaTröskel: 55, träning: "start", startvilja: 0.7,
+    vikt: { vinst: 0.4, pengar: 0.2, utveckling: 0.2, försiktighet: 0.2 }, synfel: 8 },
+  { namn: "jagar prispengar", vilaTröskel: 50, träning: "intervall", startvilja: 0.8,
+    vikt: { vinst: 0.2, pengar: 0.6, utveckling: 0.1, försiktighet: 0.1 }, synfel: 10 },
 ];
 
 /** Bygger världen vid karriärstart. */
@@ -241,15 +256,19 @@ export function bokför(värld, lopp, resultat, vecka) {
     h.energi = klamp(h.energi - int(14, 24));
     /* Även världens hästar för loppbok — annars kan spelaren inte läsa
        formen på en häst hen funderar på att köpa. */
-    h.resultat = [{
-      vecka, lopp: lopp.kortnamn || lopp.namn, dist: lopp.dist,
-      plats: r.ur ? null : r.plats, startande: lopp.startande,
-      km: r.ur ? null : r.km, spår: r.spår,
-    }, ...(h.resultat || [])].slice(0, 6);
     h.senasteStartVecka = vecka;
     const pris = r.ur
       ? (lopp.garanterad || 0)
       : (lopp.pris[r.plats - 1] ?? lopp.garanterad ?? 0);
+    /* Priset in i raden (v93): startpoängen i uttagningen räknar 1 p per
+       100 kr, så även världens hästar behöver pris per start. Äldre rader
+       saknar fältet — de ger bara placeringspoäng tills raden rullat ut
+       (sex starter). Ärlig migrering, ingen skattning. */
+    h.resultat = [{
+      vecka, lopp: lopp.kortnamn || lopp.namn, dist: lopp.dist,
+      plats: r.ur ? null : r.plats, startande: lopp.startande,
+      km: r.ur ? null : r.km, spår: r.spår, pris,
+    }, ...(h.resultat || [])].slice(0, 6);
     h.intjänat = (h.intjänat || 0) + pris;
     if (!r.ur && r.plats) {
       h.form = klamp(h.form + (r.plats <= 3 ? 4 : -2));
@@ -275,7 +294,7 @@ export function bokför(värld, lopp, resultat, vecka) {
  * loppen avgörs. Lopp som spelaren själv startat i hoppas över — de har
  * redan körts live.
  */
-export function körVärldensVecka(spel) {
+export function körVärldensVecka(spel, anmälningar = null, taUt = null, arrangör = null, dela = null) {
   const värld = spel.värld;
   if (!värld) return [];
   const vecka = spel.vecka;
@@ -286,22 +305,45 @@ export function körVärldensVecka(spel) {
 
   lopp.forEach((l) => {
     if (körda.includes(l.id)) return;
-    const fält = byggFält(värld, l, vecka, upptagna);
-    if (fält.length < 6) return;
-    fält.forEach((h) => { if (h.id) upptagna.add(h.id); });
-    rustaFält(fält, l);
-    beräknaStreck(fält, { spelförtroende: 40, stallform: 50, marknadsbild: 0 }, l);
-    const resultat = snabbresultat(fält, l);
-    bokför(värld, l, resultat, vecka);
-
-    if (l.storlopp || l.v85) {
-      const v = resultat[0];
-      const st = värld.stall.find((s) => s.id === v.häst.stallId);
-      nyheter.push({
-        rubrik: `${v.häst.namn} vann ${l.kortnamn || l.namn}`,
-        byline: st ? `${st.namn} tog hem prispotten.` : "Storloppet gick till en outsider.",
-      });
+    /* Sedan v95 kommer fälten ur AI-tränarnas anmälningskarta (skickas
+       in av veckomotorn — världsmotorn importerar aldrig uppåt) med
+       samma trösklar som spelarens uttagning: 0–3 ställs in, 4–7 är
+       arrangörens beslut, 8+ körs. En struken häst omplaceras inte.
+       Utan karta (äldre anrop, prov): klassfönstret som förut. */
+    let fältSamling;
+    if (anmälningar && anmälningar.has(l.id)) {
+      const anmälda = anmälningar.get(l.id).filter((h) => !upptagna.has(h.id)
+        && h.senasteStartVecka !== vecka && h.skada === 0);
+      if (anmälda.length <= 3) return;
+      if (anmälda.length <= 7 && arrangör && !arrangör(l.id, vecka, anmälda.length)) return;
+      /* Delningen (v96): samma regel som spelarens uttagning — stor
+         överanmälan i vardagslopp ger avdelningar via dela-funktionen
+         (skickas in av veckomotorn), annars uttagning. */
+      const kanDelas = !l.storlopp && !l.v85 && dela;
+      fältSamling = kanDelas && anmälda.length >= l.startande + 5
+        ? dela(anmälda, l)
+        : [taUt ? taUt(anmälda, l) : anmälda.slice(0, l.startande)];
+    } else {
+      fältSamling = [byggFält(värld, l, vecka, upptagna)];
     }
+    fältSamling = fältSamling.filter((f) => f.length >= 4);
+    if (!fältSamling.length) return;
+    fältSamling.forEach((f) => f.forEach((h) => { if (h.id) upptagna.add(h.id); }));
+    fältSamling.forEach((fält) => {
+      rustaFält(fält, l);
+      beräknaStreck(fält, { spelförtroende: 40, stallform: 50, marknadsbild: 0 }, l);
+      const resultat = snabbresultat(fält, l);
+      bokför(värld, l, resultat, vecka);
+
+      if (l.storlopp || l.v85) {
+        const v = resultat[0];
+        const st = värld.stall.find((s) => s.id === v.häst.stallId);
+        nyheter.push({
+          rubrik: `${v.häst.namn} vann ${l.kortnamn || l.namn}`,
+          byline: st ? `${st.namn} tog hem prispotten.` : "Storloppet gick till en outsider.",
+        });
+      }
+    });
   });
   return nyheter;
 }

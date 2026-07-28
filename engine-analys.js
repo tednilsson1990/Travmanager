@@ -128,7 +128,11 @@ export function loppanalys(sim, lopp, { häst, kusk, taktik, slutorder, förstam
     bra.push("höll gångarten trots det heta lynnet");
   if (mDödens > 200 && (min.plats ?? 99) <= 4) bra.push(`bar ${Math.round(mDödens)} meter i dödens utan att vika`);
   if ((min.sista400 ?? 99) < 27.5) bra.push(`avslutade sista 400 på ${min.sista400.toFixed(1)} — riktig fart i benen`);
-  if (bra.length === 0 && !min.ur) bra.push("gjorde ett ärligt lopp");
+  /* Även en bortkörd häst får en rad — analysen lämnar aldrig fältet
+     tomt (v95-läxan: lopp med galopp gav tom "att ta med"-lista). */
+  if (bra.length === 0) bra.push(min.ur
+    ? "gångarten är läxan — resten av loppet fanns aldrig"
+    : "gjorde ett ärligt lopp");
 
   /* ---- Nästa steg: förstamannens rekommendation (aldrig ett facit) ---- */
   const passning = häst ? distanspassning(häst, dist) : 1;

@@ -9,11 +9,9 @@
 import { html } from "htm/preact";
 import { kr } from "./engine-util.js";
 import { BANOR } from "./data-namnpaket.js";
-import { träningsråd } from "./engine-forstaman.js";
-import { gåraugifter, boxplats } from "./engine-gard.js";
+import { gåraugifter } from "./engine-gard.js";
 import { ARVODE_PER_VECKA } from "./data-agare.js";
-import { veckonetto } from "./ui-kontorvy.js";
-import { kravläge } from "./engine-sponsor.js";
+import { nästaSteg, långsiktigt } from "./engine-vagvisare.js";
 
 export default function HemVy({ spel, gåTill }) {
   /* Huvudnyheten. Är veckans stora händelse registrerad i händelsemotorn
@@ -24,53 +22,14 @@ export default function HemVy({ spel, gåTill }) {
   const storFärsk = stor && stor.säsong === (spel.säsong ?? 1)
     && spel.vecka - stor.vecka <= 1;
   const huvudnyhet = spel.press?.[0];
-  const startklara = spel.stall.filter((h) => h.skada === 0 && h.senasteStartVecka !== spel.vecka).length;
-  const skadade = spel.stall.filter((h) => h.skada > 0).length;
   const fm = spel.förstaman;
-  const avviker = fm ? spel.stall.filter((h) => h.skada === 0 &&
-    h.träning !== träningsråd(fm, h).träning).length : 0;
   const drift = spel.stall.length * 3200 + gåraugifter(spel)
     - spel.stall.filter((h) => h.ägare).length * ARVODE_PER_VECKA;
 
-  const uppgifter = [
-    spel.prolog?.övertagen && !fm &&
-      { text: "Rekrytera din förstaman", akut: true, flik: "stall" },
-    spel.banerbjudande &&
-      { text: `${BANOR[spel.banerbjudande.banaId]?.namn} vill ha stallet — svara på erbjudandet`, akut: true, flik: "stall" },
-    spel.erbjudande &&
-      { text: `${spel.erbjudande.ägare} vill lämna ${spel.erbjudande.namn} i träning`, akut: true, flik: "stall" },
-    spel.inbjudan?.vecka === spel.vecka &&
-      { text: "Inbjudningsloppet gäller bara denna vecka", akut: true, flik: "lopp" },
-    startklara > 0 &&
-      { text: `${startklara} ${startklara === 1 ? "häst är" : "hästar är"} startklara — veckans anmälan väntar`, flik: "lopp" },
-    avviker > 0 &&
-      { text: `${fm.namn.split(" ")[0]} vill ändra träningen för ${avviker} ${avviker === 1 ? "häst" : "hästar"}`, flik: "stall" },
-    skadade > 0 &&
-      { text: `${skadade} ${skadade === 1 ? "häst" : "hästar"} på skadelistan`, flik: "stall" },
-    boxplats(spel) === 0 &&
-      { text: "Stallet är fullt — inga nya ägarförfrågningar kommer", flik: "mer" },
-    /* NÄSTA STEG (kap 16.5): rekommendationerna ur verksamheten.
-       Härledda ur spelläget, aldrig påhittade — och aldrig tvingande. */
-    (spel.sponsorerbjudanden ?? []).length > 0 &&
-      { text: `${spel.sponsorerbjudanden[0].namn} vill sponsra stallet — svara på Kontoret`, ton: "gul", flik: "mer" },
-    (() => {
-      const sur = Object.entries(spel.ägarrelationer ?? {})
-        .find(([namn, r]) => r.relation < 35 && spel.stall.some((h) => h.ägare === namn));
-      return sur && { text: `${sur[0]} är missnöjd — boka ett möte på Kontoret`, akut: true, flik: "mer" };
-    })(),
-    (() => {
-      const n = veckonetto(spel);
-      const veckor = n.netto < 0 ? Math.floor(spel.kassa / -n.netto) : 99;
-      return veckor < 8 && { text: `Kassan räcker ${veckor} veckor — fler externa hästar skulle förbättra kassaflödet`, akut: veckor < 4, ton: veckor < 4 ? undefined : "gul", flik: "mer" };
-    })(),
-    (() => {
-      const sent = (spel.sponsorer ?? []).find((a) => !kravläge(a).klar) && spel.vecka >= spel.veckor - 4;
-      if (!sent) return null;
-      const a = spel.sponsorer.find((x) => !kravläge(x).klar);
-      const l = kravläge(a);
-      return { text: `Sponsorkravet hänger löst: ${l.text} — ${l.mål - l.nu} kvar`, ton: "gul", flik: "lopp" };
-    })(),
-  ].filter(Boolean);
+  /* VÄGVISAREN (kap 16): uppgifterna härleds i engine-vagvisare —
+     sorterade så att första raden alltid är veckans viktigaste. */
+  const uppgifter = nästaSteg(spel);
+  const mål = långsiktigt(spel);
 
   return html`
     ${/* TIDNINGSKLIPPET. Ögonblicket har redan fått sin helskärm — det
@@ -167,6 +126,22 @@ export default function HemVy({ spel, gåTill }) {
                 <span class=${"idag-punkt" + (u.akut ? "" : u.ton === "gul" ? " gul" : " lugn")} />${u.text}
               </button>`)}
           </div>`}
+
+    ${/* LÅNGSIKTIGT (kap 16.2): de två närmaste onådda milstolparna med
+        verklig progress. Riktmärken, inte uppdrag. */ ""}
+    ${mål.length > 0 && html`
+      <div class="kort">
+        <div class="meta">Längre fram</div>
+        ${mål.map((k, i) => html`
+          <div key=${i} class="relrad">
+            <div>
+              <div class="relnamn">${k.mål}</div>
+              ${k.not && html`<div class="relmini">${k.not}</div>`}
+            </div>
+            <div class="relbar"><i style=${{ width: Math.round(k.andel * 100) + "%" }} /></div>
+            <div class="svar">${k.kr ? Math.round(k.andel * 100) + " %" : `${Math.min(k.nu, k.av)}/${k.av}`}</div>
+          </div>`)}
+      </div>`}
     </div>
 
     ${fm && html`

@@ -11,6 +11,7 @@ import { slump } from "./engine-util.js";
  */
 
 export { BANOR } from "./data-namnpaket.js";
+import { STARTREGLER } from "./data-lopp.js";
 import { BANOR, STORLOPPSMALLAR, KLASSNAMN, STORSPEL } from "./data-namnpaket.js";
 
 /** Liten deterministisk slump så att en vecka alltid ger samma lopp. */
@@ -29,7 +30,7 @@ const DISTANSER = [1640, 2140, 2140, 2640];
  * Propositioner. Kravet avgör vilka hästar som får starta och styr därmed
  * både motståndet och vad du kan sikta på.
  */
-const KLASSER = [
+export const KLASSER = [
   { namn: KLASSNAMN.lärling, nivå: 38, prestige: 1, startande: 15,
     krav: { maxInsprunget: 120000 }, pris: [18000, 9000, 5000, 3000, 2000] },
   { namn: KLASSNAMN.klass3, nivå: 44, prestige: 1, startande: 15,
@@ -110,7 +111,13 @@ export function prisstege(förstapris, startande) {
 
 function byggLopp(r, { id, namn, banaId, dist, start, klass, extra = {} }) {
   const bana = BANOR[banaId];
-  const startande = extra.startande ?? klass.startande;
+  /* REGELEFTERLEVNAD (v92): startfältets tak följer startmetoden, aldrig
+     bara klassen. Autostart högst 12 — före v92 kunde ett lärlingslopp
+     slumpas till bilstart med 15 hästar, vilket bröt den fastställda
+     regeln (aldrig tredje led). Volt får 15: motorn ställer 13–15 på
+     tilläggets 20 m, så högst 12 står på samma distans. */
+  const tak = start === "bil" ? STARTREGLER.bilMax : STARTREGLER.voltMax;
+  const startande = Math.min(extra.startande ?? klass.startande, tak);
   return {
     id,
     namn: `${namn}, ${bana.namn}`,

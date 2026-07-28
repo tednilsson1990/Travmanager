@@ -475,6 +475,214 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Delningen och bedömningsnivåerna (v96 — anmälan komplett)
+
+Två manualbitar som gör anmälningsprocessen hel:
+
+**Delningen (6.6).** Stor överanmälan i vardagslopp (fem eller fler
+över platstaket) ger inte längre en strykningslista — loppet DELAS i
+avdelningar och alla kommer med, precis som i svensk travvardag.
+Poängsorterad round-robin ger jämna avdelningar (provet mäter
+poängsummorna: ingen b-final), ren ceil utan avdelningstak (kartan kan
+ge en populär proposition 37+ anmälda — tre avdelningar à 13 vore ett
+regelbrott), och storlopp/V85 delas aldrig: deras fält ÄR poängen.
+Spelarens avdelning får numret i loppnamnet så facit och loppboken
+berättar rätt, och världsveckan delar med SAMMA funktion (delaFält
+skickas in av veckomotorn) — världens delade lopp kör alla sina
+avdelningar och delar ut prispengar i varje. Strykning finns kvar men
+bara i mellanregistret (en till fyra över taket) — dramatiken sitter
+där den ska.
+
+**Bedömningsnivåerna (6.3).** Lämplighetsbedömningens precision beror
+på organisationen. Nivå 0 — ingen förstaman: bara Berättigade/Inte
+berättigad, ärligt sagt ("ingen lämplighetsbedömning utan förstaman");
+regelfakta som behörighet och klassklättringsvarning får alla. Nivå 1 —
+förstaman: de fyra grupperna. Nivå 2 — taktikern ("läser propositioner
+som andra läser romaner") eller fem säsonger hos dig: siffrorna —
+fönsterläget i procent och SENAST KÄNDA uttagningsgränsen i klassen,
+arkiverad ur era egna uttagningar när beskedet bekräftas. Taktikern
+minns det ni sett — inte det ni aldrig var med om.
+
+## AI-tränarnas loppval (v95 — tävlingssystemets etapp D)
+
+Världens tränare slutar vara statister. Ny motor engine-aitranare.js
+ger manualens kap 12: varje stall väljer lopp åt sina hästar med VIKTAD
+NYTTA — vinstchans, prispengar, utveckling, försiktighet — enligt sex
+profiler (FILOSOFIER utökade med vikter; sjätte profilen "jagar
+prispengar" ny). Ofullständig information är modellens mening:
+
+**Synfelet.** Varje tränare över- eller undervärderar varje häst med en
+hash-stabil bias skalad av profilens synfel — övertygelse, inte brus:
+den övervärderade stjärnan förblir övervärderad, och 2 av 108
+anmälningar i provet är felbedömningar klart uppåt. Rimliga misstag.
+
+**Klassklättringsmedvetenheten** läser SAMMA klassklättring() som
+spelarens varning: "tålmodig" värderar klättringsloppet mätbart lägre
+än "jagar prispengar" — provat med samma häst, samma lopp, samma
+synfel, bara profilen utbytt.
+
+**EN anmälningskarta för hela spelet.** veckansAnmälningar(spel) är ren
+hash — noll slump — och driver BÅDE spelarens uttagning (engine-anmalan
+läser den; specialloppen minne/inbjudan behåller fönstermetoden) och
+världsveckan (körVärldensVecka får kartan som argument av veckomotorn —
+världsmotorn importerar aldrig uppåt). Konsistenslöftet: hästen som
+slog dig i uttagningen kör faktiskt det loppet när världen körs, och en
+struken AI-häst omplaceras inte — den vilar. Trösklarna delas via
+arrangörenKör() så spelarens och världens lopp aldrig divergerar.
+
+**Balansläxan i två steg, fångad av proven:** strikt argmax flockade
+alla till samma lopp (22 anmälda till ett, var tredje lopp inställt) —
+nu väljer hash bland loppen inom femton procent av toppnyttan, vilket
+gav 7 % inställda och 67 % överanmälda över 136 provlopp. Sextonde
+provsviten (prov-aitranare.mjs): kartans determinism, ett lopp per häst,
+bara berättigade val, synfelets stabilitet, profilskillnaden och en hel
+världssäsong där 170 av 182 hästar kommer till start via tränarnas val.
+
+## Spårtrappan (v94 — tävlingssystemets etapp C, utan motoringrepp)
+
+Etapp C skulle röra loppmotorn — men inventeringen visade att
+motorarbetet redan var gjort, precis som voltens tillägg: spårfördel i
+data-lopp bygger sedan länge på Svensk Travsports statistik över 33 958
+lopp (puckeln: spår 4–5 vinner mest, spår 1 bara 10 %), andra ledet
+straffas för att man inte styr sin egen start (9 bakom 1, 10 bakom 2),
+springspåren och andra volten finns. Det som saknades var manualens
+transparenskrav: MODELLEN VAR OSYNLIG FÖR SPELAREN.
+
+**spårkaraktär() och spårtrappa()** i data-lopp läser exakt samma
+fördelstal som utlösningen räknar med — trappan kan aldrig ljuga om
+motorn (provat: varje trappsteg jämförs mot spårfördel). Lottningssteget
+visar spårläget i klartext (»tian — andra ledet: du styr inte din egen
+start; närmast framför står Rimfrost Bris«), guldlägen får guldkant och
+svåra lägen varningsfärg, plus trappans sammanfattning: bäst och svårast
+i dag. Kuskens läsning i kusksamtalet använder samma karaktär och
+namnger hästen man startar bakom. Rättelse på vägen: voltens spår 8–12
+är ANDRA VOLTEN (straffad i fördelen sedan länge) — karaktärstexten
+säger det nu i stället för att låtsas att de står i första.
+
+Ingen motorändring, ingen omkalibrering — bara samma kunskap på båda
+sidor om skärmen. Etapp C:s återstod (situationsberoende bakspårsdjup
+vid olika fältstorlekar) flyttas till förfining.
+
+## Anmälan som process (v93 — tävlingssystemets etapp B)
+
+Platsen i loppet är inte längre garanterad. Ny motor engine-anmalan.js
+lägger uttagningen mellan anmälningsknappen och lottningen — spelarens
+flöde, aldrig AI-veckans eller kalibreringens (byggFält är orörd).
+
+**Anmälningsläget är ett faktum.** Världshästarna i klassfönstret
+anmäler med två tredjedelars vilja, deterministiskt ur häst + lopp +
+vecka (seedat urval enligt UI-hashregeln): samma lopp ger samma anmälda
+hur många gånger spelaren än prövar, och spelets övriga slumpflöde rörs
+inte. Balansen provkalibrerades: 1,6 × fönster och 76 % vilja gav 87 %
+överanmälda lopp — tjat, inte dramatik — och justerades till 1,5 × och
+66 %, vilket ger överanmälan ungefär varannan gång.
+
+**Trösklarna (manualen 6.6):** 0–3 anmälda ställs in, 4–7 är
+arrangörens beslut (deterministiskt viktat: sex anmälda körs oftare än
+fyra), 8+ körs alltid. Ett arrangörskört tunt fält FÖRBLIR tunt — inga
+påhittade hästar fyller ut spelarens lopp längre.
+
+**Uttagningen (7.1):** startpoängen avgör — även för världens hästar,
+vars loppbok bär pris per start sedan v93 (äldre rader ger bara
+placeringspoäng tills de rullat ut: ärlig migrering, ingen skattning).
+Ostartade går före i lopp med pengatak — det är där karriärer ska
+börja. Vid lika poäng skiljer klassmeriterna (startsumman),
+dokumenterat i beskedet i stället för godtycklig listordning.
+
+**Beskedet:** alltid siffrorna — anmälda, platser, gränsen, din poäng —
+och struken eller inställd anmälan kostar ingenting (kusken kördes
+aldrig; arvodet dras först när platsen är klar) samt föreslår upp till
+två berättigade alternativ samma vecka, bäst bedömning först. Spelaren
+lämnas aldrig i en återvändsgränd.
+
+Femtonde provsviten (prov-anmalan.mjs): determinism, trösklarna i 136
+lopp över 25 världar, gränsen = de uttagnas lägsta, ingen struken över
+gränsen, företrädesregeln och alternativens ordning.
+
+## Klassningen och loppväljaren (v92 — tävlingssystemets etapp A)
+
+Första etappen av Teds tävlingsmanual: transparensen före regelbredden.
+Ny motor engine-proposition.js — förklaringsmaskinen. Loppmotorn vet
+inte att den finns.
+
+**Regelefterlevnaden först.** De fastställda taken bor nu som centrala
+valideringsgränser i data-lopp.js (STARTREGLER: bil 12, volt 15 varav 12
+per distans, monté 10). Kalendern bröt regeln: startmetoden slumpades
+oberoende av klassens fältstorlek, så ett lärlingslopp kunde bli
+AUTOSTART MED 15 HÄSTAR. Nu tar byggLopp min(klassens storlek, metodens
+tak). Volten var däremot redan regelrätt — motorn har haft tilläggslogik
+hela tiden (spår 13–15 startar 20 m bakom, förstaVolt: 12), vilket
+krympte etapp C rejält. OMKALIBRERINGEN: fältstorleksändringen flyttar
+siffrorna med flit — jämförelsen visar allt inom seedspann, målen ligger
+kvar (ledningen 40,8 % mot mål 42 ✓) och de kända avvikelserna är
+oförändrade i karaktär (rygg ledaren +6, andra utvändigt −4). Ingen ny
+avvikelse infördes.
+
+**Behörighet med exakta orsaker (manualen 2.3, 6.2).** behörighet()
+svarar med bådas siffror: »startsumman 312 400 kr överstiger loppets tak
+250 000 kr« — aldrig bara »högst 250 tkr«. Kalenderns startförbud ligger
+kvar som säkerhetsnät så att två regler aldrig pekar åt olika håll.
+
+**Loppväljaren i fyra grupper (6.2).** Anmälans loppval är nu optgroups:
+Rekommenderade / Möjliga / Riskfyllda / Inte berättigad — de stängda
+VISAS med orsak men går inte att välja, och byter spelaren häst hoppar
+valet från ett stängt lopp till första berättigade. Riskfylld = hårt
+inne i klassen (startsumman i pengafönstrets nedre fjärdedel), möjlig =
+berättigad med utpekad distansnackdel. Bedömningsraden i loppfakta säger
+vilket och varför.
+
+**Klassklättringsvarningen (3.2) — manualens bästa spelidé.** I insats-
+och riskrutan, FÖRE anmälan: »En seger lyfter startsumman till 290 000
+kr — Bronsserien stängs.« Räknad mot samma klassgränser som kalendern
+bygger loppen av; ingen varning när taken är långt borta.
+
+**Startpoängen (7.1) räknas och visas.** Fem senaste starterna,
+400/200/100/50/25 plus en poäng per vunna 100 kr — resultatraden har
+sparat pris per start länge, så poängen räknas retroaktivt ur befintligt
+data. Visas med begriplig prognos (»god chans att komma med vid
+överanmälan«) i anmälans Din häst-rad och på hästsidans karriärflik,
+tillsammans med nivåetiketten (»låg klass · passar oftast i lopp med
+X–Y kr i förstapris« — vägledning, aldrig spärr). Uttagningen poängen
+styr är etapp B.
+
+Fjortonde provsviten (prov-proposition.mjs): hela säsongens 110 lopp
+regelprövade, orsakstexterna sifferexakta, gruppprioriteringen,
+varningens matematik och poängmodellen till punkt och pricka.
+
+## Pälsskiftet, verifieraskärpningen och vägvisaren (v90)
+
+**Kraschen.** Stallvyn föll med »Can't find variable: pälsskifte« —
+funktionen anropades på två ställen men fanns INGENSTANS, och felet
+fanns redan i v83-zippen: Hästbildens dokumentation har hela tiden
+beskrivit den ("stallvyn räknar hästens plats bland stallkamrater med
+samma päls, så tvillingfoton inte hamnar sida vid sida") men den skrevs
+aldrig. Nu finns den, exakt som lovat, deterministisk enligt hashregeln.
+
+**Läxan in i verifiera.** Ägarkontrollen från v70 kräver att namnet
+EXPORTERAS av en modul för att bevakas — ett anrop av något som inte
+finns alls sågs aldrig, och modulladdningen ser det inte heller
+(referensen ligger i en komponentkropp som körs först vid rendering).
+Ny kontroll: varje anropat namn måste vara deklarerat i filen
+(funktion, konstant, parameter, destrukturering, metod eller import)
+eller exporterat någonstans. Strängar och kommentarer blankas av en
+riktig TECKENSKANNER — inte regex — så htm-mallarnas prosa försvinner
+men koden i ${...} behålls: det var ju precis där kraschen bodde.
+Kontrollen sabotagetestades (påhittad funktion → larm → återställt).
+
+**Vägvisaren (kap 16).** Teds återkommande punkt: spelaren ska bli mer
+ledd framåt. engine-vagvisare.js äger nu riktningen — vyer renderar,
+motorer härleder: nästaSteg() flyttar hela uppgiftslogiken från hemvyn,
+utökar den (formstark häst → »planera nästa start«, fullt stall → »dags
+att bygga ut«) och SORTERAR efter angelägenhet så att första raden
+alltid är veckans viktigaste. långsiktigt() (16.2) visar de två
+NÄRMASTE onådda milstolparna med verklig progress — sex hästar,
+halvmiljonen, större sponsor, miljonen, tre ägare med högsta
+förtroende — i ett »Längre fram«-block på Hem. Uppnådda försvinner
+tyst: riktmärken, inte uppdrag, ingenting belönas för att bockas av.
+veckonetto flyttade samtidigt från ui-kontorvy till motorn där den hör
+hemma. Trettonde provsviten (prov-vagvisare.mjs) låser sorteringen,
+förutsättningarna, progressräkningen och pälsskifteslogiken.
+
 ## Travbladet (v89)
 
 Journalisten dömer världen på om den producerar riktiga berättelser
@@ -1452,4 +1660,11 @@ från egna led (v77) och de fem bildidéerna (v78) samt beslutsfönstret med see
 omsimulering, stallmötets veckoslots, insats & risk i anmälan,
 hästsidans fem flikar, TV/analysläget, ägarsystemet, sponsorerna,
 Kontoret och Nästa steg-panelen (v84), kusksamtalets körorder i två
-delar (v86), kuskens vetorätt (v87) samt efterloppsanalysen (v88) och Travbladet (v89).
+delar (v86), kuskens vetorätt (v87) samt efterloppsanalysen (v88) och Travbladet (v89) samt pälsskifteslagningen,
+verifieraskärpningen och vägvisaren (v90),
+tävlingsmanualen som kapitel 18 (v91) och tävlingssystemets etapp A —
+klassningen, loppväljaren och startpoängen (v92) samt etapp B —
+anmälan som process med uttagning, trösklar och besked (v93) samt
+etapp C — spårtrappan som gör motorns spårkunskap synlig (v94) och
+etapp D — AI-tränarnas loppval med en gemensam anmälningskarta (v95)
+samt delningen och de organisationsberoende bedömningsnivåerna (v96).
