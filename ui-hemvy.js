@@ -10,6 +10,7 @@ import { html } from "htm/preact";
 import { kr } from "./engine-util.js";
 import { BANOR } from "./data-namnpaket.js";
 import { gåraugifter } from "./engine-gard.js";
+import { träningsråd } from "./engine-forstaman.js";
 import { ARVODE_PER_VECKA } from "./data-agare.js";
 import { nästaSteg, långsiktigt } from "./engine-vagvisare.js";
 
@@ -18,11 +19,12 @@ export default function HemVy({ spel, gåTill }) {
      (storloppsseger, avsked) bär den uppslaget med faktaruta och citat —
      annars faller vi tillbaka på senaste pressnotisen. En källa, ett
      uppslag: vyn hittar inte på något eget. */
-  const stor = spel.huvudnyhet;
-  const storFärsk = stor && stor.säsong === (spel.säsong ?? 1)
-    && spel.vecka - stor.vecka <= 1;
-  const huvudnyhet = spel.press?.[0];
   const fm = spel.förstaman;
+  /* Förstamansradens fakta (v98-lagningen: v90-flytten till vägvisaren
+     tog variablerna men lämnade repliken — "Can't find variable: avviker"). */
+  const startklara = spel.stall.filter((h) => h.skada === 0 && h.senasteStartVecka !== spel.vecka).length;
+  const avviker = fm ? spel.stall.filter((h) => h.skada === 0 &&
+    h.träning !== träningsråd(fm, h).träning).length : 0;
   const drift = spel.stall.length * 3200 + gåraugifter(spel)
     - spel.stall.filter((h) => h.ägare).length * ARVODE_PER_VECKA;
 
@@ -62,44 +64,10 @@ export default function HemVy({ spel, gåTill }) {
         </div>`;
     })()}
 
-    ${/* PÅGÅENDE BERÄTTELSER (plan 15): trådarna som redan lever i
-        systemen, synliga på ett ställe. Ren läsning — varje rad pekar
-        på tillstånd som andra motorer äger. Max fyra; ett flöde av
-        allt vore brus, inte berättelse. */ ""}
-    ${(() => {
-      const trådar = [];
-      if (spel.båge?.lopp) trådar.push(`Satsningen: ${spel.båge.lopp.kortnamn} om ${spel.båge.veckorKvar} v`);
-      const comeback = (spel.stall ?? []).find((h) => h.skadenyhet && h.skada > 0);
-      if (comeback) trådar.push(`Comebacken: ${comeback.namn} åter om ${comeback.skada} v`);
-      const svacka = (spel.stall ?? []).find((h) => h.svackafråga);
-      if (svacka) trådar.push(`Frågetecknet: vad är det med ${svacka.namn}?`);
-      if ((spel.förstaman?.ambition ?? 0) >= 70 && !spel.förstaman.delägare)
-        trådar.push(`${spel.förstaman.namn.split(" ")[0]} funderar på framtiden`);
-      const rival = Object.values(spel.rivaliteter ?? {}).find((r) => (r.möten ?? 0) === 4);
-      if (rival) trådar.push(`Rivalitet på väg: ett möte kvar`);
-      const tf = (spel.tidigareFörstamän ?? []).find((f) => !f.segerMotDig && f.mötenMotDig > 0);
-      if (tf) trådar.push(`Eleven jagar: ${tf.namn} har ännu inte slagit dig`);
-      return trådar.length === 0 ? "" : html`
-        <div class="etikettrad" style=${{ marginTop: "14px" }}>Pågående berättelser</div>
-        <div class="kort trådar">
-          ${trådar.slice(0, 4).map((t, i) => html`<div key=${i} class="tråd">❧ ${t}</div>`)}
-        </div>`;
-    })()}
-
-    ${storFärsk
-      ? html`
-        <div class="klipp" style=${{ marginTop: "12px" }}>
-          <div class="klipp-etikett">Ur ${""}Travbladet · ${stor.etikett}</div>
-          <div class="klipp-rubrik">${stor.rubrik}</div>
-          <div class="klipp-rad">${stor.ingress}</div>
-        </div>`
-      : huvudnyhet && html`
-        <div class="klipp" style=${{ marginTop: "12px" }}>
-          <div class="klipp-etikett">Säsong ${spel.säsong} · vecka ${Math.min(spel.vecka, spel.veckor)}${spel.hemmabana ? ` · ${BANOR[spel.hemmabana]?.namn}` : ""}</div>
-          <div class=${"klipp-rubrik" + (huvudnyhet.ton === "dålig" ? " tegel" : "")}>${huvudnyhet.rubrik}</div>
-          <div class="klipp-rad">${huvudnyhet.byline}</div>
-        </div>`}
-
+    ${/* Storyn bor i Sfären sedan v98 (Teds princip: berättelser på
+        egna sidor, inte insprängda bland vardagsbesluten). Hem är
+        VAD GÖR JAG NU — tidningsklippet och berättelsetrådarna
+        flyttade till Travbladet. Bågkortet stannar: det är en plan. */ ""}
     ${spel.båge && html`
       <h2>${spel.båge.veckorKvar === 0 ? "Storloppsvecka" : "På horisonten"}</h2>
       <div class="kort bågkort">

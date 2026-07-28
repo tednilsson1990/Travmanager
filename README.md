@@ -475,6 +475,97 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Inkorgen, etapp A (v99 — kap 19, Teds FM-dokument)
+
+Teds insikt ur många års Football Manager: inkorgen är inte en funktion
+utan spelets motor — nästan varje beslut börjar där. Etapp A lägger
+grunden: HÄNDELSEFORMATET och ett eget rum.
+
+**engine-inkorg.js** — formatet { id, avsändare, typ, prioritet,
+rubrik, text, flik } med dokumentets fem typer (sms, samtal, mejl,
+rapport, nyhet) och tre prioritetsnivåer (beslut / rekommendation /
+info). DERIVATION, INTE DUBBELLAGRING: veckans inkorg härleds ur
+spelets tillstånd vid varje anrop — id:n är stabila innehållshashar,
+så lästmarkeringarna (spel.inkorgLästa, takad till 120) överlever
+omrendering utan att sparfilen växer. Adaptrarna läser BEFINTLIGA
+motorer: vägvisaren blir förstamannens sms (akut ton = beslut krävs),
+propositionsmotorn blir arrangörens mejl ("3 propositioner passar
+stallet" — räknat med SAMMA loppläge som anmälans väljare, så inkorgen
+aldrig lovar mer än loppfliken håller), skador blir veterinärrapporter,
+negativt veckonetto en kontorsrapport (beslut när kassan inte täcker
+en månad), sponsoravtal på upphällningen ett telefonsamtal, pressen
+Travbladsnyheter.
+
+**ui-inkorgvy.js** — egen flik mellan Hem och Stall, i Travbladets
+estetik: typografiska etiketter i trycksvärta (SMS/TEL/BREV/RAPPORT/
+NYTT), tegelkant på beslut, guldkant på förslag. Varje rad är en
+genväg: trycket markerar läst och tar spelaren till vyn där man agerar
+— aldrig en återvändsgränd. Flikraden bär ett olästmärke (ren CSS ur
+data-attribut).
+
+Sjuttonde provsviten (prov-inkorg.mjs): id-stabilitet, unika id:n,
+prioritetssorteringen, att varje genväg pekar på en verklig flik och
+att källorna täcks. Kvar i kap 19: B veckobrevet (öppnas vid ny vecka,
+ersätter Hem-panelen), C beslutshändelser, D karriärdagboken.
+
+## Avviker-läxan, avplottringen och guidningen (v98)
+
+Teds skärmdump från produktionen: »Can't find variable: avviker« —
+v90-flytten till vägvisaren tog variablerna men lämnade förstamans-
+repliken som läste dem. Lagningen är två rader; LÄXAN är större:
+
+**Verifieran fick en riktig stackmaskin.** Anropskontrollen såg bara
+`namn()` — nakna variabler i mallarna slank igenom. Nu skalas koden med
+en tillståndsstack (kod/kod-i-mall/kod-block/mall/rad/block/strängar)
+som klarar nästlade html-mallar och räknar vanliga klamrar (en
+destrukturering fick tidigare mallnivån att poppa i förtid), och ALLA
+identifierare i ${...}-uttryck prövas mot deklarationer, importer,
+pilparametrar och multideklarationer. Sabotagetestad åt båda hållen.
+
+**Avplottringen (Teds tre punkter).** (1) Väljarna visar bara det som
+går att välja: stängda lopp blev en orsaksrad UNDER loppväljaren
+(»Stängda för Rimfrost Bris: Guldstoet — öppet endast för ston«),
+drömkuskarna en aspirationsrad, de uppbokade helt ute (de syns ändå i
+startlistan). Transparensen är orsaken, inte skräpet. (2) Storyn bor i
+Sfären: tidningsklippet och berättelsetrådarna lämnade Hem — Travbladet
+äger allt redaktionellt, Hem är VAD GÖR JAG NU (bågkortet stannar: det
+är en plan, inte en story). (3) Guidningen där beslutet fattas:
+förstamannen föreslår en FÄRDIG anmälan överst i loppfliken — häst i
+form, bäst bedömda loppet, kusk som bekräftar direkt — och ett tryck
+fyller i alla tre valen. Gamla matchningskortet gick upp i förslaget:
+ett guidningskort, inte två konkurrerande.
+
+## Kuskbokningen (v97 — manualen kap 9)
+
+Kusken slutar vara en rullista och blir en relation med villkor. Tre
+statusar, synliga redan i väljaren (data-kuskar äger dem):
+"bekräftar" — tackar ja och står vid sitt ord; "preliminär" — de fem
+mest eftertraktade kuskarna tackar preliminärt ja men kör helst
+loppets bästa häst; "upptagen" — redan bokad i loppet (embryot från
+v62, nu med namn).
+
+**Bekräftelsen** prövas i uttagningsbeskedet, när fältet är känt:
+stjärnkusken jämför din häst mot loppets bästa MED KUSKENS ÖGON — samma
+kapacitetsmått som AI-tränarnas skattning, aldrig en titt i
+simuleringen. Bland fältets tre bästa håller bokningen alltid. Annars
+avgör relationen: vid 70+ hoppar stjärnan aldrig (den som kört för dig
+i åratal står vid sitt ord), därunder är risken deterministisk ur
+kusk + lopp + vecka — samma besked varje gång, aldrig ett omtärnat.
+Avhoppet kommer i klartext på telefonen (»Fältets bästa är svår att
+tacka nej till. Inget illa ment.«) och pekar alltid på hästen kusken
+väljer i stället — som finns i fältet på riktigt.
+
+**Reserven:** vid avhopp väljs ersättaren direkt i beskedet bland sex
+villiga, med status och arvode synligt; arvodet som dras är reservens.
+Struket eller inställt frigör bokningen utan kostnad som förut.
+Kuskvalet blir därmed strategiskt på riktigt: stjärnan är bäst i
+sulkyn men en risk bakom en halvbra häst — trotjänaren med hög
+relation är garantin.
+
+Provsviten: vanlig kusk hoppar aldrig, topp-tre-häst håller alltid
+bokningen, hög relation gör stjärnan trofast, risken är risk (25 av 40
+veckor bakom fältets sämsta) och avhoppet pekar på rätt häst.
+
 ## Delningen och bedömningsnivåerna (v96 — anmälan komplett)
 
 Två manualbitar som gör anmälningsprocessen hel:
@@ -1667,4 +1758,8 @@ klassningen, loppväljaren och startpoängen (v92) samt etapp B —
 anmälan som process med uttagning, trösklar och besked (v93) samt
 etapp C — spårtrappan som gör motorns spårkunskap synlig (v94) och
 etapp D — AI-tränarnas loppval med en gemensam anmälningskarta (v95)
-samt delningen och de organisationsberoende bedömningsnivåerna (v96).
+samt delningen och de organisationsberoende bedömningsnivåerna (v96)
+och kuskbokningens statusar med bekräftelse och reserv (v97), följt av
+v98: avviker-lagningen, verifierans stackmaskin, avplottrade väljare,
+storyflytten till Sfären och förstamannens förslag i anmälan, samt
+inkorgens etapp A — händelseformatet och det egna rummet (v99).

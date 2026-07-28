@@ -764,3 +764,33 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   border-left:3px solid var(--marin);border-radius:0 8px 8px 0;
   font-family:'Lora',Georgia,serif;font-size:13px;font-style:italic;color:#2E3742}
 .fm-namn{font-style:normal;font-weight:700;font-family:inherit;color:var(--marin)}
+
+
+/* ==================== Inkorgen (v99, kap 19) ==================== */
+/* Travbladets estetik: typografiska etiketter i trycksvärta.        */
+.inkorgsrad { display: block; width: 100%; text-align: left; }
+.inkorgsrad.läst { opacity: 0.62; }
+.inkorgsrad.tegel-kant { border-left: 3px solid var(--tegel, #a63a2b); }
+.inkorgsrad.guld-kant { border-left: 3px solid var(--guld, #c9a227); }
+.inkorgs-topp { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }
+.inkorgs-typ {
+  font-size: 10px; letter-spacing: 0.12em;
+  color: var(--benvit, #f4efe6); background: var(--marin, #1d2f4e);
+  padding: 1px 5px; border-radius: 2px;
+}
+.inkorgs-avsändare { font-size: 12px; font-weight: 700; color: var(--marin, #1d2f4e); }
+.inkorgs-märke {
+  margin-left: auto; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #8a6d1a;
+}
+.inkorgs-märke.tegel { color: var(--tegel, #a63a2b); font-weight: 700; }
+
+/* Olästmärket i flikraden — en liten trycksvärtad siffra. */
+[data-olästa] { position: relative; }
+[data-olästa]:not([data-olästa=""])::after {
+  content: attr(data-olästa);
+  position: absolute; top: 4px; right: 12%;
+  min-width: 15px; height: 15px; line-height: 15px; border-radius: 8px;
+  background: var(--tegel, #a63a2b); color: var(--benvit, #f4efe6);
+  font-size: 10px; font-weight: 700; text-align: center; padding: 0 3px;
+}

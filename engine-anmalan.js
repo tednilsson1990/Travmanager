@@ -32,6 +32,7 @@ import { klamp, seedad, sättRng, slump } from "./engine-util.js";
 import { tillgängliga } from "./engine-varld.js";
 import { startpoäng } from "./engine-proposition.js";
 import { veckansAnmälningar } from "./engine-aitranare.js";
+import { ärEftertraktad, relation } from "./data-kuskar.js";
 
 /** Arrangörens beslut vid 4–7 anmälda — deterministiskt och viktat
     (4: 25 %, 5: 43 %, 6: 61 %, 7: 79 %). Samma funktion för spelarens
@@ -157,6 +158,30 @@ export function uttagning(spel, lopp, egenHäst) {
   return { utfall: "struken", antal, platser, överanmält: true, gräns,
     dinPoäng: egenRad.poäng,
     text: `${grund} Din poäng: ${egenRad.poäng} — ${egenHäst.namn} kom inte med. ${platser} hästar hade starkare rader.` };
+}
+
+/**
+ * KUSKBEKRÄFTELSEN (v97, manualen kap 9). En preliminär bokning prövas
+ * när fältet är känt: den eftertraktade kusken jämför din häst mot
+ * loppets bästa — med kuskens ögon (samma kapacitetsmått som
+ * AI-tränarnas skattning, ingen facit-titt i simuleringen). Är din häst
+ * bland fältets tre bästa håller bokningen alltid. Annars avgör
+ * relationen: ju längre ni kört ihop, desto oftare står kusken vid sitt
+ * ord. Deterministiskt ur kusk + lopp + vecka — samma besked varje gång.
+ */
+export function kuskbekräftelse(spel, kusk, egenHäst, fält, lopp) {
+  if (!ärEftertraktad(kusk) || relation(spel, kusk) >= 70) return { bekräftad: true };
+  const mått = (h) => (h.start + h.fart + h.styrka) / 3 * 0.55 + h.form * 0.45;
+  const ordnade = [...fält].sort((a, b) => mått(b) - mått(a));
+  const rang = ordnade.indexOf(egenHäst) + 1;
+  if (rang <= 3) return { bekräftad: true, rang };
+  const risk = Math.max(8, 58 - relation(spel, kusk) / 2 - (fält.length - rang) * 2);
+  if (hash(`${kusk.namn}:${lopp.id}:${spel.vecka}:bokning`) % 100 < risk) {
+    const bästa = ordnade.find((h) => h !== egenHäst);
+    return { bekräftad: false, rang, till: bästa?.namn ?? "en annan häst",
+      text: `${kusk.namn} bryter den preliminära bokningen — »${bästa?.namn ?? "Fältets bästa"} är svår att tacka nej till. Inget illa ment.«` };
+  }
+  return { bekräftad: true, rang };
 }
 
 /**

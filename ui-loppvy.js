@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { html } from "htm/preact";
 import { TAKTIKER } from "./data-lopp.js";
 import { veckansLopp, startförbud, kravText, inbjudningslopp, medInbjudningspengar } from "./data-kalender.js";
-import { KUSKAR, villig, svar, uppbokad, uppbokadeI } from "./data-kuskar.js";
-import { loppmatchning } from "./engine-forstaman.js";
+import { KUSKAR, villig, svar, uppbokad, uppbokadeI, kuskstatus } from "./data-kuskar.js";
 import { veckansMinneslopp } from "./engine-mentor.js";
 import { Bild } from "./ui-grafik.js";
 import { BANOR } from "./data-namnpaket.js";
@@ -16,7 +15,7 @@ import { resekostnad } from "./engine-sponsor.js";
 import { loppanalys } from "./engine-analys.js";
 import { pressfråga } from "./engine-travblad.js";
 import { klassEtikett, loppläge, GRUPPNAMN, klassklättring, startpoäng, startpoängText, bedömningsnivå } from "./engine-proposition.js";
-import { uttagning, alternativlopp } from "./engine-anmalan.js";
+import { uttagning, alternativlopp, kuskbekräftelse } from "./engine-anmalan.js";
 import { spårkaraktär, spårtrappa, framförSpår } from "./data-lopp.js";
 import { blanda, klamp, kr, kmtid, tidText, plock, slump } from "./engine-util.js";
 import { Täcke, Tom, Rad } from "./ui-delar.js";
@@ -44,11 +43,13 @@ function Anmälan({ spel, onStart }) {
      före till och med inbjudningsloppen. Vissa lopp väger mer. */
   const minne = veckansMinneslopp(spel);
   const veckans = veckansLoppFör(spel, minne);
-  /* Kåren är stor. Visa dem som tackar ja, plus några snäpp över för att
-     visa vad du kan sikta på när renommét stiger. */
+  /* Kåren är stor — men väljaren visar BARA kuskar som går att boka
+     (Teds v98-princip: otillgängliga rader skräpar inte i listor;
+     orsaken finns nära i stället). Drömkuskarna blev en aspirationsrad
+     under väljaren, de uppbokade syns ändå i startlistan sen. */
   const villiga = KUSKAR.filter((k) => villig(spel, k));
-  const drömmar = KUSKAR.filter((k) => !villig(spel, k)).slice(0, 5);
-  const valbara = [...villiga.slice(0, 28), ...drömmar];
+  const drömmar = KUSKAR.filter((k) => !villig(spel, k)).slice(0, 3);
+  const valbara = villiga.slice(0, 28);
   const [hästId, sättHäst] = useState(startbara[0]?.id ?? null);
   const [loppIx, sättLopp] = useState(0);
   const [kuskNamn, sättKusk] = useState(villiga[0]?.namn ?? KUSKAR[KUSKAR.length - 1].namn);
@@ -84,9 +85,38 @@ function Anmälan({ spel, onStart }) {
   const resa = hemmabana && !hemma ? resekostnad(spel) : 0;
   const kanStarta = !förbud && villig(spel, kusk) && !bokad && spel.kassa >= kusk.arvode + resa;
 
-  const matchning = spel.förstaman ? loppmatchning(spel.förstaman, häst, veckans) : null;
 
-  return html`
+  /* FÖRSTAMANNENS FÖRSLAG (v98, Teds guidningspunkt): vägvisaren pekar
+     på Hem — här, där beslutet faktiskt fattas, föreslår förstamannen
+     en färdig anmälan: hästen i bäst form med öppna lopp, det bäst
+     bedömda loppet för den, och en kusk som bekräftar direkt. Ett
+     tryck fyller i alla tre valen — spelaren kan alltid ändra. */
+  const förslag = (() => {
+    if (!spel.förstaman) return null;
+    const nivå = bedömningsnivå(spel);
+    for (const h of [...startbara].sort((a, b) => (b.form ?? 0) - (a.form ?? 0))) {
+      const öppna = veckans
+        .map((l, i2) => ({ l, i2, läge: loppläge(h, l, nivå) }))
+        .filter((x) => x.läge.status !== "ej")
+        .sort((a, b) => a.läge.ordning - b.läge.ordning);
+      if (!öppna.length) continue;
+      const k = villiga.find((k2) => !uppbokad(spel, k2, öppna[0].l)
+        && kuskstatus(spel, k2, öppna[0].l).status === "bekräftar");
+      if (!k) continue;
+      return { h, ...öppna[0], k };
+    }
+    return null;
+  })();
+
+    return html`
+    ${förslag && html`
+      <div class="kort">
+        <div class="meta">${spel.förstaman.namn.split(" ")[0]} föreslår</div>
+        <div class="logg">»${förslag.h.namn} i ${förslag.l.kortnamn || förslag.l.namn} — ${förslag.läge.not}. ${förslag.k.namn} kör och bekräftar direkt.«</div>
+        <button class="btn sekundär" onClick=${() => { sättHäst(förslag.h.id); sättLopp(förslag.i2); sättKusk(förslag.k.namn); }}>
+          Använd förslaget
+        </button>
+      </div>`}
     <${Bild} id="lopp" alt="" klass="vytopp" fallback=${null} />
     <h2>Vecka ${spel.vecka} — anmälan</h2>
     ${spel.inbjudan?.vecka === spel.vecka && html`
@@ -95,13 +125,8 @@ function Anmälan({ spel, onStart }) {
         <div class="logg">Efter <b>${spel.inbjudan.häst}</b>s seger vill arrangören ha stallet
           i sitt inbjudningslopp — förhöjda prispengar, men fältet håller klass. ✉-loppet i listan.</div>
       </div>`}
-    ${matchning && html`
-      <div class="kort">
-        <div class="meta">Förstamannen om ${häst.namn}</div>
-        <div class="logg">»${matchning.text}«</div>
-        ${matchning.lopp && html`<button class="btn liten sekundär" onClick=${() =>
-          sättLopp(veckans.indexOf(matchning.lopp))}>Ta det loppet</button>`}
-      </div>`}
+    ${/* Matchningskortet gick upp i förstamannens förslag (v98) — ETT
+        guidningskort, inte två konkurrerande. */ ""}
     <div class="kort">
       <label class="fält" for="v-hast">Häst</label>
       <select id="v-hast" value=${hästId} onChange=${(e) => sättHäst(+e.target.value)}>
@@ -122,7 +147,7 @@ function Anmälan({ spel, onStart }) {
              klassläsning — grupperna kollapsar ärligt till Berättigade. */
           const nivå = bedömningsnivå(spel);
           const lägen = veckans.map((l, i) => ({ l, i, läge: loppläge(häst, l, nivå) }));
-          return ["rekommenderad", "möjlig", "riskfylld", "ej"].map((grupp) => {
+          return ["rekommenderad", "möjlig", "riskfylld"].map((grupp) => {
             const rader = lägen.filter((x) => x.läge.status === grupp);
             if (!rader.length) return null;
             return html`<optgroup key=${grupp} label=${nivå === 0 && grupp === "möjlig" ? "Berättigade" : GRUPPNAMN[grupp]}>
@@ -134,18 +159,36 @@ function Anmälan({ spel, onStart }) {
           });
         })()}
       </select>
+      ${(() => {
+        /* Stängda lopp VISAS fortfarande — men som orsaksrader här,
+           inte som låsta poster i väljaren (Teds v98-princip). Manualens
+           transparenskrav är orsaken, inte skräpet. */
+        const nivå = bedömningsnivå(spel);
+        const stängda = veckans
+          .map((l) => ({ l, läge: loppläge(häst, l, nivå) }))
+          .filter((x) => x.läge.status === "ej");
+        return stängda.length === 0 ? "" : html`
+          <div class="hint">Stängda för ${häst.namn}: ${stängda.map(({ l, läge }) =>
+            `${l.kortnamn || l.namn} (${läge.not})`).join(" · ")}</div>`;
+      })()}
 
       <label class="fält" for="v-kusk">Kusk</label>
       <select id="v-kusk" value=${kusk.namn} onChange=${(e) => sättKusk(e.target.value)}>
-        ${valbara.map((k) => html`
-          <option key=${k.namn} value=${k.namn} disabled=${!villig(spel, k) || uppbokad(spel, k, lopp)}>
-            ${k.namn} — ${k.stil} · st ${k.start}/av ${k.avslutning} · ${uppbokad(spel, k, lopp) ? "uppbokad i loppet" : svar(spel, k).t} · ${kr(k.arvode)}
+        ${valbara.filter((k) => !uppbokad(spel, k, lopp)).map((k) => html`
+          <option key=${k.namn} value=${k.namn}>
+            ${k.namn} — ${k.stil} · st ${k.start}/av ${k.avslutning} · ${kuskstatus(spel, k, lopp).status === "preliminär" ? "preliminärt ja" : uppbokad(spel, k, lopp) ? "uppbokad i loppet" : svar(spel, k).t} · ${kr(k.arvode)}
           </option>`)}
       </select>
     </div>
 
     <div class="loppfakta">
       <div><span>Proposition</span> ${kravText(lopp)}</div>
+      ${drömmar.length > 0 && html`<div class="hint">Utom räckhåll ännu: ${drömmar.map((k) => k.namn).join(", ")} — kräver högre renommé.</div>`}
+      ${(() => {
+        const ks = kuskstatus(spel, kusk, lopp);
+        return ks.status === "preliminär" && html`<div class="dålig">
+          <span>Kuskbokningen</span> ${ks.not} — bekräftas först efter uttagningen</div>`;
+      })()}
       ${(() => {
         const nivå = bedömningsnivå(spel);
         const läge = loppläge(häst, lopp, nivå);
@@ -253,6 +296,16 @@ function Uttagningsbesked({ spel, besked, onKlar, onAnnat, onAvstå }) {
   const { häst, lopp, kusk } = besked;
   const veckans = veckansLoppFör(spel);
   const med = besked.utfall === "med";
+  /* KUSKBEKRÄFTELSEN (kap 9): den preliminära bokningen prövas nu när
+     fältet är känt. Deterministisk — samma besked varje gång. Vid
+     avhopp väljs reserven här, och arvodet blir reservens. */
+  const bekräftelse = med ? kuskbekräftelse(spel, kusk, häst, besked.fält, lopp) : { bekräftad: true };
+  const [reservNamn, sättReserv] = useState(null);
+  const reserver = !bekräftelse.bekräftad
+    ? KUSKAR.filter((k) => k.namn !== kusk.namn && villig(spel, k)
+        && !uppbokadeI(spel, lopp).some((u) => u.namn === k.namn)).slice(0, 6)
+    : [];
+  const körande = reservNamn ? KUSKAR.find((k) => k.namn === reservNamn) : kusk;
   const nivå = bedömningsnivå(spel);
   const alternativ = med ? [] : alternativlopp(veckans, lopp, häst, (h, l) => loppläge(h, l, nivå));
   return html`
@@ -267,8 +320,21 @@ function Uttagningsbesked({ spel, besked, onKlar, onAnnat, onAvstå }) {
           <div class="prisrad"><span>${häst.namn}s startpoäng</span>
             <span class=${"pris " + (med ? "upp" : "ner")}>${besked.företräde ? "företräde (ostartad)" : besked.dinPoäng}</span></div>`}`}
     </div>
+    ${med && !bekräftelse.bekräftad && html`
+      <div class="samtal">
+        <div class="samtal-vem">${kusk.namn} · telefonen</div>
+        <div class="samtal-text">${bekräftelse.text}</div>
+      </div>
+      <div class="hint">Reserv — vem tar körningen?</div>
+      ${reserver.map((k) => html`
+        <button key=${k.namn} class=${"val" + (k.namn === reservNamn ? " rek" : "")}
+          onClick=${() => sättReserv(k.namn)}>
+          <div class="val-rubrik">${k.namn} · ${kr(k.arvode)} kr</div>
+          <div class="val-citat">${k.stil} · st ${k.start}/av ${k.avslutning} · ${kuskstatus(spel, k, lopp).not}</div>
+        </button>`)}`}
     ${med
-      ? html`<button class="btn" onClick=${() => onKlar(besked.fält)}>Till lottningen — ${kusk.namn} kör</button>`
+      ? html`<button class="btn" disabled=${!bekräftelse.bekräftad && !reservNamn}
+          onClick=${() => onKlar(besked.fält, körande)}>Till lottningen — ${körande.namn} kör</button>`
       : html`
         ${alternativ.length > 0 && html`<div class="hint">Berättigade alternativ samma vecka:</div>`}
         ${alternativ.map(({ l, läge }) => html`
@@ -277,7 +343,7 @@ function Uttagningsbesked({ spel, besked, onKlar, onAnnat, onAvstå }) {
             <div class="val-citat">${läge.not}</div>
           </button>`)}
         <button class="btn sekundär" onClick=${onAvstå}>Avstå den här veckan</button>`}
-    <div class="hint">${med ? `Arvode ${kr(kusk.arvode)} kr dras när ni går till lottningen.` : "Struken anmälan kostar ingenting — kusken kördes aldrig."}</div>`;
+    <div class="hint">${med ? `Arvode ${kr(körande.arvode)} kr dras när ni går till lottningen.` : "Struken anmälan kostar ingenting — kusken kördes aldrig."}</div>`;
 }
 
 /* ==================== Startlista ==================== */
@@ -873,7 +939,7 @@ export default function LoppVy({ spel, uppdatera }) {
 
   if (steg === "besked" && besked) {
     return html`<${Uttagningsbesked} spel=${spel} besked=${besked}
-      onKlar=${(f) => {
+      onKlar=${(f, körandeKusk) => {
         /* Taktikern minns: uttagningsgränsen arkiveras för klassen
            (nivå 2 visar den nästa gång). Delat lopp får avdelningen i
            namnet så facit och loppboken berättar rätt. */
@@ -885,7 +951,7 @@ export default function LoppVy({ spel, uppdatera }) {
               kortnamn: `${besked.lopp.kortnamn || besked.lopp.namn} avd. ${besked.avdelning}` }
           : besked.lopp;
         sättBesked(null);
-        anmäl({ häst: besked.häst, lopp, kusk: besked.kusk, fält: f });
+        anmäl({ häst: besked.häst, lopp, kusk: körandeKusk ?? besked.kusk, fält: f });
       }}
       onAnnat=${(nyttLopp) => {
         sättBesked(null);

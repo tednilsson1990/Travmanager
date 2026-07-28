@@ -7,7 +7,7 @@
  * den gamla cachen städas bort. Glöms detta ser man den gamla versionen
  * för evigt, även online.
  */
-const VERSION = 96;
+const VERSION = 99;
 const CACHE = `stallet-v${VERSION}`;
 
 /* Allt spelet behöver för att starta helt utan nät. Egna filer med samma
@@ -64,6 +64,8 @@ const EGNA = [
   `./engine-proposition.js?v=${VERSION}`,
   `./engine-anmalan.js?v=${VERSION}`,
   `./engine-aitranare.js?v=${VERSION}`,
+  `./engine-inkorg.js?v=${VERSION}`,
+  `./ui-inkorgvy.js?v=${VERSION}`,
   `./engine-vagvisare.js?v=${VERSION}`,
   `./engine-stallmote.js?v=${VERSION}`,
   `./data-agare.js?v=${VERSION}`,

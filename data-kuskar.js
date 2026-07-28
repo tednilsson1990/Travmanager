@@ -56,3 +56,29 @@ export function uppbokad(spel, kusk, lopp) {
 
 /** Kuskarna som är uppbokade i ett visst lopp, för fältbygget och vyn. */
 export const uppbokadeI = (spel, lopp) => KUSKAR.filter((k) => uppbokad(spel, k, lopp));
+
+
+/**
+ * KUSKBOKNINGENS STATUSAR (v97, tävlingsmanualen kap 9). En kusk är inte
+ * en rullista utan en relation med villkor:
+ *   "bekräftar"  — tackar ja och står vid sitt ord.
+ *   "preliminär" — de eftertraktade: tackar ja, men kör helst loppets
+ *                  bästa häst. Bokningen bekräftas först efter
+ *                  uttagningen — och kan brytas om fältet bjuder bättre.
+ *   "upptagen"   — redan bokad åt ett annat stall i loppet.
+ * Hög relation gör även en stjärnkusk trofast: den som kört för dig i
+ * åratal hoppar inte för ett halvt streck.
+ */
+export const eftertraktade = () =>
+  [...KUSKAR].sort((a, b) => b.ryktbarhet - a.ryktbarhet).slice(0, 5);
+
+export const ärEftertraktad = (kusk) => eftertraktade().some((k) => k.namn === kusk.namn);
+
+export function kuskstatus(spel, kusk, lopp) {
+  if (lopp && uppbokadeI(spel, lopp).some((k) => k.namn === kusk.namn))
+    return { status: "upptagen", not: "redan bokad i loppet" };
+  if (!villig(spel, kusk)) return { status: "nej", not: svar(spel, kusk).t };
+  if (ärEftertraktad(kusk) && relation(spel, kusk) < 70)
+    return { status: "preliminär", not: "preliminärt ja — kör helst loppets bästa häst" };
+  return { status: "bekräftar", not: "tackar ja och står vid sitt ord" };
+}

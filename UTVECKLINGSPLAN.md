@@ -426,8 +426,52 @@ gäller allt: spelaren får alltid en konkret förklaring.
 ## 18.3 Loppväljaren i fyra grupper (dok kap 6.2–6.3) [KLART v96 — fyra grupper med orsak (v92) + bedömningsnivåer 0/1/2 efter organisationen med gränsminne (v96)]
 ## 18.4 Anmälan som process (dok kap 6–7) [KLART v96 i grunden — uttagning (v93) + delning i jämna avdelningar även i världsveckan (v96); anmälningsfönster över veckor och mörk anmälan kvar som fördjupning]
 ## 18.5 Startfält och spår (dok kap 5, 8) [KLART v94 i grunden — taken (v92), tillägg/andra volten (fanns), spårtrappa och spårkaraktär synliga i lottning och kusksamtal; situationsberoende bakspårsdjup som förfining]
-## 18.6 Kuskbokning och licenser (dok kap 9) [EJ PÅBÖRJAT — bokningsstatus intresse/preliminär/bekräftad/reserv; kuskensRåd är embryot]
+## 18.6 Kuskbokning och licenser (dok kap 9) [KLART v97 i grunden — statusar, relationsstyrd bekräftelse efter uttagningen, reservval; lärlingslicenser kvar]
 ## 18.7 Tävlingsplanering och matchningsassistent (dok kap 10) [DELVIS — loppmatchning + vägvisaren är embryon; personalens OENIGA röster kvar]
 ## 18.8 Startens verkliga kostnad (dok kap 11) [DELVIS v84 — insats/risk-rutan täcker arvode+resa+risk; personal, övernattning och chansprocent kvar]
 ## 18.9 AI-tränarnas loppval (dok kap 12) [KLART v95 — sex profiler, viktad nytta, synfel, klassklättringsmedvetenhet, gemensam anmälningskarta för spelaruttagning och världsvecka]
 ## 18.10 STL, serier, försök/final och årgångsvägar (dok kap 3.3–3.4, 4.7) [EJ PÅBÖRJAT — storloppsbågen är embryot till årgångsvägen]
+
+
+# 19. INKORGEN — spelets nav (Teds dokument, juli 2026)
+
+Teds kärninsikt ur Football Manager: inkorgen är inte en funktion utan
+SPELETS MOTOR — nästan varje beslut börjar där, nästan varje system
+kommunicerar genom den. Det här kapitlet är dokumentet inarbetat mot
+det som redan finns i kodbasen.
+
+## 19.1 Händelsesystemet (grunden — byggs först) [KLART v99 — engine-inkorg.js med formatet, sex källadaptrar, id-stabil derivation]
+Ett gemensamt händelseformat: { avsändare, typ, prioritet, text,
+genväg, beslut? }. Typerna ur dokumentet: sms/chatt, telefonsamtal,
+mejl, rapport, nyhet — SAMMA data, olika presentation. Prioriteterna
+är dokumentets tre nivåer: information / rekommendation / beslut krävs.
+VIKTIGT: nästan alla källor finns redan som motorer — vägvisarens
+nästaSteg (rekommendationer), pressen och huvudnyheten (nyheter),
+uttagningsbeskeden (mejl), stallmötets slots (rapporter), ägar- och
+sponsormöten (telefonsamtal), veterinär/skador (rapporter),
+travbladet (nyheter). Inkorgen UNIFIERAR dem — den ersätter inte
+motorerna, den blir deras gemensamma postlåda.
+
+## 19.2 Veckobrevet
+Vid varje ny vecka öppnas inkorgen först: "Vad har hänt?" (världens
+resultat, pressen, ekonomiutfall) och "Vad bör jag göra nu?"
+(vägvisarens rader som klickbara händelser). Hem-flikens Nästa
+steg-panel migrerar in hit när inkorgen finns.
+
+## 19.3 Genvägarna
+Varje händelse pekar på sin vy: proposition → anmälan med loppet
+förvalt; träningsrapport → hästsidan; sponsorbrev → kontoret; artikel
+→ Travbladet. Inkorgen är aldrig en återvändsgränd (samma princip som
+uttagningsbeskedets alternativlopp).
+
+## 19.4 Historiken
+Inkorgen sparas per säsong och blir karriärens dagbok: första hästen,
+första segern, avgörande beslut. Sparfilstak: äldre säsonger
+komprimeras till milstolpar (max ~40 rader/säsong).
+
+## 19.5 Etappordning
+A [KLART v99]: händelseformatet + inkorgsvyn (läsa, prioritetsmärken, genvägar) —
+befintliga källor adapterade. B: veckobrevet ersätter Hem-panelen.
+C: beslutshändelser (svara ja/nej i inkorgen: sponsorförslag,
+ägarfrågor). D: historiken och dagboken. Story-principen från v98
+gäller: inkorgen är ett EGET rum, inte insprängd i andra vyer.

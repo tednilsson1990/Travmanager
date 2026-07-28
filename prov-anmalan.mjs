@@ -12,7 +12,8 @@
 import { sättRng, seedad } from "./engine-util.js";
 import { byggVärld } from "./engine-varld.js";
 import { veckansLopp } from "./data-kalender.js";
-import { anmälningsläge, uttagning, alternativlopp, delaFält } from "./engine-anmalan.js";
+import { anmälningsläge, uttagning, alternativlopp, delaFält, kuskbekräftelse } from "./engine-anmalan.js";
+import { KUSKAR, eftertraktade, ärEftertraktad, kuskstatus } from "./data-kuskar.js";
 import { startpoäng, loppläge } from "./engine-proposition.js";
 import { nyHäst } from "./engine-hast.js";
 
@@ -164,6 +165,45 @@ console.log("PROV: anmälningsmotorn\n");
   const poängsumma = (a) => a.reduce((x, h) => x + startpoäng(h).poäng, 0);
   ok(avd.length === 2 && Math.abs(poängsumma(avd[0]) - poängsumma(avd[1])) < poängsumma(avd[0]) * 0.15,
     "avdelningarna är poängmässigt jämna — ingen b-final");
+}
+
+/* ---------- Kuskbokningen (v97, manualen kap 9) ---------- */
+{
+  const stjärna = eftertraktade()[0];
+  const trotjänare = KUSKAR.find((k) => !ärEftertraktad(k));
+  const spel = { vecka: 5, renommé: 60, kuskrelation: {}, startadeLopp: [] };
+  const mått = (v) => ({ id: v, namn: "H" + v, start: v, fart: v, styrka: v, form: v });
+  const fält = [90, 82, 78, 70, 64, 58, 52, 46, 40, 34, 30].map(mått);
+  const svag = mått(22); fält.push(svag);
+  const stark = fält[0];
+  const lopp = { id: "prov-lopp", startande: 12 };
+
+  ok(kuskbekräftelse(spel, trotjänare, svag, fält, lopp).bekräftad,
+    "en vanlig kusk står alltid vid sitt ord — även bakom fältets sämsta häst");
+  ok(kuskbekräftelse(spel, stjärna, stark, fält, lopp).bekräftad,
+    "stjärnkusken bekräftar alltid när din häst är bland fältets bästa");
+  spel.kuskrelation[stjärna.namn] = 85;
+  ok(kuskbekräftelse(spel, stjärna, svag, fält, lopp).bekräftad,
+    "hög relation gör även stjärnan trofast — den som kört för dig i åratal hoppar inte");
+  spel.kuskrelation[stjärna.namn] = 10;
+  const a = kuskbekräftelse(spel, stjärna, svag, fält, lopp);
+  const b = kuskbekräftelse(spel, stjärna, svag, fält, lopp);
+  ok(a.bekräftad === b.bekräftad, "bekräftelsen är deterministisk — samma besked varje gång");
+  let hopp = 0;
+  for (let v = 1; v <= 40; v++) {
+    if (!kuskbekräftelse({ ...spel, vecka: v }, stjärna, svag, fält, lopp).bekräftad) hopp++;
+  }
+  ok(hopp > 8 && hopp < 36,
+    `stjärnan bakom fältets sämsta häst hoppar ibland (${hopp} av 40 veckor) — risk, inte visshet`);
+  const avhopp = kuskbekräftelse({ ...spel, vecka: [...Array(40).keys()].find((v) =>
+    !kuskbekräftelse({ ...spel, vecka: v + 1 }, stjärna, svag, fält, lopp).bekräftad) + 1 },
+    stjärna, svag, fält, lopp);
+  ok(!avhopp.bekräftad && avhopp.till === stark.namn && avhopp.text.includes(stark.namn),
+    "avhoppet pekar på fältets bästa häst — och säger det i klartext");
+  ok(kuskstatus(spel, stjärna, null).status === "preliminär",
+    "stjärnkusk med låg relation bokas preliminärt — det syns före anmälan");
+  ok(kuskstatus(spel, trotjänare, null).status === "bekräftar",
+    "vanliga kuskar bekräftar direkt");
 }
 
 sättRng();

@@ -13,11 +13,14 @@ import KontorVy from "./ui-kontorvy.js";
 import { ÖvertagandeVy, FörstamansvalVy } from "./ui-prolog.js";
 import { Dräkt } from "./ui-grafik.js";
 import HemVy from "./ui-hemvy.js";
+import InkorgVy from "./ui-inkorgvy.js";
+import { inkorgsläge } from "./engine-inkorg.js";
 import JournalVy from "./ui-journalvy.js";
 import ScenVy from "./ui-scenvy.js";
 
 const FLIKAR = [
   { id: "hem", namn: "Hem" },
+  { id: "inkorg", namn: "Inkorg" },
   { id: "stall", namn: "Stall" },
   { id: "lopp", namn: "Lopp" },
   { id: "sfar", namn: "Sfären" },
@@ -86,6 +89,7 @@ export default function App() {
 
     <div class="wrap">
       ${flik === "hem" && html`<${HemVy} spel=${spel} gåTill=${(f) => sättFlik(f)} />`}
+      ${flik === "inkorg" && html`<${InkorgVy} spel=${spel} uppdatera=${uppdatera} gåTill=${(f) => sättFlik(f)} />`}
       ${flik === "stall" && html`<${StallVy} spel=${spel} uppdatera=${uppdatera} nystart=${nystart} />`}
       ${flik === "lopp" && html`<${LoppVy} spel=${spel} uppdatera=${uppdatera} />`}
       ${flik === "sfar" && html`<${SfarVy} spel=${spel} />`}
@@ -104,6 +108,7 @@ export default function App() {
     <nav role="tablist">
       ${FLIKAR.map((f) => html`
         <button key=${f.id} role="tab" aria-selected=${flik === f.id}
+          data-olästa=${f.id === "inkorg" && spel ? inkorgsläge(spel).antal || null : null}
           onClick=${() => sättFlik(f.id)}>${f.namn}</button>`)}
     </nav>`;
 }

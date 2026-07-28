@@ -147,33 +147,52 @@ for (const f of js) {
    behålls: det är ju precis där kraschen bodde. */
 {
   const skalaKod = (src) => {
-    let ut = "", läge = "kod", mall = [];
+    /* Tillståndsstack — nästlade mallar (html-mallar inuti ${...}) är
+       vardag i kodbasen och knäckte den platta maskinen (v98-läxan:
+       prosa läckte in som kod och larmade på ordet "button"). Stackens
+       topp är sanningen: "kod" | "mall" | "rad" | "block" | '"' | "'".
+       mallkod samlar BARA kod som ligger inuti minst ett ${...}. */
+    let ut = "", mallUt = "";
+    const stack = ["kod"];
+    const iUttryck = () => stack.includes("mall");
+    const skriv = (c) => { ut += c; mallUt += (iUttryck() && stack[stack.length - 1].startsWith("kod") ? c : (c === "\n" ? c : " ")); };
+    const blank = (c) => { ut += (c === "\n" ? c : " "); mallUt += (c === "\n" ? c : " "); };
     for (let i = 0; i < src.length; i++) {
       const c = src[i], c2 = src[i + 1];
-      if (läge === "kod") {
-        if (c === "/" && c2 === "/") { läge = "rad"; ut += "  "; i++; continue; }
-        if (c === "/" && c2 === "*") { läge = "block"; ut += "  "; i++; continue; }
-        if (c === '"' || c === "'") { läge = c; ut += " "; continue; }
-        if (c === "`") { läge = "mall"; ut += " "; continue; }
-        if (c === "}" && mall.length) { läge = "mall"; mall.pop(); ut += " "; continue; }
-        ut += c; continue;
+      const topp = stack[stack.length - 1];
+      if (topp.startsWith("kod")) {
+        if (c === "/" && c2 === "/") { stack.push("rad"); blank(c); blank(c2); i++; continue; }
+        if (c === "/" && c2 === "*") { stack.push("block"); blank(c); blank(c2); i++; continue; }
+        if (c === '"' || c === "'") { stack.push(c); blank(c); continue; }
+        if (c === "\`") { stack.push("mall"); blank(c); continue; }
+        /* Vanliga klamrar räknas — annars poppar en destrukturering
+           ({ l, läge }) mallnivån i förtid (v98-läxan, del två). */
+        if (c === "{") { stack.push("kod-block"); skriv(c); continue; }
+        if (c === "}" && topp === "kod-block") { stack.pop(); skriv(c); continue; }
+        if (c === "}" && topp === "kod-i-mall") { stack.pop(); blank(c); continue; }
+        skriv(c); continue;
       }
-      if (läge === "rad") { if (c === "\n") { läge = "kod"; ut += c; } else ut += " "; continue; }
-      if (läge === "block") { if (c === "*" && c2 === "/") { läge = "kod"; ut += "  "; i++; } else ut += c === "\n" ? c : " "; continue; }
-      if (läge === '"' || läge === "'") {
-        if (c === "\\") { ut += "  "; i++; continue; }
-        if (c === läge) { läge = "kod"; ut += " "; } else ut += " ";
+      if (topp === "rad") { if (c === "\n") { stack.pop(); blank(c); } else blank(c); continue; }
+      if (topp === "block") {
+        if (c === "*" && c2 === "/") { stack.pop(); blank(c); blank(c2); i++; } else blank(c);
         continue;
       }
-      /* mall: prosa blankas, ${ öppnar kod igen (med djup för nästlade mallar) */
-      if (c === "\\") { ut += "  "; i++; continue; }
-      if (c === "$" && c2 === "{") { mall.push(1); läge = "kod"; ut += "  "; i++; continue; }
-      if (c === "`") { läge = "kod"; ut += " "; continue; }
-      ut += c === "\n" ? c : " ";
+      if (topp === '"' || topp === "'") {
+        if (c === "\\") { blank(c); blank(c2); i++; continue; }
+        if (c === topp) stack.pop();
+        blank(c); continue;
+      }
+      /* topp === "mall": prosa blankas; ${ öppnar kod-i-mall; ` stänger mallen */
+      if (c === "\\") { blank(c); blank(c2); i++; continue; }
+      if (c === "$" && c2 === "{") { stack.push("kod-i-mall"); blank(c); blank(c2); i++; continue; }
+      if (c === "`") { stack.pop(); blank(c); continue; }
+      blank(c);
     }
-    return ut;
+    return { kod: ut, mallkod: mallUt };
   };
   const KÄNT = new Set(("if for while switch catch return typeof new await async function super " +
+    "const let var else true false null undefined of in do break continue case default try finally " +
+    "throw void delete instanceof this yield static get set location history screen event " +
     "Math JSON Object Array String Number Boolean Date Promise Set Map RegExp Symbol Error " +
     "TypeError RangeError parseInt parseFloat isNaN isFinite structuredClone console fetch " +
     "setTimeout clearTimeout setInterval clearInterval requestAnimationFrame URL URLSearchParams " +
@@ -184,9 +203,13 @@ for (const f of js) {
   const allaExporter = new Set();
   for (const e of Object.values(exporter)) for (const n of e) allaExporter.add(n);
   for (const f of js) {
-    const s2 = skalaKod(fs.readFileSync(f, "utf8"));
+    const { kod: s2, mallkod } = skalaKod(fs.readFileSync(f, "utf8"));
     const kända = new Set(KÄNT);
     for (const m of s2.matchAll(/\b(?:function|const|let|var|class)\s+([\wÅÄÖåäö$]+)/g)) kända.add(m[1]);
+    /* Multideklaration: const a = 1, b = 2 — fortsättningsnamnen. */
+    for (const m of s2.matchAll(/,\s*([\wÅÄÖåäö$]+)\s*=[^=]/g)) kända.add(m[1]);
+    /* Pilfunktion med ensam parameter utan parenteser: h => ... */
+    for (const m of s2.matchAll(/(?<![\wÅÄÖåäö$])([\wÅÄÖåäö$]+)\s*=>/g)) kända.add(m[1]);
     for (const m of s2.matchAll(/import\s+([^;]+?)\s+from/g))
       for (const w of m[1].matchAll(/[\wÅÄÖåäö$]+/g)) kända.add(w[0]);
     /* Parametrar och destruktureringar — brett hellre än falsklarm:
@@ -202,6 +225,20 @@ for (const f of js) {
       if (kända.has(namn) || allaExporter.has(namn)) continue;
       if (namn.length < 5 && !/[ÅÄÖåäö]/.test(namn)) continue;
       console.log(`${f}: anropar ${namn}() som varken är deklarerad, importerad eller exporterad någonstans`);
+      fel++;
+    }
+    /* AVVIKER-LÄXAN (v98): även NAKNA variabler kraschar vid rendering —
+       "Can't find variable: avviker" nådde produktionen trots
+       anropskontrollen. Kraschklassen bor i htm-mallarnas ${...}-uttryck
+       (där bodde både pälsskifte och avviker), så kontrollen körs BARA
+       på mallkoden — och identifierare direkt före kolon undantas
+       (objektnycklar och ternärens mittled), hellre en missad än hundra
+       falsklarm. */
+    for (const m of mallkod.matchAll(/(?<![.\wÅÄÖåäö$])([A-Za-zÅÄÖåäö_$][\wÅÄÖåäö$]*)(?!\s*:)(?![\wÅÄÖåäö$])/g)) {
+      const namn = m[1];
+      if (kända.has(namn) || allaExporter.has(namn)) continue;
+      if (namn.length < 4 && !/[ÅÄÖåäö]/.test(namn)) continue;
+      console.log(`${f}: mallen läser ${namn} som varken är deklarerad, importerad eller exporterad`);
       fel++;
     }
   }
