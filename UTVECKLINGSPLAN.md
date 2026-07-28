@@ -471,7 +471,6 @@ komprimeras till milstolpar (max ~40 rader/säsong).
 
 ## 19.5 Etappordning
 A [KLART v99]: händelseformatet + inkorgsvyn (läsa, prioritetsmärken, genvägar) —
-befintliga källor adapterade. B: veckobrevet ersätter Hem-panelen.
-C: beslutshändelser (svara ja/nej i inkorgen: sponsorförslag,
-ägarfrågor). D: historiken och dagboken. Story-principen från v98
+befintliga källor adapterade. B [KLART v100]: veckoskiftet landar i inkorgen; Nästa steg-panelen och förstamansraderna migrerade in.
+C [PÅBÖRJAD v100]: beslutsformatet + verkställBeslut; sponsorerbjudandet och träningsjusteringen besvaras i raden. Kvar: ägarfrågor, veterinärförslag, hästköpsbud. D: historiken och dagboken. Story-principen från v98
 gäller: inkorgen är ett EGET rum, inte insprängd i andra vyer.

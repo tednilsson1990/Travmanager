@@ -475,6 +475,36 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Inkorgen som beslutsrum (v100 — kap 19 etapp B+C)
+
+Teds precisering efter v99: ALL kommunikation i spelet går genom
+inkorgen — och man ska AGERA i notisen, inte länkas vidare jämt.
+
+**Expandera i raden.** Trycket öppnar notisen på plats: hela texten,
+detaljrader (sponsorbudets ersättning, förmån och krav) och knapparna.
+Genvägen finns kvar men degraderad till en sekundär »Öppna →«-knapp
+för den som vill se sammanhanget. Läst markeras vid öppning.
+
+**Beslut direkt i inkorgen.** Händelseformatet bär nu beslut { typ,
+ref, alternativ }, och verkställBeslut() muterar spelet med SAMMA
+funktioner som vyerna — inkorgen är en dörr till motorerna, aldrig en
+egen regeluppsättning. Två riktiga beslut i v100: sponsorerbjudandet
+(»Skriv på« kör Kontorets teckna(), »Tacka nej« dess tackaNej()) och
+förstamannens träningsjustering (»Lägg om enligt råden« applicerar
+träningsråd på alla friska hästar med ett tryck — frågan självslocknar
+när avvikelserna är noll, och »Behåll min plan« tystar den till nästa
+vecka via inkorgBeslutade + veckbundna id:n). Vägvisarens gamla rader
+för samma ärenden filtreras: en fråga ställs aldrig två gånger i samma
+inkorg.
+
+**All kommunikation genom inkorgen.** Hems tre sista kommunikations-
+ytor flyttade in: förstamansraden, samtalskortet och hela Nästa
+steg-panelen (vägvisarens rader ÄR förstamannens sms, med genvägar).
+Hem är nu: gårdsbilden, bågkortet (en plan), Längre fram (riktmärken)
+och ekonomifakta. Och veckorytmen (etapp B): »Kör veckan« landar i
+inkorgen — den nya veckan börjar med vad har hänt och vad bör jag
+göra, som i FM.
+
 ## Inkorgen, etapp A (v99 — kap 19, Teds FM-dokument)
 
 Teds insikt ur många års Football Manager: inkorgen är inte en funktion
@@ -1762,4 +1792,6 @@ samt delningen och de organisationsberoende bedömningsnivåerna (v96)
 och kuskbokningens statusar med bekräftelse och reserv (v97), följt av
 v98: avviker-lagningen, verifierans stackmaskin, avplottrade väljare,
 storyflytten till Sfären och förstamannens förslag i anmälan, samt
-inkorgens etapp A — händelseformatet och det egna rummet (v99).
+inkorgens etapp A — händelseformatet och det egna rummet (v99) — och
+v100: inkorgen som beslutsrum där all kommunikation bor och notiserna
+expanderas och besvaras i raden.

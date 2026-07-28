@@ -478,7 +478,7 @@ function Säsongsavslut({ spel, uppdatera }) {
     </div>`;
 }
 
-export default function StallVy({ spel, uppdatera, nystart }) {
+export default function StallVy({ spel, uppdatera, nystart, efterVecka }) {
   const [valdHästId, sättValdHäst] = useState(null);
   const slut = spel.vecka > spel.veckor;
   if (slut && spel.säsongAvslutad) {
@@ -499,6 +499,9 @@ export default function StallVy({ spel, uppdatera, nystart }) {
       öppna=${() => sättValdHäst(h.id)} />`)}
     <button class="btn" disabled=${slut} onClick=${() => {
       uppdatera((s) => { körVecka(s); });
+      /* Veckoskiftet landar i inkorgen (kap 19 etapp B): den nya veckan
+         börjar med "vad har hänt, vad bör jag göra" — inte i en lista. */
+      if (efterVecka) efterVecka();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }}>${slut ? "Säsongen är slut" : "Kör veckan"}</button>
 

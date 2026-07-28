@@ -10,7 +10,7 @@
  * ger arrangörsmejl.
  */
 import { sättRng, seedad } from "./engine-util.js";
-import { byggInkorg, inkorgsläge } from "./engine-inkorg.js";
+import { byggInkorg, inkorgsläge, synligInkorg, verkställBeslut } from "./engine-inkorg.js";
 import { nyHäst } from "./engine-hast.js";
 
 let fel = 0;
@@ -31,7 +31,9 @@ function byggSpel() {
       { rubrik: "Provrubrik två", byline: "En annan rad." },
     ],
     sponsor: { namn: "Provfirman", krav: { text: "två segrar", mål: 2, nu: 0 }, veckorKvar: 2 },
-    inkorgLästa: [],
+    sponsorer: [], sponsorerbjudanden: [{ namn: "Provbolaget", typId: "foder", typnamn: "Foderpartner",
+      perVecka: 1500, segerbonus: 4000, gällerTill: 8, krav: { text: "en seger", mål: 1, nu: 0 } }],
+    kassa2: 0, inkorgLästa: [], inkorgBeslutade: [],
   };
 }
 
@@ -84,6 +86,37 @@ console.log("PROV: inkorgen\n");
   ok(före.antal === alla.length && efter.antal === alla.length - 1,
     `lästmarkeringen räknas: ${före.antal} → ${efter.antal} olästa`);
   ok(före.beslut >= 1, `${före.beslut} händelse(r) kräver beslut — märket i flikraden har underlag`);
+}
+
+/* ---------- Beslut i raden (v100) ---------- */
+{
+  const spel = byggSpel();
+  const alla = byggInkorg(spel);
+  const sponsorfråga = alla.find((h) => h.avsändare === "Provbolaget");
+  ok(!!sponsorfråga && sponsorfråga.beslut?.alternativ?.length === 2
+    && sponsorfråga.detaljer?.length >= 2,
+    "sponsorerbjudandet är en beslutshändelse med två val och detaljrader");
+  ok(!alla.some((h) => h.typ === "sms" && h.text.includes("vill sponsra")),
+    "vägvisarens dubblettrad är filtrerad — en fråga ställs aldrig två gånger");
+
+  verkställBeslut(spel, sponsorfråga, "ja");
+  ok((spel.sponsorer ?? []).length === 1 && spel.sponsorerbjudanden.length === 0,
+    "»Skriv på« i inkorgen tecknar avtalet — samma mutation som Kontoret");
+  ok(spel.inkorgBeslutade.includes(sponsorfråga.id)
+    && !synligInkorg(spel).some((h) => h.id === sponsorfråga.id),
+    "besvarade beslut försvinner ur den synliga inkorgen");
+
+  /* Träningsjusteringen: godkännandet lägger om alla friska hästar. */
+  const spel2 = byggSpel();
+  spel2.stall.forEach((h) => { h.träning = "lugnt"; });
+  const fråga = byggInkorg(spel2).find((h) => h.beslut?.typ === "träningsjustering");
+  if (fråga) {
+    verkställBeslut(spel2, fråga, "godkänn");
+    ok(!byggInkorg(spel2).some((h) => h.beslut?.typ === "träningsjustering"),
+      "»Lägg om enligt råden« nollar avvikelserna — frågan självslocknar");
+  } else {
+    ok(true, "(råden råkade sammanfalla med planen — träningsprovet överhoppat)");
+  }
 }
 
 sättRng();

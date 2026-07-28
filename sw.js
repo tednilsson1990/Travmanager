@@ -7,7 +7,7 @@
  * den gamla cachen städas bort. Glöms detta ser man den gamla versionen
  * för evigt, även online.
  */
-const VERSION = 99;
+const VERSION = 100;
 const CACHE = `stallet-v${VERSION}`;
 
 /* Allt spelet behöver för att starta helt utan nät. Egna filer med samma

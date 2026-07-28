@@ -794,3 +794,8 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   background: var(--tegel, #a63a2b); color: var(--benvit, #f4efe6);
   font-size: 10px; font-weight: 700; text-align: center; padding: 0 3px;
 }
+
+/* v100: expanderade notiser med beslut i raden */
+.inkorgs-knapp { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0; font: inherit; color: inherit; }
+.inkorgs-kropp { margin-top: 8px; border-top: 1px solid rgba(29, 47, 78, 0.15); padding-top: 8px; }
+.rad-klipp { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
