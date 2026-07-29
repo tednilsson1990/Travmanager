@@ -472,7 +472,7 @@ komprimeras till milstolpar (max ~40 rader/säsong).
 ## 19.5 Etappordning
 A [KLART v99]: händelseformatet + inkorgsvyn (läsa, prioritetsmärken, genvägar) —
 befintliga källor adapterade. B [KLART v100]: veckoskiftet landar i inkorgen; Nästa steg-panelen och förstamansraderna migrerade in.
-C [PÅBÖRJAD v100, förhand/helskärm v103]: beslutsformatet + verkställBeslut; sponsorerbjudandet och träningsjusteringen besvaras i raden; tre läsdjup med långtextfält och storyn i posten (huvudnyheten + följetongen ur delad källa). Kvar: ägarfrågor, hästköpsbud. [v108: veterinärens vilobeslut och skötardagen tillkom; läsvyn med FM-anatomi; alla typer i sina riktiga format] D: historiken och dagboken. Story-principen från v98
+C [PÅBÖRJAD v100, förhand/helskärm v103]: beslutsformatet + verkställBeslut; sponsorerbjudandet och träningsjusteringen besvaras i raden; tre läsdjup med långtextfält och storyn i posten (huvudnyheten + följetongen ur delad källa). Kvar: hästköpsbud. [v110: ägarfrågorna byggda — tacksamtalet, otåliga samtalet med ägarlöftet (uppföljt i veckomotorn med belöning/ras), löftesbrottets sms; kuskens måndagsröst] [v108: veterinärens vilobeslut och skötardagen tillkom; läsvyn med FM-anatomi; alla typer i sina riktiga format] D: historiken och dagboken. Story-principen från v98
 gäller: inkorgen är ett EGET rum, inte insprängd i andra vyer.
 
 

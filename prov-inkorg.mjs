@@ -10,6 +10,7 @@
  * ger arrangörsmejl.
  */
 import { sättRng, seedad } from "./engine-util.js";
+import { följUppÄgarlöften } from "./engine-agare.js";
 import { byggInkorg, inkorgsläge, synligInkorg, verkställBeslut, berättelsetrådar } from "./engine-inkorg.js";
 import { nyHäst } from "./engine-hast.js";
 
@@ -109,6 +110,51 @@ console.log("PROV: inkorgen\n");
   const utanFm = { ...byggSpel(), förstaman: null };
   ok(!byggInkorg(utanFm).some((h) => h.fäst),
     "utan förstaman: inget möte — ingen låtsasröst");
+}
+
+/* ---------- Ägarna och kuskarna (v110) ---------- */
+{
+  const spel = byggSpel();
+  spel.stall[0].ägare = "Lena Provägare";
+  spel.stall[0].senasteStartVecka = 1;   /* vecka 6 nu — fem veckor still */
+  spel.ägarrelationer = { "Lena Provägare": { relation: 48, sport: 48, komm: 48, typ: "lojal" } };
+  const samtal = byggInkorg(spel).find((h) => h.roll === "Hästägare" && h.beslut);
+  ok(!!samtal && samtal.beslut.typ === "ägarlöfte"
+    && samtal.lång.split("\n").filter((r) => r.startsWith("—")).length >= 4,
+    "otålig ägare ringer — replikväxling med ett riktigt val");
+
+  verkställBeslut(spel, samtal, "lova");
+  ok(spel.ägarlöften["Lena Provägare"]?.deadline === spel.vecka + 3
+    && spel.ägarrelationer["Lena Provägare"].komm > 48,
+    "löftet bokförs med deadline och värmer kommunikationen");
+
+  /* Uppföljningen: hålls löftet stärks den — bryts det rasar den. */
+  spel.stall[0].senasteStartVecka = spel.vecka + 1;
+  spel.vecka += 2;
+  följUppÄgarlöften(spel);
+  ok(!spel.ägarlöften["Lena Provägare"] && spel.ägarrelationer["Lena Provägare"].komm >= 55,
+    "hållet löfte: uppfyllt, avskrivet och belönat");
+
+  const spel2 = byggSpel();
+  spel2.stall[0].ägare = "Bo Provägare";
+  spel2.ägarrelationer = { "Bo Provägare": { relation: 40, sport: 40, komm: 40, typ: "otålig" } };
+  spel2.ägarlöften = { "Bo Provägare": { hästId: spel2.stall[0].id, från: 3, deadline: 5 } };
+  spel2.stall[0].senasteStartVecka = 1;
+  spel2.vecka = 6;
+  följUppÄgarlöften(spel2);
+  ok(spel2.löftesbrott["Bo Provägare"] === 6
+    && spel2.ägarrelationer["Bo Provägare"].komm <= 28,
+    "brutet löfte: kommunikationen rasar och brottet antecknas");
+  ok(byggInkorg(spel2).some((h) => h.rubrik === "Löftet som inte hölls"),
+    "ägaren säger det rakt ut i inkorgen veckan därpå");
+
+  /* Kuskens måndags-sms ur färskaste raden. */
+  const spel3 = byggSpel();
+  spel3.stall[0].resultat = [{ säsong: 2, vecka: 5, lopp: "P", plats: 1, km: 14.9,
+    läge: "rygg/inner", kusk: "Ann Provkusk", pris: 30000 }];
+  const kusksms = byggInkorg(spel3).find((h) => h.roll === "Kusk");
+  ok(!!kusksms && kusksms.text.includes("svarade direkt"),
+    "kusken sms:ar på måndagen — segertonen ur radens verkliga innehåll");
 }
 
 /* ---------- Formaten och rösterna (v108) ---------- */

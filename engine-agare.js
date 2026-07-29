@@ -180,3 +180,27 @@ export function ägarEfterStart(spel, häst) {
 /* Anteckning för läsaren: plock importeras inte i onödan — den används
    av framtida spontanägare. */
 export const slumpaÄgartyp = () => plock(Object.keys(ÄGARTYPER));
+
+
+/**
+ * ÄGARLÖFTENA (v110, inkorgens ägarsamtal): "jag lovar att planera en
+ * start" är ett riktigt val med riktig risk. Löftet sparas med
+ * deadline; hålls det (hästen startar i tid) stärks kommunikationen,
+ * bryts det rasar den — och ägaren säger det i inkorgen veckan därpå.
+ * Anropas ur körVecka; ren att prova isolerat.
+ */
+export function följUppÄgarlöften(spel) {
+  const löften = spel.ägarlöften ?? {};
+  Object.entries(löften).forEach(([namn, löfte]) => {
+    const häst = spel.stall.find((h) => h.id === löfte.hästId);
+    if (!häst) { delete löften[namn]; return; }
+    if ((häst.senasteStartVecka ?? 0) >= löfte.från) {
+      ägarKontakt(spel, namn, 5);
+      delete löften[namn];
+    } else if (spel.vecka > löfte.deadline) {
+      ägarKontakt(spel, namn, -12);
+      (spel.löftesbrott ??= {})[namn] = spel.vecka;
+      delete löften[namn];
+    }
+  });
+}

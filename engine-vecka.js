@@ -16,6 +16,7 @@ import { uppdateraAmbition, prövaAvgång, gamlaBekanta, ägarrelation } from ".
 import { verkställVeckoslots } from "./engine-stallmote.js";
 import { veckansAnmälningar, taUtVärldsfält } from "./engine-aitranare.js";
 import { bokförKarriär } from "./engine-minnen.js";
+import { följUppÄgarlöften } from "./engine-agare.js";
 import { FÖRSTAMANSNAMN } from "./data-namnpaket.js";
 import { arrangörenKör, delaFält } from "./engine-anmalan.js";
 import { ägarVecka, ägarSport, ägarEfterStart } from "./engine-agare.js";
@@ -66,6 +67,7 @@ function media(spel) {
 export function körVecka(spel) {
   /* Äldre karriärer saknar förstaman — en dyker upp med en pressnotis. */
   säkraAnläggning(spel);
+  följUppÄgarlöften(spel);
   /* Skötaren (v108): stallets tredje röst — namnet ur namnpaketet,
      deterministiskt på stallnamnet så varje karriär får sin egen. */
   if (!spel.skötare) {

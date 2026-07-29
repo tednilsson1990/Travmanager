@@ -475,6 +475,35 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Ägarnas och kuskarnas röster (v110 — kap 19 C + FM-punkt 3–4)
+
+Skötarmallen fick sällskap. Två nya röster i inkorgen, båda lästa rent
+ur befintliga motorer:
+
+**Ägarna ringer.** Tacksamtalet: en ägares häst vann i helgen — en
+replikväxling färgad av ägartypen (den känslosamma "grät en skvätt vid
+mållinjen", tävlingsmänniskan har "redan börjat fundera på nästa
+lopp"). Så byggs Teds exempel "Anders uppskattar att du alltid ringer
+efter loppen" — fast åt andra hållet: det är ägaren som ringer dig.
+Och det otåliga samtalet: hästen har stått fem veckor och relationen
+kärvar — "jag betalar träningsavgift varje månad och hästen står
+hemma" — med ett VAL SOM BÄR RISK: »Lova en start inom tre veckor«
+värmer kommunikationen nu (ägarKontakt +7) och bokför löftet med
+deadline; »Var ärlig — hästen behöver tid« kostar lite värme (−2) men
+bygger ingen bomb. Löftet FÖLJS UPP i veckomotorn
+(följUppÄgarlöften i engine-agare, provad isolerat): startar hästen i
+tid stärks relationen (+5) — passerar deadlinen rasar den (−12) och
+ägaren säger det rakt ut i inkorgen veckan därpå: "Du lovade en start.
+Det blev ingen. Jag glömmer inte sånt."
+
+**Kusken sms:ar på måndagen** efter helgens körning, ur radens
+VERKLIGA innehåll: segern ("hon svarade direkt när jag klickade"),
+dödensresan ("vi fick betala hela vägen hem — inte hästens fel"),
+pallplatsen, den grå dagen ("spara inte på henne för det — det fanns
+mer än resultatet visar"). Relation ≥ 70 ger den trogna kuskens
+tillägg: "som alltid, tack för förtroendet." Ingen mekanik — bara
+människan.
+
 ## Statistiklagret (v109 — kap 20.3, FM-punkt 2)
 
 "Man ska kunna grotta ner sig i siffror i timmar." Tjugonde provsviten
@@ -2089,4 +2118,6 @@ den FM:s anatomi — lista ⇄ läsvy med Nästa olästa och åtgärdsraden i
 botten — och riktiga röster: brev som brev, rapporter med struktur
 och val, samtal som repliker, skötaren som stallets tredje röst.
 v109 bygger statistiklagret: ledningen i positionsklassen, banan i
-resultatraden och Statistiken-sidan under Mer (kap 20.3).
+resultatraden och Statistiken-sidan under Mer (kap 20.3). v110 ger
+ägarna och kuskarna röster: tacksamtal och otåliga samtal med
+löftesbeslut som följs upp, och kuskens måndags-sms ur helgens rad.

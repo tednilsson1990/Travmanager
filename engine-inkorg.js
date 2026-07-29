@@ -40,6 +40,8 @@ import { träningsråd } from "./engine-forstaman.js";
 import { säkraKarriär, nästaMilstolpe } from "./engine-minnen.js";
 import { klamp } from "./engine-util.js";
 import { veckansGenomgång } from "./engine-veckomote.js";
+import { ägartyp, ägarKontakt } from "./engine-agare.js";
+import { KUSKAR, relation as kuskrelation } from "./data-kuskar.js";
 
 /** Stabil innehållshash — lästmarkeringens ankare. */
 function hash(text) {
@@ -223,6 +225,96 @@ export function byggInkorg(spel) {
     }
   }
 
+  /* ---- ÄGARNAS RÖSTER (v110, Teds punkt 3–4: relationer och
+     personligheter). Läser rent — profilerna skapas av ägarmotorn,
+     typen färgar replikerna. ---- */
+  {
+    const ägarNamn = [...new Set((spel.stall ?? []).map((h) => h.ägare).filter(Boolean))];
+
+    /* Tacksamtalet: en ägares häst vann i helgen. Ren värme — så byggs
+       "Anders uppskattar att du alltid ringer efter loppen". */
+    for (const namn of ägarNamn) {
+      const h = (spel.stall ?? []).find((x) => x.ägare === namn
+        && x.resultat?.[0]?.plats === 1 && x.resultat[0].vecka === spel.vecka - 1
+        && x.resultat[0].säsong === (spel.säsong ?? 1));
+      if (h) {
+        const typ = ägartyp(namn);
+        lägg({
+          avsändare: namn, roll: "Hästägare", typ: "samtal", prioritet: "info",
+          rubrik: `Ringer om segern`,
+          text: `»${h.namn}! Jag har sett omloppet tre gånger nu.«`,
+          lång: `— Hallå? Ja, det är ${namn.split(" ")[0]}. Jag ska inte störa länge.\n— Jag har sett omloppet tre gånger nu. TRE gånger. ${typ === "känslosam" ? "Jag grät faktiskt en skvätt vid mållinjen, det erkänner jag." : typ === "tävlingsmänniska" ? "Och jag har redan börjat fundera på nästa lopp — vad siktar vi på?" : "Sånt här är precis varför man håller på med trav."}\n— Hälsa alla i stallet. Och tack. Jag menar det.`,
+          flik: "stall",
+        });
+        break;
+      }
+    }
+
+    /* Otåliga samtalet: hästen har stått länge och relationen kärvar.
+       Valet är riktigt: löftet bokförs med deadline och FÖLJS UPP. */
+    const otålig = ägarNamn.map((namn) => ({
+      namn,
+      h: (spel.stall ?? []).find((x) => x.ägare === namn && x.skada === 0
+        && (x.senasteStartVecka ?? 0) <= spel.vecka - 5),
+      rel: spel.ägarrelationer?.[namn]?.relation ?? 50,
+    })).find((k) => k.h && k.rel < 65 && !(spel.ägarlöften ?? {})[k.namn]);
+    if (otålig) {
+      const typ = ägartyp(otålig.namn);
+      lägg({
+        avsändare: otålig.namn, roll: "Hästägare", typ: "samtal", prioritet: "beslut",
+        rubrik: `Undrar när ${otålig.h.namn} ska starta`,
+        text: `»Jag betalar träningsavgift varje månad — och hästen står hemma.«`,
+        lång: `— Du, det är ${otålig.namn.split(" ")[0]}. Jag ska vara rak.\n— ${otålig.h.namn} har inte startat på över en månad. Jag betalar träningsavgift varje månad, och hästen står hemma.\n— ${typ === "otålig" ? "Jag är inte känd för mitt tålamod, det vet du." : typ === "snål" ? "Och varje vecka utan lopp är en vecka utan prispengar. Räkna på det." : "Jag litar på dig, men jag vill förstå planen."}\n— Så: när startar hon?`,
+        detaljer: [
+          { namn: "Senast i lopp", värde: otålig.h.senasteStartVecka ? `vecka ${otålig.h.senasteStartVecka}` : "aldrig" },
+          { namn: "Relationen", värde: `${otålig.rel} av 100` },
+        ],
+        beslut: { typ: "ägarlöfte", ref: { namn: otålig.namn, hästId: otålig.h.id },
+          alternativ: [
+            { id: "lova", etikett: "Lova en start inom tre veckor" },
+            { id: "ärlig", etikett: "Var ärlig — hästen behöver tid", sekundär: true },
+          ] },
+        flik: "stall",
+      });
+    }
+
+    /* Löftesbrottet: förra veckans svek sägs rakt ut. */
+    Object.entries(spel.löftesbrott ?? {}).forEach(([namn, v]) => {
+      if (v !== spel.vecka) return;
+      lägg({
+        avsändare: namn, roll: "Hästägare", typ: "sms", prioritet: "info",
+        rubrik: "Löftet som inte hölls",
+        text: `Du lovade en start. Det blev ingen. Jag glömmer inte sånt.`,
+        flik: "stall",
+      });
+    });
+  }
+
+  /* ---- KUSKENS MÅNDAGS-SMS (v110): rösten efter helgens körning,
+     färgad av resan och relationen. Ingen mekanik — bara människan. ---- */
+  {
+    const senaste = (spel.stall ?? [])
+      .map((h) => ({ h, r: h.resultat?.[0] }))
+      .filter((x) => x.r && x.r.vecka === spel.vecka - 1 && x.r.säsong === (spel.säsong ?? 1) && x.r.kusk)
+      .sort((a, b) => (a.r.plats ?? 99) - (b.r.plats ?? 99))[0];
+    if (senaste) {
+      const kuskObj = KUSKAR.find((k) => k.namn === senaste.r.kusk);
+      const rel = kuskObj ? kuskrelation(spel, kuskObj) : 50;
+      const { h, r } = senaste;
+      const text = r.plats === 1
+        ? `Satt och tänkte på gårdagen. ${h.namn} svarade direkt när jag klickade — sån häst kör man gärna igen.${rel >= 70 ? " Som alltid: tack för förtroendet." : ""}`
+        : r.läge === "dödens"
+          ? `Vi fick dödens och fick betala hela vägen hem. Inte hästens fel — hon gjorde jobbet. Med ett bättre läge är hon med där framme.`
+          : (r.plats ?? 99) <= 3
+            ? `Bra dag i sulkyn. ${h.namn} gjorde det mesta rätt — det där sista klivet tar vi nästa gång.`
+            : `Ingen resa att rama in, jag vet. Men spara inte på ${h.namn} för det — det fanns mer i henne än resultatet visar.`;
+      lägg({
+        avsändare: senaste.r.kusk.split(" ").slice(-1)[0], roll: "Kusk", typ: "sms",
+        prioritet: "info", rubrik: `Om helgens lopp med ${h.namn}`, text, flik: "stall",
+      });
+    }
+  }
+
   /* ---- Milstolpen som närmar sig (v104, 20.2): förstamannen håller
      räkningen — bara när nästa seger ÄR siffran, och bara med
      startklara hästar i stallet. ---- */
@@ -340,6 +432,17 @@ export function verkställBeslut(spel, händelse, valId) {
     const mål = (spel.sponsorerbjudanden ?? []).find((e) =>
       e.namn === b.ref.namn && e.typId === b.ref.typId);
     if (mål) (valId === "ja" ? teckna : tackaNej)(spel, mål);
+  }
+  if (b.typ === "ägarlöfte") {
+    if (valId === "lova") {
+      ägarKontakt(spel, b.ref.namn, 7);
+      (spel.ägarlöften ??= {})[b.ref.namn] = {
+        hästId: b.ref.hästId, från: spel.vecka, deadline: spel.vecka + 3,
+      };
+    } else {
+      /* Ärligheten kostar lite värme nu — men bygger ingen bomb. */
+      ägarKontakt(spel, b.ref.namn, -2);
+    }
   }
   if (b.typ === "vila" && valId === "extra") {
     const h = (spel.stall ?? []).find((x) => x.id === b.ref);
