@@ -1,7 +1,7 @@
 import { rnd, int, plock, klamp, blanda, slump } from "./engine-util.js";
 import { nyHäst, TRÄNING } from "./engine-hast.js";
 import { nyttNamn } from "./data-namn.js";
-import { KUSKAR } from "./data-kuskar.js";
+import { KUSKAR, aktivaKuskar } from "./data-kuskar.js";
 import { veckansLopp, startförbud } from "./data-kalender.js";
 import { beräknaStreck } from "./engine-streck.js";
 
@@ -183,11 +183,11 @@ export function välTaktik(häst, lopp, kusk) {
  * motståndarna: det är därför rivalen bokade dem, och det är det som gör
  * beskedet till ett hot i stället för en notis. Resten lottas som förut.
  */
-export function rustaFält(fält, lopp, egenKusk = null, egenTaktik = null, bokade = []) {
+export function rustaFält(fält, lopp, egenKusk = null, egenTaktik = null, bokade = [], kår = KUSKAR) {
   const antal = fält.length;
   const spårnr = blanda(Array.from({ length: antal }, (_, i) => i + 1));
   const upptagna = new Set([...bokade.map((k) => k.namn), egenKusk?.namn].filter(Boolean));
-  const kuskar = blanda(KUSKAR.filter((k) => !upptagna.has(k.namn)));
+  const kuskar = blanda(kår.filter((k) => !upptagna.has(k.namn)));
 
   const motstånd = fält.filter((h) => !h.egen)
     .sort((a, b) => (b.fart + b.form) - (a.fart + a.form));
@@ -201,7 +201,7 @@ export function rustaFält(fält, lopp, egenKusk = null, egenTaktik = null, boka
   fält.forEach((h, i) => {
     h.spår = spårnr[i];
     h.kusk = h.egen && egenKusk ? egenKusk
-           : bokning.get(h) || kuskar[n++] || KUSKAR[i % KUSKAR.length];
+           : bokning.get(h) || kuskar[n++] || kår[i % kår.length];
     h.taktik = h.egen && egenTaktik ? egenTaktik : välTaktik(h, lopp, h.kusk);
   });
   return fält;
@@ -295,6 +295,9 @@ export function bokför(värld, lopp, resultat, vecka) {
  * redan körts live.
  */
 export function körVärldensVecka(spel, anmälningar = null, taUt = null, arrangör = null, dela = null) {
+  /* Världens utveckling (v111): kåren som rustar fälten är den AKTIVA —
+     pensionerade borta, lärlingar med. */
+  const kår = aktivaKuskar(spel);
   const värld = spel.värld;
   if (!värld) return [];
   const vecka = spel.vecka;
@@ -330,7 +333,7 @@ export function körVärldensVecka(spel, anmälningar = null, taUt = null, arran
     if (!fältSamling.length) return;
     fältSamling.forEach((f) => f.forEach((h) => { if (h.id) upptagna.add(h.id); }));
     fältSamling.forEach((fält) => {
-      rustaFält(fält, l);
+      rustaFält(fält, l, undefined, undefined, [], kår);
       beräknaStreck(fält, { spelförtroende: 40, stallform: 50, marknadsbild: 0 }, l);
       const resultat = snabbresultat(fält, l);
       bokför(värld, l, resultat, vecka);

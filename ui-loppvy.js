@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { html } from "htm/preact";
 import { TAKTIKER } from "./data-lopp.js";
 import { veckansLopp, startförbud, kravText, inbjudningslopp, medInbjudningspengar } from "./data-kalender.js";
-import { KUSKAR, villig, svar, uppbokad, uppbokadeI, kuskstatus } from "./data-kuskar.js";
+import { KUSKAR, aktivaKuskar, villig, svar, uppbokad, uppbokadeI, kuskstatus } from "./data-kuskar.js";
 import { veckansMinneslopp } from "./engine-mentor.js";
 import { Bild } from "./ui-grafik.js";
 import { BANOR } from "./data-namnpaket.js";
@@ -54,12 +54,13 @@ function Anmälan({ spel, onStart, inskickade = [], draTillbaka }) {
      (Teds v98-princip: otillgängliga rader skräpar inte i listor;
      orsaken finns nära i stället). Drömkuskarna blev en aspirationsrad
      under väljaren, de uppbokade syns ändå i startlistan sen. */
-  const villiga = KUSKAR.filter((k) => villig(spel, k));
-  const drömmar = KUSKAR.filter((k) => !villig(spel, k)).slice(0, 3);
+  const kår = aktivaKuskar(spel);
+  const villiga = kår.filter((k) => villig(spel, k));
+  const drömmar = kår.filter((k) => !villig(spel, k)).slice(0, 3);
   const valbara = villiga.slice(0, 28);
   const [hästId, sättHäst] = useState(startbara[0]?.id ?? null);
   const [loppIx, sättLopp] = useState(0);
-  const [kuskNamn, sättKusk] = useState(villiga[0]?.namn ?? KUSKAR[KUSKAR.length - 1].namn);
+  const [kuskNamn, sättKusk] = useState(villiga[0]?.namn ?? kår[kår.length - 1].namn);
 
   /* Byter spelaren häst kan det valda loppet vara stängt för den nya —
      då hoppar valet till första berättigade i stället för att stå på en
@@ -83,7 +84,7 @@ function Anmälan({ spel, onStart, inskickade = [], draTillbaka }) {
   const lopp = veckans[Math.min(loppIx, veckans.length - 1)];
   const förbud = startförbud(häst, lopp);
   const passning = passningsText(häst, lopp);
-  const kusk = KUSKAR.find((k) => k.namn === kuskNamn) || villiga[0] || KUSKAR[KUSKAR.length - 1];
+  const kusk = kår.find((k) => k.namn === kuskNamn) || villiga[0] || kår[kår.length - 1];
   /* Uppbokad gäller PER LOPP — byter man lopp kan samma kusk vara ledig. */
   const bokad = uppbokad(spel, kusk, lopp);
   /* Hemmaplan: ingen resa och hemmapubliken ger extra. Bortalopp kostar. */
@@ -334,10 +335,10 @@ function Uttagningsbesked({ spel, besked, onKlar, onAnnat, onAvstå, läge }) {
   const bekräftelse = med ? kuskbekräftelse(spel, kusk, häst, besked.fält, lopp) : { bekräftad: true };
   const [reservNamn, sättReserv] = useState(null);
   const reserver = !bekräftelse.bekräftad
-    ? KUSKAR.filter((k) => k.namn !== kusk.namn && villig(spel, k)
+    ? aktivaKuskar(spel).filter((k) => k.namn !== kusk.namn && villig(spel, k)
         && !uppbokadeI(spel, lopp).some((u) => u.namn === k.namn)).slice(0, 6)
     : [];
-  const körande = reservNamn ? KUSKAR.find((k) => k.namn === reservNamn) : kusk;
+  const körande = reservNamn ? aktivaKuskar(spel).find((k) => k.namn === reservNamn) : kusk;
   const nivå = bedömningsnivå(spel);
   const alternativ = med ? [] : alternativlopp(veckans, lopp, häst, (h, l) => loppläge(h, l, nivå));
   return html`
@@ -896,7 +897,7 @@ export default function LoppVy({ spel, uppdatera }) {
     /* De uppbokade kuskarna sitter i det här fältet på riktigt — samma
        kuskar som anmälan nekade dig syns nu hos motståndarna. */
     const egnaKuskar = new Set([kusk.namn, ...kamrater.map((k) => k.kusk.namn)]);
-    rustaFält(fält, lopp, kusk, "rygg", uppbokadeI(spel, lopp).filter((k) => !egnaKuskar.has(k.namn)));
+    rustaFält(fält, lopp, kusk, "rygg", uppbokadeI(spel, lopp).filter((k) => !egnaKuskar.has(k.namn)), aktivaKuskar(spel));
     /* Stallkamraterna (v106): bokad kusk och kuskens taktikval — de körs
        av sina kuskar, spelaren styr bara den först anmälda. */
     kamrater.forEach(({ häst: kh, kusk: kk }) => {
@@ -1010,7 +1011,7 @@ export default function LoppVy({ spel, uppdatera }) {
       const veckans = veckansLoppFör(spel);
       const häst = spel.stall.find((h) => h.id === obesvarad.hästId);
       const lopp = veckans.find((l) => l.id === obesvarad.loppId);
-      const kusk = kuskEfterNamn(obesvarad.kuskNamn) ?? KUSKAR[0];
+      const kusk = kuskEfterNamn(obesvarad.kuskNamn, spel) ?? KUSKAR[0];
       if (häst && lopp) {
         /* Stallets övriga anmälda i samma lopp konkurrerar på riktigt
            (v106) — symmetriskt oavsett vems besked som visas. */
@@ -1068,7 +1069,7 @@ export default function LoppVy({ spel, uppdatera }) {
     const primärA = först.anmälningar[0];
     const häst = spel.stall.find((h) => h.id === primärA.hästId);
     const loppGrund = veckans.find((l) => l.id === först.loppId);
-    const kusk = kuskEfterNamn(primärA.kuskNamn) ?? KUSKAR[0];
+    const kusk = kuskEfterNamn(primärA.kuskNamn, spel) ?? KUSKAR[0];
     const kamratA = först.anmälningar.slice(1);
     return html`
       <h2>Loppdag</h2>
@@ -1086,7 +1087,7 @@ export default function LoppVy({ spel, uppdatera }) {
       <button class="btn" onClick=${() => {
         const kamrater = kamratA.map((a2) => ({
           häst: spel.stall.find((h) => h.id === a2.hästId),
-          kusk: kuskEfterNamn(a2.kuskNamn) ?? KUSKAR[1],
+          kusk: kuskEfterNamn(a2.kuskNamn, spel) ?? KUSKAR[1],
         })).filter((k) => k.häst);
         /* Deterministisk uttagning — samma fält som beskeden, med
            kamraterna inräknade. */

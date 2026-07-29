@@ -168,6 +168,26 @@ function frö(n) {
  * har ett renommé värt namnet. Efter några timmar vet spelaren själv vilka
  * som löser ut bäst och vilka som är kalla nog för en het häst.
  */
+/**
+ * LÄRLINGEN (v111, världens utveckling 20.8): en ny kusk kliver in vid
+ * säsongsskiftet — samma namnlistor som kåren (järnregeln: namn bor
+ * här), deterministisk på löpnumret, med lärlingens profil: lågt
+ * arvode, låga krav, hungrig relation, ingen ryktbarhet ännu.
+ */
+export function byggLärling(löpnr) {
+  const r = frö(9000 + löpnr);
+  const f = FÖRNAMN[Math.floor(r() * FÖRNAMN.length)];
+  const e = EFTERNAMN[Math.floor(r() * EFTERNAMN.length)];
+  return {
+    namn: `${f[0]}. ${e}`,
+    start: Math.round(42 + r() * 12), avslutning: Math.round(42 + r() * 12),
+    omdöme: Math.round(38 + r() * 12),
+    arvode: 600, krav: 0, startrelation: Math.round(55 + r() * 15),
+    ryktbarhet: Math.round(4 + r() * 8), andel: 0.08,
+    lärling: true, debutSäsong: null,
+  };
+}
+
 export function byggKuskkår(antal = 90) {
   const r = frö(7);
   const kår = [];

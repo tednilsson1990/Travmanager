@@ -567,7 +567,7 @@ nöjdhet). Högt förtroende ⇒ fler hästar, större investeringar,
 tålamod. Scoutrapporter som inkorgshändelser: unghästar (finns i
 marknaden), men även kuskar, personal, sponsorer och ägare.
 
-## 20.8 Världens utveckling (17 — "viktigast")
+## 20.8 Världens utveckling (17 — "viktigast") [ETAPP A KLAR v111 — kuskgenerationerna (hash-ålder, pension 58+, max 2/skifte, lärlingsdebut per säsong med krocksäkrade namn, aktiva kåren genom kuskväljare/reserver/världsrustning), sponsoromsättning varannan säsong, press för allt. Kvar B: tränarstall, journalister, banor; lärlingsreglerna hör till 18.6]
 Generationsskiften för MÄNNISKORNA, inte bara hästarna: tränare
 lägger av (stall tas över/läggs ner), kuskar pensioneras och nya
 lärlingar kliver in (knyter till lärlingslicenserna 18.6), journalister

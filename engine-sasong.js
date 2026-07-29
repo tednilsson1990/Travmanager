@@ -5,6 +5,7 @@ import { tränarliga } from "./engine-varld.js";
 import { registreraHändelse } from "./engine-handelser.js";
 import { invalIHallOfFame } from "./engine-rekord.js";
 import { prövaMentornsBortgång } from "./engine-mentor.js";
+import { utvecklaVärlden } from "./engine-varldsutveckling.js";
 
 /**
  * SÄSONGEN
@@ -106,6 +107,13 @@ export function avslutaSäsong(spel) {
 export function nySäsong(spel) {
   spel.säsong = (spel.säsong || 1) + 1;
   spel.vecka = 1;
+  /* VÄRLDENS UTVECKLING (v111, 20.8): generationsfasen — kuskar
+     pensioneras, lärlingar debuterar, sponsorsfären omsätts. Pressen
+     skrivs här med säsongens egen penna. */
+  utvecklaVärlden(spel).forEach((p) => {
+    spel.press.unshift({ rubrik: p.rubrik, byline: p.byline, ton: p.ton, vecka: 1, signatur: null });
+  });
+  spel.press = spel.press.slice(0, 20);
   /* Ny säsong, ny chans till en (1) skadeförstasida. */
   delete spel.skadescenSäsong;
   spel.intjänat = 0;

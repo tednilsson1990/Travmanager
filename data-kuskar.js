@@ -11,7 +11,20 @@ import { byggKuskkår } from "./data-namnpaket.js";
  */
 export const KUSKAR = byggKuskkår(90);
 
-export const kuskEfterNamn = (namn) => KUSKAR.find((k) => k.namn === namn);
+/**
+ * VÄRLDENS UTVECKLING (v111): kåren är inte evig. Pensionerade kuskar
+ * (spel.kuskvärld.pensionerade) lämnar de aktiva, lärlingar
+ * (spel.kuskvärld.lärlingar) kliver in. Utan spel: hela grundkåren —
+ * bakåtkompatibelt för rena uppslag.
+ */
+export const aktivaKuskar = (spel) => {
+  const borta = new Set(spel?.kuskvärld?.pensionerade ?? []);
+  return [...KUSKAR.filter((k) => !borta.has(k.namn)), ...(spel?.kuskvärld?.lärlingar ?? [])];
+};
+
+export const kuskEfterNamn = (namn, spel) =>
+  KUSKAR.find((k) => k.namn === namn)
+    ?? (spel?.kuskvärld?.lärlingar ?? []).find((k) => k.namn === namn);
 export const relation = (spel, kusk) => spel.kuskrelation[kusk.namn] ?? kusk.startrelation;
 export const villig = (spel, kusk) => spel.renommé + relation(spel, kusk) * 0.5 >= kusk.krav;
 export const svar = (spel, kusk) => {

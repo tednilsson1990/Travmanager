@@ -475,6 +475,41 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Världens utveckling, etapp A (v111 — kap 20.8, Teds viktigaste)
+
+"När du spelar tio säsonger ska världen vara helt annorlunda."
+Hästarna åldrades och pensionerades redan — nu även människorna.
+Ny motor engine-varldsutveckling.js, krokad i säsongsskiftet:
+
+**Kuskkåren lever.** Varje kusk har en ålder — grundåldern hashas ur
+namnet (24–55 år: en verklig kår har veteraner nära pension dag ett)
+och stiger med säsongerna. Vid 58+ hänger de äldsta upp sulkyn, högst
+två per säsongsskifte så kåren glesnar i verklig takt. Varje säsong
+DEBUTERAR en lärling ur namnpaketets listor (löpnumret stegas
+deterministiskt förbi namnkrockar med 90-mannakåren): lågt arvode,
+inga krav, ingen ryktbarhet — och hungrig startrelation. HELA spelet
+läser den aktiva kåren: kuskväljaren, reservlistan, drömkuskarna och
+världens fältrustning (aktivaKuskar i data-kuskar; rustaFält och
+körVärldensVecka tar kåren; kuskEfterNamn hittar lärlingar när spelet
+skickas med). Efter tio säsonger — provat — är tolv veteraner borta
+och nio lärlingar inne: kuskkåren är en annan än den du började med.
+
+**Sponsorsfären omsätts.** Varannan säsong lämnar en sponsortyp
+sporten (hash-vald bland dem du inte har avtal med) och försvinner ur
+erbjudandeflödet. En dörr som stod öppen är stängd.
+
+**Pressen berättar** om varje förändring — pensioneringen ("En av
+sportens största lämnar vid 61. Banorna blir sig inte lika."),
+lärlingslicensen, sponsorpengarna — och därmed inkorgen och Sfären.
+Allt hash-avgjort ur säsong och namn: ingen slump i motorflödet,
+samma karriär ger samma värld. Tjugoförsta provsviten kör tio
+säsonger och låser takten, åldersgolvet, krocksäkringen, den aktiva
+kårens spegling och determinismen.
+
+Kvar i 20.8 (etapp B): tränarstall som läggs ner eller tas över,
+journalistgenerationerna, banrenoveringarna — och lärlingslicensernas
+spelregler (18.6: viktlättnad i loppen).
+
 ## Ägarnas och kuskarnas röster (v110 — kap 19 C + FM-punkt 3–4)
 
 Skötarmallen fick sällskap. Två nya röster i inkorgen, båda lästa rent
@@ -2121,3 +2156,6 @@ v109 bygger statistiklagret: ledningen i positionsklassen, banan i
 resultatraden och Statistiken-sidan under Mer (kap 20.3). v110 ger
 ägarna och kuskarna röster: tacksamtal och otåliga samtal med
 löftesbeslut som följs upp, och kuskens måndags-sms ur helgens rad.
+v111 sätter världen i rörelse: kuskgenerationerna (pensioneringar och
+lärlingsdebuter genom hela spelet), sponsoromsättningen och pressen
+som berättar — kap 20.8, etapp A.
