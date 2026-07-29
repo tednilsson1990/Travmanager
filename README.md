@@ -475,6 +475,140 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Statistiklagret (v109 — kap 20.3, FM-punkt 2)
+
+"Man ska kunna grotta ner sig i siffror i timmar." Tjugonde provsviten
+och två nya filer:
+
+**Positionsdatan kompletterad — det brådskande.** Målraden klassade
+position sedan v88 (dödens, utvändigt, rygg/inner, fri inner) men
+LEDNINGEN saknades: ledaren räknades som "fri inner". Simulatorn fick
+en ledningsräknare — REN OBSERVATION bredvid de befintliga
+tidräknarna, inga beteende- eller slumpändringar, full svitkörning
+grön före vidare bygge — och målraden klassar nu "ledningen" när
+ledtiden dominerar. Och BANAN sparas i resultatraden från och med nu
+(efterLopp och stallkamratbokföringen): samma argument som
+positionsdatan — varje vecka utan är historik som aldrig kan byggas.
+
+**engine-statistik.js** — ren läsning, ingen egen lagring:
+hästStatistik (starter/segrar/topp 3-procent, bästa kilometertid,
+tabeller per bana, startmetod, distansgrupp, POSITION och kusk) och
+tränarStatistik (karriärtotalerna bär helheten — inte de trunkerade
+raderna — plus segerprocent, snittintjäning per start, bästa bana,
+främsta kusk och säsongstabell över bevarade rader). Ärligheten är
+inbyggd: rader utan bana eller läge hamnar utanför sina tabeller i
+stället för att gissas, och vyn säger att radaggregaten gäller de
+bevarade starterna (upp till 24 per häst).
+
+**Statistiken** — ny sida under Mer i Travbladets tabellestetik:
+tränarkortet överst, sedan häst för häst med positionstabellen där
+Teds lista står: Ledningen, Dödens, Rygg. Tomma tabeller förklarar
+sig: "positionsdata sparas från och med varje ny start."
+
+## FM-anatomin och de riktiga rösterna (v108)
+
+Ted skickade en FM-skärmbild: lista, stor läsyta med avsändare och
+roll, strukturerat innehåll, åtgärdsknapparna i botten, NEXT UNREAD.
+"Något sådant fast mobilt" — och sedan: "titta även hur innehållet
+ser ut. Story med sin personal och riktiga dialoger. Som ett mail,
+rapport, sms, artikel."
+
+**Anatomin (mobilt = lägen i stället för spalter).** LISTAN:
+segmenterad i Post och Nyheter (FM skiljer Inbox från News),
+prioritetssektioner, typformade rader, »Läs nästa olästa (N) →«
+överst. LÄSVYN: hela ytan blir meddelandet — huvud med initial,
+avsändare och ROLL (»Ulla · Förstaman«), läsningstypografi, detalj-
+tabell, och åtgärdsraden KLISTRAD I BOTTEN som i FM: besluten som
+knappar plus »Nästa olästa →« som bär en genom hela posten (byter
+segment själv när posten är slut och nyheterna tar vid). Läsvyn
+ersätter både förhandet och helskärmen — på en telefon ÄR läsvyn
+helskärmen.
+
+**Innehållet — varje typ är sitt format på riktigt:**
+MEJLET: arrangörens brev med hälsning, styckad brödtext, anmälnings-
+tider och »Med vänlig hälsning, Tävlingsledningen«. RAPPORTEN:
+veterinärens med versalrubriker (STATUS / BEDÖMNING / REKOMMENDATION),
+detaljtabell — och sista skadeveckan ett RIKTIGT VAL: följ planen
+eller ge en extra vecka (skadan +1, orken +12 — verkställt i motorn).
+SAMTALET: sponsorbudet som replikväxling med tankstreck, fem repliker
+som låter som en människa i luren. SMS:EN: skötaren — stallets tredje
+röst, skapad ur namnpaketet per karriär — hörs från stallgången varje
+vecka med text ur hästens VERKLIGA läge: sliten häst ger frågan »ska
+jag ge hen en lugn dag i hagen?« (ja: ork +8, form −1), pigg häst ger
+»hen ville MER hela passet«, lugn vecka ger »ibland är ingenting det
+bästa nyheterna«. ARTIKELN: pressnotiserna fick brödtext i tonens
+tempo. MÖTET: genomgångens sektioner under versalrubriker (EKONOMI /
+FORMEN / STARTERNA / SPONSORN / ATT HÅLLA I HUVUDET) — och läsvyns
+brödtext radbryter (pre-line) så rapporter, repliker och signaturer
+står som de ska.
+
+## Verklighetens delning och inkorgens ansiktslyft (v107)
+
+Ted frågade "men så funkar det inte i verkligheten?" — och det gjorde
+det inte. Delningen är omskriven efter Svensk Travsports egna regler
+("Hur delar man lopp?", travsport.se):
+
+**Spontandelning (vanliga lopp):** ordinarie (poängsorterade upp till
+platstaket) LOTTAS mellan avdelningarna — deterministisk hästhash per
+lopp och vecka, subjektoberoende så alla besked ser samma delning —
+och RESERVERNA fyller på underifrån: strukna hästar får verklighetens
+andra chans, och beskedet säger det ("Ni stod som reserv men fylldes
+på — en andra chans"). **Delningsproposition (breddlopp, klasstak ≤
+150 000 kr):** de anmälda listas efter startprissumma — lägst
+insprunget möts i avdelning 1, nästa gäng i nästa. Ingen tränarhänsyn:
+stallets hästar hamnar där pengarna faller. **Arrangörsbromsen:**
+spontandelning kostar dubbla prispengar i verkligheten (ST:s
+spontandelningspott är begränsad; främst unghästlopp och lägre klasser
+delas) — här delar arrangören bara vardagsnivån; högre klasser
+stryker. **Sammanhållningen från förra versionen är utriven** —
+verkligheten SPRIDER tränarens hästar (seedad delning) eller struntar
+i dem (delningsproposition); seedningen hör till uttagningslopp och
+byggs med serierna (18.10). Följdbygge: anmälningskartan är nu STABIL
+inom veckan (dubbelstartsskyddet flyttat till världskörningen), så
+avdelning 2:s fält är identiskt med onsdagens besked även efter att
+avdelning 1 körts — och helgen räknar körd PER HÄST: stallets hästar
+i skilda avdelningar är två körningar, precis som för en riktig
+tränare.
+
+**Inkorgens ansiktslyft:** sektionsrubriker med antal och olästa,
+tegelfärgad olästpunkt på varje rad, nyckelvärdet direkt i listan
+(sponsorsamtalets "1 500 kr/v + 4 000 kr/seger" syns innan man
+öppnar), nyheternas textrad tillbaka, veckomötet i eget tidningshuvud
+(marin botten, "VECKANS GENOMGÅNG"-etikett) och förhandets
+helskärmsknapp med klartext: »Läs i helskärm«.
+
+## Stallets flera hästar och inkorgens ordning (v106 — spelrapporten)
+
+Teds speltest hittade en riktig designmiss OCH tre följdbuggar:
+
+**Flera egna i samma lopp — helt normalt i trav, aldrig hanterat.**
+Uttagningen kördes per häst i isolering (hästarna såg aldrig
+varandra), helgen prickade av LOPPET efter första starten (resten
+låstes ute), och min-extraktionen ur simresultatet letade på
+egen-flaggan — som med två egna pekade på den BÄST PLACERADE, inte den
+styrda. Nu: uttagning(spel, lopp, häst, medEgna) räknar stallets alla
+anmälda i loppet, SYMMETRISKT (samma anmälda mängd och sortering
+oavsett vems besked som visas — provat: subjektet ändrar aldrig
+fältet), vid delning hålls stallets hästar ihop i samma avdelning
+(hästbestämt mål: dit poängbästa egna hamnade; platsbyte mot lägst-
+poängade världshästar så storlekarna består). Helgen kör EN körning
+per lopp: spelaren styr den först anmälda, stallkamraterna körs av
+sina bokade kuskar (kusk + kuskens taktikval via samma välTaktik som
+världen) i samma fält, alla arvoden dras. Efter loppet:
+bokförStallkamrat — resultatrad i samma format, prispengar till kassan
+efter kuskandel, startsumma, energi och form; press och ägardialog
+förblir primärens (dokumenterad förenkling). Kamraternas placeringar
+står i efter-steget, och min hämtas via IDENTITET, inte flagga.
+
+**Inkorgens rörighet och valen.** Förhandet öppnades ÖVERST medan man
+stod långt ner i listan — trycket såg ut att göra ingenting, och
+besluten "gick inte att göra". Nu öppnas förhandet PÅ PLATS, direkt
+under raden man tryckte, med besluten i sig. Och listan fick ordning:
+tre sektioner med tunna rubriker — Kräver beslut, Förslag, Att läsa
+(FM-punkt 16:s nivåer som RUM, inte bara kanter) — veckomötet fäst
+överst, och en enhetlig radrytm så de olika meddelandeformerna står i
+samma spalt i stället för att spreta.
+
 ## Veckomötet (v105 — kap 20.4, FM-punkt 6)
 
 "Detta saknar nästan alla managerspel." Förstamannens veckans
@@ -1944,4 +2078,15 @@ huvudnyheten och följetongens trådar ur en delad källa. v104 ger
 spelet minne: karriärtotaler, loppfacit och rivalhistorik som
 kontextrader i lottningen, efteranalysen och inkorgen (kap 20.2).
 v105 ger måndagen sitt möte: förstamannens genomgång som fäst rapport
-i egen röst (kap 20.4) — och lagar sponsorsamtalets fältbugg.
+i egen röst (kap 20.4) — och lagar sponsorsamtalets fältbugg. v106,
+ur Teds speltest: flera egna hästar i samma lopp på riktigt
+(symmetrisk uttagning, sammanhållen delning, stallkamratsbokföring)
+samt inkorgens sektioner och förhandet på plats. v107 skriver om
+delningen efter Svensk Travsports verkliga regler (spontandelning med
+lottning och reservpåfyllning, delningsproposition med prissumme-
+grupper, arrangörsbroms) och ger inkorgen sitt ansiktslyft. v108 ger
+den FM:s anatomi — lista ⇄ läsvy med Nästa olästa och åtgärdsraden i
+botten — och riktiga röster: brev som brev, rapporter med struktur
+och val, samtal som repliker, skötaren som stallets tredje röst.
+v109 bygger statistiklagret: ledningen i positionsklassen, banan i
+resultatraden och Statistiken-sidan under Mer (kap 20.3).

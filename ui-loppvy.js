@@ -7,10 +7,10 @@ import { veckansMinneslopp } from "./engine-mentor.js";
 import { Bild } from "./ui-grafik.js";
 import { BANOR } from "./data-namnpaket.js";
 import { distanspassning } from "./engine-hast.js";
-import { byggFält, rustaFält, bokför } from "./engine-varld.js";
+import { byggFält, rustaFält, bokför, välTaktik } from "./engine-varld.js";
 import { beräknaStreck } from "./engine-streck.js";
 import { simulera } from "./engine-simulera.js";
-import { efterLopp } from "./engine-vecka.js";
+import { efterLopp, bokförStallkamrat } from "./engine-vecka.js";
 import { resekostnad } from "./engine-sponsor.js";
 import { loppanalys } from "./engine-analys.js";
 import { pressfråga } from "./engine-travblad.js";
@@ -853,6 +853,8 @@ function Facit({ körning, facit, onKlart }) {
       ${facit.dagstext && html`<div class=${facit.dåligDag ? "skada" : "logg"}>${facit.dagstext}</div>`}
       ${facit.ägartext && html`<div class=${facit.ägartext.ton === "dålig" ? "skada" : "logg"}>${facit.ägartext.text}</div>`}
       ${facit.karriärminne && html`<div class="logg guldram">❧ ${facit.karriärminne}</div>`}
+      ${(facit.kamratrader ?? []).map((k) => html`
+        <div key=${k.namn} class="logg">Stallkamraten ${k.namn} (${k.kusk}): ${k.plats ? `${k.plats}:a` : "bortkörd"}${k.netto > 0 ? ` · ${kr(k.netto)} kr till kassan` : ""}</div>`)}
       ${häst.skada > 0 && html`<div class="skada">Kom ur loppet ömmande — ${häst.skada} vecka(or) vila.</div>`}
     </div>
     <${Efterloppsanalys} analys=${facit.analys} körning=${körning} />
@@ -886,23 +888,33 @@ export default function LoppVy({ spel, uppdatera }) {
   });
 
   /* Steg 1 → 2: platsen klar, spåren lottas */
-  const anmäl = ({ häst, lopp, kusk, fält: uttagetFält }) => {
+  const anmäl = ({ häst, lopp, kusk, fält: uttagetFält, kamrater = [] }) => {
     /* Fältet är de UTTAGNA anmälda — samma individer som tävlar mot
        varandra de veckor du inte möter dem. Ett tunt fält förblir tunt:
        inga påhittade hästar fyller ut ett arrangörskört lopp. */
     const fält = uttagetFält ?? byggFält(spel.värld, lopp, spel.vecka, new Set(), häst);
     /* De uppbokade kuskarna sitter i det här fältet på riktigt — samma
        kuskar som anmälan nekade dig syns nu hos motståndarna. */
-    rustaFält(fält, lopp, kusk, "rygg", uppbokadeI(spel, lopp).filter((k) => k.namn !== kusk.namn));
+    const egnaKuskar = new Set([kusk.namn, ...kamrater.map((k) => k.kusk.namn)]);
+    rustaFält(fält, lopp, kusk, "rygg", uppbokadeI(spel, lopp).filter((k) => !egnaKuskar.has(k.namn)));
+    /* Stallkamraterna (v106): bokad kusk och kuskens taktikval — de körs
+       av sina kuskar, spelaren styr bara den först anmälda. */
+    kamrater.forEach(({ häst: kh, kusk: kk }) => {
+      kh.kusk = kk;
+      kh.taktik = välTaktik(kh, lopp, kk);
+    });
     beräknaStreck(fält, spel, lopp);
     uppdatera((s) => {
       const hemmaB = s.hemmabana && BANOR[s.hemmabana];
       const resa = hemmaB && lopp.banaNamn !== hemmaB.namn ? resekostnad(s) : 0;
-      s.kassa -= kusk.arvode + resa;
+      s.kassa -= kusk.arvode + kamrater.reduce((a, k) => a + k.kusk.arvode, 0) + resa;
       if (s.inbjudan?.vecka === s.vecka && lopp.id.endsWith("-inbjudan")) s.inbjudan = null;
-      s.startadeLopp = [...(s.startadeLopp || []), lopp.id];
+      s.startadeLopp = [...new Set([...(s.startadeLopp || []), lopp.id])];
+      /* Körd per häst (v107): de egna hästarna i DEN HÄR avdelningen. */
+      const kördaId = new Set([häst.id, ...kamrater.map((k) => k.häst.id)]);
+      (s.anmälningar ?? []).forEach((a) => { if (kördaId.has(a.hästId)) a.körd = true; });
     });
-    sättKörning({ häst, lopp, kusk, fält });
+    sättKörning({ häst, lopp, kusk, fält, kamrater });
     sättSteg("lottning");
   };
 
@@ -938,7 +950,9 @@ export default function LoppVy({ spel, uppdatera }) {
   const avsluta = () => {
     if (!körning || !körning.sim || facit) return;
     const { sim, lopp, häst, kusk, favorit, pressval } = körning;
-    const min = sim.resultat.find((r) => r.häst.egen);
+    /* v106: identiteten, inte egen-flaggan — med stallkamrater i fältet
+       pekade egen-flaggan på bäst placerade egna häst, inte den styrda. */
+    const min = sim.resultat.find((r) => r.häst === häst);
     const streckRang = [...sim.resultat].sort((a, b) => b.streck - a.streck)
       .findIndex((r) => r.häst.egen) + 1;
     let sammanfattning;
@@ -955,6 +969,14 @@ export default function LoppVy({ spel, uppdatera }) {
         varFavorit: favorit === häst,
         streckRang,
         förväntan: pressval ? pressval.förväntan : 0,
+      });
+      /* Stallkamraternas bokföring (v106): resultatrad, pengar, energi
+         och form — den styrda hästen fick full behandling ovan. */
+      sammanfattning.kamratrader = (körning.kamrater ?? []).map(({ häst: kh, kusk: kk }) => {
+        const rad = körning.sim.resultat.find((r) => r.häst === kh);
+        const bok = bokförStallkamrat(s, { häst: kh, kusk: kk, lopp,
+          rad: rad ? { plats: rad.plats, km: rad.km, spår: rad.spår ?? kh.spår, läge: rad.läge, ur: rad.ur } : null });
+        return { namn: kh.namn, kusk: kk.namn, plats: bok.plats, netto: bok.netto };
       });
     });
     /* Efterloppsanalysen (kap 14): läses ur simuleringen som redan körts,
@@ -990,7 +1012,12 @@ export default function LoppVy({ spel, uppdatera }) {
       const lopp = veckans.find((l) => l.id === obesvarad.loppId);
       const kusk = kuskEfterNamn(obesvarad.kuskNamn) ?? KUSKAR[0];
       if (häst && lopp) {
-        const besked = { ...uttagning(spel, lopp, häst), häst, lopp, kusk };
+        /* Stallets övriga anmälda i samma lopp konkurrerar på riktigt
+           (v106) — symmetriskt oavsett vems besked som visas. */
+        const medEgna = (spel.anmälningar ?? [])
+          .filter((x) => x !== obesvarad && x.loppId === obesvarad.loppId && x.status !== "avstod")
+          .map((x) => spel.stall.find((h) => h.id === x.hästId)).filter(Boolean);
+        const besked = { ...uttagning(spel, lopp, häst, medEgna), häst, lopp, kusk };
         return html`<${Uttagningsbesked} spel=${spel} besked=${besked} läge="onsdag"
           onKlar=${(f, körandeKusk) => uppdatera((s) => {
             if (besked.gräns) (s.uttagningsgränser ??= {})[besked.lopp.kortnamn] = besked.gräns;
@@ -1018,40 +1045,60 @@ export default function LoppVy({ spel, uppdatera }) {
   /* ---- HELG: loppdagarna. Beskedade anmälningar körs i tur och
      ordning genom det befintliga loppflödet. ---- */
   if (!körning && stopp === "helg") {
-    const kvar = (spel.anmälningar ?? []).filter((a) => a.status === "med"
-      && !(spel.startadeLopp ?? []).includes(a.loppId));
+    /* v107: körd räknas PER HÄST — med verklighetens delning kan
+       stallets hästar stå i olika avdelningar av samma lopp, och då är
+       det två körningar. */
+    const kvar = (spel.anmälningar ?? []).filter((a) => a.status === "med" && !a.körd);
     if (kvar.length === 0) {
       return html`
         <h2>Helgen</h2>
         <div class="kort"><div class="logg">Inga fler lopp i helgen.</div></div>
         <button class="btn" onClick=${() => uppdatera((s) => hoppaFram(s))}>${nästaStopp(spel).etikett}</button>`;
     }
-    const a = kvar[0];
+    /* Grupperat per lopp (v106): flera egna i samma lopp körs i EN
+       körning — spelaren styr den först anmälda, stallkamraterna körs
+       av sina bokade kuskar i samma fält. */
     const veckans = veckansLoppFör(spel);
-    const häst = spel.stall.find((h) => h.id === a.hästId);
-    const loppGrund = veckans.find((l) => l.id === a.loppId);
-    const kusk = kuskEfterNamn(a.kuskNamn) ?? KUSKAR[0];
+    const grupper = [];
+    kvar.forEach((a) => {
+      const g = grupper.find((x) => x.loppId === a.loppId);
+      if (g) g.anmälningar.push(a); else grupper.push({ loppId: a.loppId, anmälningar: [a] });
+    });
+    const först = grupper[0];
+    const primärA = först.anmälningar[0];
+    const häst = spel.stall.find((h) => h.id === primärA.hästId);
+    const loppGrund = veckans.find((l) => l.id === först.loppId);
+    const kusk = kuskEfterNamn(primärA.kuskNamn) ?? KUSKAR[0];
+    const kamratA = först.anmälningar.slice(1);
     return html`
       <h2>Loppdag</h2>
-      ${kvar.map((k2, i) => {
-        const h2x = spel.stall.find((h) => h.id === k2.hästId);
-        const l2 = veckans.find((l) => l.id === k2.loppId);
-        return html`<div key=${i} class="kort">
+      ${grupper.map((g, i) => {
+        const l2 = veckans.find((l) => l.id === g.loppId);
+        return html`<div key=${g.loppId} class="kort">
           <div class="meta">${i === 0 ? "Nästa start" : "Senare i helgen"}</div>
-          <div class="namn">${h2x?.namn} · ${l2?.kortnamn || l2?.namn}</div>
-          <div class="meta">${k2.kuskNamn} kör</div>
+          <div class="namn">${l2?.kortnamn || l2?.namn}</div>
+          ${g.anmälningar.map((a2) => {
+            const h2x = spel.stall.find((h) => h.id === a2.hästId);
+            return html`<div key=${a2.hästId} class="meta">${h2x?.namn} · ${a2.kuskNamn} kör</div>`;
+          })}
         </div>`;
       })}
       <button class="btn" onClick=${() => {
-        /* Uttagningen är deterministisk inom veckan — samma fält som
-           onsdagens besked, inklusive delningens avdelning. */
-        const b = uttagning(spel, loppGrund, häst);
+        const kamrater = kamratA.map((a2) => ({
+          häst: spel.stall.find((h) => h.id === a2.hästId),
+          kusk: kuskEfterNamn(a2.kuskNamn) ?? KUSKAR[1],
+        })).filter((k) => k.häst);
+        /* Deterministisk uttagning — samma fält som beskeden, med
+           kamraterna inräknade. */
+        const b = uttagning(spel, loppGrund, häst, kamrater.map((k) => k.häst));
         const lopp = b.delat
           ? { ...loppGrund, namn: `${loppGrund.namn} avd. ${b.avdelning}`,
               kortnamn: `${loppGrund.kortnamn || loppGrund.namn} avd. ${b.avdelning}` }
           : loppGrund;
-        anmäl({ häst, lopp, kusk, fält: b.fält ?? undefined });
-      }}>Kör loppet — ${häst?.namn} i ${loppGrund?.kortnamn || loppGrund?.namn}</button>`;
+        anmäl({ häst, lopp, kusk, fält: b.fält ?? undefined,
+          kamrater: kamrater.filter((k) => (b.fält ?? []).includes(k.häst)) });
+      }}>Kör loppet — ${[häst, ...kamratA.map((a2) => spel.stall.find((h) => h.id === a2.hästId))]
+        .filter(Boolean).map((h) => h.namn).join(" och ")} i ${loppGrund?.kortnamn || loppGrund?.namn}</button>`;
   }
 
   /* ---- MÅNDAG: anmälningarna är öppna. ---- */

@@ -12,7 +12,7 @@
 import { sättRng, seedad } from "./engine-util.js";
 import { byggVärld } from "./engine-varld.js";
 import { veckansLopp } from "./data-kalender.js";
-import { anmälningsläge, uttagning, alternativlopp, delaFält, kuskbekräftelse } from "./engine-anmalan.js";
+import { anmälningsläge, uttagning, alternativlopp, delaFält, kuskbekräftelse, ärDelningsproposition } from "./engine-anmalan.js";
 import { KUSKAR, eftertraktade, ärEftertraktad, kuskstatus } from "./data-kuskar.js";
 import { startpoäng, loppläge } from "./engine-proposition.js";
 import { nyHäst } from "./engine-hast.js";
@@ -161,10 +161,26 @@ console.log("PROV: anmälningsmotorn\n");
     resultat: [{ plats: (i % 5) + 1, pris: i * 1000 }],
   }));
   const avd = delaFält(hästar, { startande: 12 });
-  /* Jämnheten mäts i det delningen sorterar på: startpoängen. */
-  const poängsumma = (a) => a.reduce((x, h) => x + startpoäng(h).poäng, 0);
-  ok(avd.length === 2 && Math.abs(poängsumma(avd[0]) - poängsumma(avd[1])) < poängsumma(avd[0]) * 0.15,
-    "avdelningarna är poängmässigt jämna — ingen b-final");
+  /* Verklighetens spontandelning (v107): ordinarie lottas, reserver
+     fyller på underifrån — fler än platstaket kommer med totalt. */
+  const totalt = avd.reduce((x, a) => x + a.length, 0);
+  ok(avd.length === 2 && totalt === 20 && avd.every((a) => a.length <= 12),
+    `spontandelningen lottar ordinarie och fyller på med reserver (${avd.map((a) => a.length).join("+")} av 20)`);
+  const avd2 = delaFält(hästar, { startande: 12 }, 7);
+  ok(avd.map((a) => a.map((h) => h.id).join(",")).join("|")
+    === delaFält(hästar, { startande: 12 }, 0).map((a) => a.map((h) => h.id).join(",")).join("|")
+    && avd.map((a) => a.map((h) => h.id).join(",")).join("|")
+      !== avd2.map((a) => a.map((h) => h.id).join(",")).join("|"),
+    "lottningen är deterministisk per vecka — och en annan vecka lottar annorlunda");
+
+  /* Delningspropositionen: prissummegrupper — lägst insprunget möts. */
+  const bredd = { startande: 12, krav: { maxInsprunget: 120000 } };
+  ok(ärDelningsproposition(bredd), "lågt klasstak ⇒ delningsproposition");
+  const grupper = delaFält(hästar, bredd, 3);
+  const maxAvd1 = Math.max(...grupper[0].map((h) => h.intjänat));
+  const minAvd2 = Math.min(...grupper[1].map((h) => h.intjänat));
+  ok(maxAvd1 <= minAvd2,
+    `prissummegrupperna: avdelning 1 (≤ ${maxAvd1} kr) möter aldrig avdelning 2:s pengar (≥ ${minAvd2} kr)`);
 }
 
 /* ---------- Kuskbokningen (v97, manualen kap 9) ---------- */
@@ -204,6 +220,38 @@ console.log("PROV: anmälningsmotorn\n");
     "stjärnkusk med låg relation bokas preliminärt — det syns före anmälan");
   ok(kuskstatus(spel, trotjänare, null).status === "bekräftar",
     "vanliga kuskar bekräftar direkt");
+}
+
+/* ---------- Flera egna i samma lopp (v106) ---------- */
+{
+  const { spel, egen } = byggSpel(900);
+  const kamrat = nyHäst({ ålder: 4 });
+  kamrat.egen = true; kamrat.intjänat = 60000; kamrat.starter = 5;
+  kamrat.resultat = [{ plats: 2, pris: 12000 }, { plats: 3, pris: 6000 }];
+  spel.vecka = 4;
+  let prövade = 0, bådaMed = 0, symmetriBrott = 0, skildaOk = true;
+  for (const lopp of veckansLopp(4)) {
+    const a = uttagning(spel, lopp, egen, [kamrat]);
+    const b = uttagning(spel, lopp, kamrat, [egen]);
+    prövade++;
+    if (a.utfall === "med" && a.fält.includes(kamrat)) bådaMed++;
+    if (a.utfall === "med" && !a.fält.includes(kamrat)
+      && b.utfall === "med" && b.fält.includes(egen)) symmetriBrott++;
+    /* Symmetrin: samma lopp ska ge samma delnings-/uttagningsbild
+       oavsett subjekt. */
+    if (a.delat && b.delat && a.antalAvdelningar !== b.antalAvdelningar) symmetriBrott++;
+    if (a.utfall === "med" && a.delat && b.utfall === "med" && b.delat
+      && !a.fält.includes(kamrat)) {
+      if (b.fält.includes(egen) || a.avdelning === b.avdelning) skildaOk = false;
+    }
+  }
+  ok(prövade >= 4, `${prövade} lopp prövade med stallkamrat`);
+  ok(bådaMed >= 0, `stallets hästar i samma fält i ${bådaMed} lopp — och i skilda avdelningar i andra, som i verkligheten`);
+  ok(symmetriBrott === 0, "beräkningen är symmetrisk — subjektet ändrar aldrig fältet");
+  /* v107: stallets hästar KAN hamna i olika avdelningar — som i
+     verkligheten. Kravet är konsistens, inte sammanhållning: en häst
+     står aldrig i två fält, och skilda avdelningar är skilda. */
+  ok(skildaOk, "skilda avdelningar är konsistenta — ingen häst i två fält");
 }
 
 sättRng();

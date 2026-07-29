@@ -898,3 +898,91 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 
 /* v104: karriärminnets rad i efteranalysen */
 .guldram { border-left: 3px solid var(--guld, #c9a227); padding-left: 10px; font-weight: 600; }
+
+
+/* v106: sektioner och enhetlig radrytm — mot rörigheten */
+.post-sektion { margin-top: 14px; }
+.post-rubrik {
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--marin, #1d2f4e); opacity: 0.6;
+  border-bottom: 1px solid rgba(29,47,78,0.2); padding-bottom: 3px; margin-bottom: 6px;
+}
+.post-rad { margin: 6px 0 !important; }
+.förhand { margin: 4px 0 12px !important; }
+
+
+/* ==================== Inkorgens ansiktslyft (v107) ==================== */
+.ny-punkt { color: var(--tegel, #a63a2b); font-size: 9px; margin-right: 5px; vertical-align: 2px; }
+.rad-nyckel {
+  margin-left: auto; font-weight: 800; font-size: 12px;
+  color: var(--marin, #1d2f4e); white-space: nowrap;
+}
+.tel-topp { display: flex; align-items: baseline; gap: 6px; }
+.brev-rad.ämne { display: flex; align-items: baseline; gap: 6px; }
+.post-antal { float: right; letter-spacing: 0.04em; font-weight: 400; }
+
+/* Veckomötets tidningshuvud */
+.möteskort {
+  background: var(--marin, #1d2f4e); color: var(--benvit, #f4efe6);
+  border-radius: 4px; padding: 12px 14px; margin: 6px 0 12px; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(29,47,78,0.3);
+}
+.möteskort.läst { opacity: 0.75; }
+.mötes-etikett {
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  border-bottom: 1px solid rgba(244,239,230,0.35); padding-bottom: 4px; margin-bottom: 5px;
+}
+.mötes-vem { font-weight: 800; font-size: 15px; }
+.mötes-ingress { font-size: 13px; opacity: 0.92; margin-top: 2px; }
+
+
+/* ==================== FM-anatomin (v108): läsvyn ==================== */
+.inkorg-topp { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.segment { display: flex; gap: 0; margin-bottom: 10px; border: 1px solid var(--marin, #1d2f4e); border-radius: 5px; overflow: hidden; }
+.segment button {
+  flex: 1; background: none; border: 0; font: inherit; font-size: 13px;
+  padding: 7px 0; cursor: pointer; color: var(--marin, #1d2f4e);
+}
+.segment button.aktiv { background: var(--marin, #1d2f4e); color: var(--benvit, #f4efe6); font-weight: 700; }
+
+.läsvy { display: flex; flex-direction: column; min-height: 72vh; }
+.läs-topp { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.läs-vecka { margin-left: auto; font-size: 11px; opacity: 0.65; }
+.läs-huvud {
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 2px solid var(--marin, #1d2f4e); padding-bottom: 10px; margin-bottom: 12px;
+}
+.sms-initial.stor { flex: 0 0 40px; height: 40px; font-size: 18px; }
+.läs-avsändare { font-weight: 800; font-size: 16px; color: var(--marin, #1d2f4e); }
+.läs-roll { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
+.läs-huvud .inkorgs-märke { margin-left: auto; }
+.läs-inre { flex: 1; max-width: 640px; }
+.läs-inre .helskärm-rubrik { font-size: 22px; margin: 4px 0 10px; }
+.läs-tabell {
+  border: 1px solid rgba(29,47,78,0.25); border-radius: 4px;
+  padding: 6px 10px; margin: 10px 0; background: rgba(255,255,255,0.5);
+}
+.läs-botten {
+  position: sticky; bottom: 0; display: flex; align-items: center; gap: 8px;
+  padding: 10px 0; margin-top: 14px;
+  background: linear-gradient(180deg, transparent, var(--papper, #efe9dc) 30%);
+  border-top: 1px solid rgba(29,47,78,0.25);
+}
+
+/* v108: radbrytningar i brödtext — rapportrubriker, replikväxling, signaturer */
+.förhand-text p { white-space: pre-line; }
+
+
+/* ==================== Statistiken (v109) ==================== */
+.stat-tabell { margin: 10px 0 4px; }
+.stat-rubrik {
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--marin, #1d2f4e); opacity: 0.65;
+  border-bottom: 2px solid var(--marin, #1d2f4e); padding-bottom: 3px;
+}
+.stat-rad {
+  display: grid; grid-template-columns: 1fr 44px 44px 56px 40px;
+  font-size: 12px; padding: 3px 0; border-bottom: 1px solid rgba(29,47,78,0.12);
+}
+.stat-rad span:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+.stat-huvud { font-size: 10px; opacity: 0.55; text-transform: uppercase; letter-spacing: 0.06em; }

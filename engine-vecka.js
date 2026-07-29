@@ -16,6 +16,7 @@ import { uppdateraAmbition, prövaAvgång, gamlaBekanta, ägarrelation } from ".
 import { verkställVeckoslots } from "./engine-stallmote.js";
 import { veckansAnmälningar, taUtVärldsfält } from "./engine-aitranare.js";
 import { bokförKarriär } from "./engine-minnen.js";
+import { FÖRSTAMANSNAMN } from "./data-namnpaket.js";
 import { arrangörenKör, delaFält } from "./engine-anmalan.js";
 import { ägarVecka, ägarSport, ägarEfterStart } from "./engine-agare.js";
 import { sponsorVecka, sponsorEfterLopp, sponsorSäsongsskifte, foderrabatt } from "./engine-sponsor.js";
@@ -65,6 +66,15 @@ function media(spel) {
 export function körVecka(spel) {
   /* Äldre karriärer saknar förstaman — en dyker upp med en pressnotis. */
   säkraAnläggning(spel);
+  /* Skötaren (v108): stallets tredje röst — namnet ur namnpaketet,
+     deterministiskt på stallnamnet så varje karriär får sin egen. */
+  if (!spel.skötare) {
+    let h = 0; const nyckel = spel.stallnamn ?? "stallet";
+    for (let i = 0; i < nyckel.length; i++) h = (h * 31 + nyckel.charCodeAt(i)) >>> 0;
+    let ix = h % FÖRSTAMANSNAMN.length;
+    if (FÖRSTAMANSNAMN[ix] === spel.förstaman?.namn) ix = (ix + 1) % FÖRSTAMANSNAMN.length;
+    spel.skötare = { namn: FÖRSTAMANSNAMN[ix], roll: "Hästskötare" };
+  }
   if (säkraFörstaman(spel)) {
     skrivPress(spel, `${spel.förstaman.namn} ny förstaman hos ${spel.stallnamn}`,
       "Stallet förstärker", "positiv");
@@ -348,6 +358,41 @@ export function körVecka(spel) {
  * Efter ett lopp: pengar, form, och hela sfärens reaktion.
  * Returnerar en sammanfattning som UI:t kan visa.
  */
+/**
+ * STALLKAMRATENS BOKFÖRING (v106): när flera egna hästar startar i
+ * samma lopp får den STYRDA hästen full efterloppsbehandling
+ * (efterLopp: press, ägare, form, analys) — kamraterna bokförs enklare
+ * men ärligt: resultatrad i samma format, prispengar till kassan efter
+ * kuskandelen, startsumman växer, energin kostar och formen följer
+ * placeringen. Ingen press och ingen ägardialog — det är primärens
+ * berättelse den dagen. Dokumenterad förenkling, inte ett glömt hål.
+ */
+export function bokförStallkamrat(spel, { häst, kusk, lopp, rad }) {
+  const brutto = rad?.ur
+    ? (lopp.garanterad || 0)
+    : (lopp.pris[(rad?.plats ?? 99) - 1] ?? lopp.garanterad ?? 0);
+  const kuskandel = Math.round(brutto * (kusk.andel ?? 0.1));
+  const netto = brutto - kuskandel;
+  häst.starter = (häst.starter ?? 0) + 1;
+  häst.intjänat = (häst.intjänat ?? 0) + brutto;
+  häst.senasteStartVecka = spel.vecka;
+  häst.energi = klamp((häst.energi ?? 70) - 20, 0, 100);
+  if (rad?.plats && rad.plats <= 3) häst.form = klamp((häst.form ?? 50) + 2, 0, 100);
+  else häst.form = klamp((häst.form ?? 50) - 1, 0, 100);
+  häst.resultat = [{
+    säsong: spel.säsong || 1, vecka: spel.vecka,
+    lopp: lopp.kortnamn || lopp.namn, bana: lopp.banaNamn ?? null,
+    dist: lopp.dist, start: lopp.start,
+    plats: rad?.ur ? null : rad?.plats ?? null, startande: lopp.startande,
+    km: rad?.ur ? null : rad?.km ?? null, läge: rad?.läge, spår: rad?.spår,
+    kusk: kusk.namn, pris: brutto,
+  }, ...(häst.resultat || [])].slice(0, 24);
+  spel.kassa += netto;
+  bokförKarriär(spel, { vann: rad?.plats === 1, brutto, lopp, häst,
+    plats: rad?.ur ? null : rad?.plats ?? null });
+  return { brutto, netto, plats: rad?.ur ? null : rad?.plats ?? null };
+}
+
 export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang, förväntan = 0, sim = null }) {
   /* Dold dagsform. En häst som inte var bra den dagen presterar under sin
      kapacitet — och då är ett dåligt resultat inte ett misslyckande utan
@@ -377,7 +422,8 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
      starter — inte totalsiffror. Utan den ser hästarna likadana ut. */
   häst.resultat = [{
     säsong: spel.säsong || 1, vecka: spel.vecka,
-    lopp: lopp.kortnamn || lopp.namn, dist: lopp.dist, start: lopp.start,
+    lopp: lopp.kortnamn || lopp.namn, bana: lopp.banaNamn ?? null,
+    dist: lopp.dist, start: lopp.start,
     plats: min.ur ? null : min.plats, startande: lopp.startande,
     km: min.ur ? null : min.km, läge: min.läge, spår: min.spår,
     kusk: kusk.namn, pris: brutto,

@@ -57,14 +57,14 @@ const harFöreträde = (häst, lopp) =>
  * alltid använt, men var och en anmäler med ~3/4 sannolikhet —
  * deterministiskt ur häst + lopp + vecka, så listan är ett faktum.
  */
-export function anmälningsläge(spel, lopp, egenHäst) {
+export function anmälningsläge(spel, lopp, egenHäst, medEgna = []) {
   /* Sedan v95 kommer världens anmälda ur AI-tränarnas riktiga loppval
      (engine-aitranare) — samma karta som världsveckan sedan kör. Bara
      specialloppen utanför kalendern (minneslopp, inbjudan) behåller
      klassfönstermetoden. */
   const karta = veckansAnmälningar(spel);
   if (karta.has(lopp.id)) {
-    return { anmälda: [egenHäst, ...karta.get(lopp.id)], platser: lopp.startande };
+    return { anmälda: [egenHäst, ...medEgna, ...karta.get(lopp.id)], platser: lopp.startande };
   }
   sättRng(seedad(hash(`${lopp.id}:${spel.vecka}:anmälan`)));
   const kandidater = tillgängliga(spel.värld, lopp, spel.vecka, new Set())
@@ -81,7 +81,7 @@ export function anmälningsläge(spel, lopp, egenHäst) {
   const iFönstret = kandidater.slice(start, start + Math.max(0, bredd));
   const världsanmälda = iFönstret.filter((h) =>
     hash(`${h.id}:${lopp.id}:${spel.vecka}`) % 100 < 66);
-  return { anmälda: [egenHäst, ...världsanmälda], platser };
+  return { anmälda: [egenHäst, ...medEgna, ...världsanmälda], platser };
 }
 
 /**
@@ -89,8 +89,17 @@ export function anmälningsläge(spel, lopp, egenHäst) {
  * text och siffrorna bakom:
  *   { utfall: "inställt" | "med" | "struken", ... }
  */
-export function uttagning(spel, lopp, egenHäst) {
-  const { anmälda, platser } = anmälningsläge(spel, lopp, egenHäst);
+/**
+ * FLERA EGNA I SAMMA LOPP (v106): helt normalt i trav — och en riktig
+ * spelrapportsbugg: uttagningen kördes per häst i isolering, så
+ * stallets hästar såg aldrig varandra. Nu skickas övriga egna anmälda
+ * in som medEgna: de konkurrerar om platserna med sina riktiga poäng,
+ * och beräkningen är SYMMETRISK — samma anmälda mängd och samma
+ * sortering oavsett vilken häst som är beskedets subjekt, så onsdagens
+ * besked och helgens körning aldrig ser olika fält.
+ */
+export function uttagning(spel, lopp, egenHäst, medEgna = []) {
+  const { anmälda, platser } = anmälningsläge(spel, lopp, egenHäst, medEgna);
   const antal = anmälda.length;
 
   /* 0–3: ställs in. 4–7: arrangörens beslut — deterministiskt ur
@@ -115,19 +124,39 @@ export function uttagning(spel, lopp, egenHäst) {
       text: `${antal} anmälda till ${platser} platser — alla kommer med.` };
   }
 
-  /* DELNINGEN (v96, manualen 6.6): vid stor överanmälan i vardagslopp
-     delas loppet i avdelningar och ALLA kommer med — precis som i
-     svensk travvardag. Storlopp, V85 och speciallopp delas aldrig:
-     deras fält är poängen. Round-robin på poängsorterad lista ger jämna
-     avdelningar, och ingen avdelning kan överstiga platstaket. */
+  /* DELNINGEN (v107, verklighetens regler — se delaFält): storlopp,
+     V85 och speciallopp delas aldrig, och arrangören delar bara
+     vardagsnivån (spontandelning kostar dubbla prispengar; högre
+     klasser stryker hellre). */
   const kanDelas = !lopp.storlopp && !lopp.v85 && !lopp.minneslopp && !lopp.id.endsWith("-inbjudan");
-  if (kanDelas && antal >= platser + 5) {
-    const avdelningar = delaFält(anmälda, lopp);
+  if (kanDelas && arrangörenDelar(lopp) && antal >= platser + 5) {
+    const avdelningar = delaFält(anmälda, lopp, spel.vecka);
     const ix = avdelningar.findIndex((avd) => avd.includes(egenHäst));
-    return { utfall: "med", antal, platser, delat: true,
-      avdelning: ix + 1, antalAvdelningar: avdelningar.length,
-      fält: ordna(avdelningar[ix], egenHäst),
-      text: `Överanmält: ${antal} anmälda till ${platser} platser. Loppet delas i ${avdelningar.length} avdelningar — alla kommer med. Ni startar i avdelning ${ix + 1}.` };
+    if (ix >= 0) {
+      /* Reservtexten (v107): stod hästen utanför de ordinarie men
+         fylldes på? Verklighetens andra chans förtjänar sin rad. */
+      const poängOrdnade = [...anmälda].sort((a, b) =>
+        startpoäng(b).poäng - startpoäng(a).poäng || (b.intjänat ?? 0) - (a.intjänat ?? 0));
+      const varReserv = !ärDelningsproposition(lopp)
+        && poängOrdnade.indexOf(egenHäst) >= platser;
+      const metod = ärDelningsproposition(lopp)
+        ? `Delningsproposition: avdelningarna följer startprissumman — ni möter hästar i er egen pengaklass.`
+        : `Spontandelning: avdelningarna lottades.`;
+      return { utfall: "med", antal, platser, delat: true,
+        avdelning: ix + 1, antalAvdelningar: avdelningar.length,
+        fält: ordna(avdelningar[ix], egenHäst),
+        text: `Överanmält: ${antal} anmälda till ${platser} platser. Loppet delas i ${avdelningar.length} avdelningar. ${metod} Ni startar i avdelning ${ix + 1}.${varReserv ? " Ni stod som reserv men fylldes på underifrån — en andra chans." : ""}` };
+    }
+    /* Utanför alla avdelningar (reserverna räckte inte till): struken. */
+    return { utfall: "struken", antal, platser, överanmält: true, gräns: null,
+      dinPoäng: startpoäng(egenHäst).poäng,
+      text: `Överanmält: ${antal} anmälda. Loppet delades, men inte ens reservpåfyllningen räckte — ${egenHäst.namn} kom inte med.` };
+  }
+
+  if (antal <= platser) {
+    return { utfall: "med", antal, platser, överanmält: false,
+      fält: ordna(anmälda, egenHäst),
+      text: `${antal} anmälda till ${platser} platser — alla kommer med.` };
   }
 
   /* Överanmält: startpoängen avgör, företrädet först. */
@@ -185,20 +214,66 @@ export function kuskbekräftelse(spel, kusk, egenHäst, fält, lopp) {
 }
 
 /**
- * Delningen av ett överanmält fält: poängsorterad round-robin ger jämna
- * avdelningar (bästa hästen i avd 1, näst bästa i avd 2, tredje i avd 1
- * ...). Antalet avdelningar är det minsta som ryms under platstaket.
- * Används av både spelarens uttagning och världsveckan.
+ * DELNINGEN ENLIGT VERKLIGHETEN (v107, källa: Svensk Travsports
+ * "Hur delar man lopp?"). Tre metoder finns på riktigt; två byggs nu:
+ *
+ * SPONTAN DELNING (vanliga lopp): ordinarie hästar lottas — udda spår
+ * i ena loppet, jämna i det andra — och RESERVERNA fyller på
+ * underifrån i båda avdelningarna. Här: deterministisk lottning via
+ * hästhash (subjektoberoende, så alla besked ser samma delning), och
+ * reservpåfyllningen ger strukna hästar en andra chans — precis som i
+ * verkligheten.
+ *
+ * DELNINGSPROPOSITION (breddlopp med lågt klasstak): de anmälda
+ * listas efter startprissumma — lägst prissumma möts i ett lopp,
+ * nästa gäng i nästa. INGEN hänsyn till tränare: stallets hästar kan
+ * hamna i samma avdelning eller i olika, som prissummorna faller.
+ * v106:s sammanhållning är därmed utriven — den var fel åt båda
+ * hållen (seedad delning SPRIDER tränarens hästar; den metoden hör
+ * till uttagningslopp och byggs med serierna, 18.10).
+ *
+ * ARRANGÖRSBROMSEN: spontandelning kostar dubbla prispengar (ST har
+ * en begränsad spontandelningspott och delar främst unghästlopp och
+ * lägre klasser) — här: lopp över vardagsnivå delas inte, de stryker.
  */
-export function delaFält(anmälda, lopp) {
+function hälftHash(h, lopp, vecka) {
+  return hash(`${h.id}:${lopp.id ?? lopp.kortnamn}:${vecka}:lott`);
+}
+
+/** Breddlopp med lågt klasstak delas som delningsproposition. */
+export const ärDelningsproposition = (lopp) =>
+  !!lopp.krav?.maxInsprunget && lopp.krav.maxInsprunget <= 150000;
+
+/** Arrangören delar bara vardagslopp — högre klasser stryker hellre. */
+export const arrangörenDelar = (lopp) => (lopp.nivå ?? 50) <= 58;
+
+export function delaFält(anmälda, lopp, vecka = 0) {
+  const platser = lopp.startande;
+  const antalAvd = Math.ceil(anmälda.length / platser);
+
+  if (ärDelningsproposition(lopp)) {
+    /* Prissummegrupperna: lägst insprunget möts i avdelning 1. */
+    const efterPris = [...anmälda].sort((a, b) =>
+      (a.intjänat ?? 0) - (b.intjänat ?? 0) || startpoäng(a).poäng - startpoäng(b).poäng);
+    const avdelningar = Array.from({ length: antalAvd }, () => []);
+    efterPris.forEach((h, i) => avdelningar[Math.min(Math.floor(i / platser), antalAvd - 1)].push(h));
+    return avdelningar;
+  }
+
+  /* Spontandelningen: ordinarie (poängsorterade platser) hash-lottas
+     mellan avdelningarna; reserverna fyller på underifrån. */
   const sorterade = [...anmälda].sort((a, b) =>
     startpoäng(b).poäng - startpoäng(a).poäng || (b.intjänat ?? 0) - (a.intjänat ?? 0));
-  /* Ren ceil, inget tak: kartan kan ge en populär proposition 37+
-     anmälda, och tre avdelningar à 13 vore ett regelbrott. Fyra
-     avdelningar är ovanligt men regelrätt — och besked­et säger det. */
-  const antalAvd = Math.ceil(sorterade.length / lopp.startande);
+  const ordinarie = sorterade.slice(0, platser);
+  const reserver = sorterade.slice(platser);
+  const lottade = [...ordinarie].sort((a, b) =>
+    hälftHash(a, lopp, vecka) - hälftHash(b, lopp, vecka));
   const avdelningar = Array.from({ length: antalAvd }, () => []);
-  sorterade.forEach((h, i) => avdelningar[i % antalAvd].push(h));
+  lottade.forEach((h, i) => avdelningar[i % antalAvd].push(h));
+  reserver.forEach((h) => {
+    const minst = avdelningar.reduce((a, b) => (a.length <= b.length ? a : b));
+    if (minst.length < platser) minst.push(h);
+  });
   return avdelningar;
 }
 

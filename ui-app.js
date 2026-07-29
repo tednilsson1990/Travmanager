@@ -14,6 +14,7 @@ import { ÖvertagandeVy, FörstamansvalVy } from "./ui-prolog.js";
 import { Dräkt } from "./ui-grafik.js";
 import HemVy from "./ui-hemvy.js";
 import InkorgVy from "./ui-inkorgvy.js";
+import StatistikVy from "./ui-statistikvy.js";
 import { inkorgsläge } from "./engine-inkorg.js";
 import JournalVy from "./ui-journalvy.js";
 import ScenVy from "./ui-scenvy.js";
@@ -29,6 +30,7 @@ const FLIKAR = [
 const MER = [
   { id: "gård", namn: "Gård" },
   { id: "kontor", namn: "Kontor" },
+  { id: "statistik", namn: "Statistiken" },
   { id: "journal", namn: "Journal" },
   { id: "marknad", namn: "Marknad" },
   { id: "avel", namn: "Avel" },
@@ -100,6 +102,7 @@ export default function App() {
         </div>
         ${merFlik === "gård" && html`<${GårdVy} spel=${spel} uppdatera=${uppdatera} />`}
         ${merFlik === "kontor" && html`<${KontorVy} spel=${spel} uppdatera=${uppdatera} />`}
+        ${merFlik === "statistik" && html`<${StatistikVy} spel=${spel} />`}
         ${merFlik === "journal" && html`<${JournalVy} spel=${spel} />`}
         ${merFlik === "marknad" && html`<${MarknadVy} spel=${spel} uppdatera=${uppdatera} />`}
         ${merFlik === "avel" && html`<${AvelVy} spel=${spel} uppdatera=${uppdatera} />`}`}

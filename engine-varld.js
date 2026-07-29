@@ -162,7 +162,7 @@ export function byggFält(värld, lopp, vecka, upptagna, egenHäst = null) {
 }
 
 /** AI-kuskens körorder, utifrån hästens egenskaper och spåret. */
-function välTaktik(häst, lopp, kusk) {
+export function välTaktik(häst, lopp, kusk) {
   /* Kuskens stil ska delta i valet av körorder, inte bara i utförandet.
      En smygkusk ska sällan få ordern "till ledningen" och en spetskusk
      sällan "sitta i skydd". Hästen väger fortfarande tyngst. */
@@ -321,7 +321,7 @@ export function körVärldensVecka(spel, anmälningar = null, taUt = null, arran
          (skickas in av veckomotorn), annars uttagning. */
       const kanDelas = !l.storlopp && !l.v85 && dela;
       fältSamling = kanDelas && anmälda.length >= l.startande + 5
-        ? dela(anmälda, l)
+        ? dela(anmälda, l, vecka)
         : [taUt ? taUt(anmälda, l) : anmälda.slice(0, l.startande)];
     } else {
       fältSamling = [byggFält(värld, l, vecka, upptagna)];

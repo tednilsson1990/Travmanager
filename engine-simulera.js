@@ -503,6 +503,9 @@ export function simulera(fält, lopp, ingripande = null) {
       const harSkydd = !!drag;
       harSkydd ? (s.skyddTid += DT) : (s.utanSkyddTid += DT);
       if (s.kol >= 1 && !harSkydd && platsIKolumn(s) === 1) s.dödensTid += DT;
+      /* Ledningsräknaren (v109, statistiklagret): ren observation för
+         målradens positionsklass — påverkar ingenting i loppet. */
+      if (s.kol <= 0 && !harSkydd && !s.instängd) s.ledTid = (s.ledTid ?? 0) + DT;
 
       /* ---------- Positionsbeslut var tredje sekund ---------- */
       /* Besluten fattas var tredje sekund under resan — men varje sekund
@@ -942,7 +945,8 @@ export function simulera(fält, lopp, ingripande = null) {
       kusk: s.kusk, spår: s.spår, streck: s.h.streck,
       sista800: s.sista800 !== null ? s.mål - s.sista800 : null,
       sista400: s.sista400 !== null ? s.mål - s.sista400 : null,
-      läge: s.dödensTid > 25 ? "dödens" : s.kol > 0 ? "utvändigt"
+      läge: (s.ledTid ?? 0) > 30 && (s.ledTid ?? 0) > s.dödensTid ? "ledningen"
+        : s.dödensTid > 25 ? "dödens" : s.kol > 0 ? "utvändigt"
         : s.skyddTid > s.utanSkyddTid ? "rygg/inner" : "fri inner",
       utanSkydd: s.utanSkyddTid,
       dödensTid: s.dödensTid,

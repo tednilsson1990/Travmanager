@@ -101,14 +101,41 @@ console.log("PROV: inkorgen\n");
     "veckans genomgång är måndagens fästa rapport");
   ok(möte.lång.split("\n\n").length >= 4,
     `genomgången har sektioner för helskärmen (${möte.lång.split("\n\n").length} stycken)`);
-  ok(möte.lång.includes("Ekonomin") && möte.lång.includes("Formen")
-    && möte.lång.includes("Sponsorn"),
-    "ekonomi, form och sponsorläget står i mötet med riktiga siffror");
+  ok(möte.lång.includes("EKONOMI") && möte.lång.includes("FORMEN")
+    && möte.lång.includes("SPONSORN"),
+    "ekonomi, form och sponsorläget står i mötet under sina rubriker");
   ok(!byggInkorg(spel).some((h) => !h.fäst && h.rubrik.startsWith("Veckonettot")),
     "den lösa nettorapporten viker när genomgången bär siffrorna");
   const utanFm = { ...byggSpel(), förstaman: null };
   ok(!byggInkorg(utanFm).some((h) => h.fäst),
     "utan förstaman: inget möte — ingen låtsasröst");
+}
+
+/* ---------- Formaten och rösterna (v108) ---------- */
+{
+  const spel = byggSpel();
+  const alla = byggInkorg(spel);
+  const mejl = alla.find((h) => h.typ === "mejl" && h.avsändare === "Arrangörerna");
+  ok(!!mejl && mejl.lång.startsWith("Hej") && mejl.lång.includes("Med vänlig hälsning"),
+    "arrangörsmejlet är ett riktigt brev — hälsning, stycken, signatur");
+  const samtal = alla.find((h) => h.avsändare === "Provbolaget");
+  ok(samtal?.lång?.split("\n").filter((r) => r.startsWith("—")).length >= 4,
+    "sponsorsamtalet är en replikväxling — minst fyra repliker med tankstreck");
+  const vet = alla.find((h) => h.avsändare === "Veterinären");
+  ok(vet?.lång?.includes("VETERINÄRRAPPORT") && vet.lång.includes("BEDÖMNING"),
+    "veterinärens rapport har rapportens struktur");
+  const skötarsms = alla.find((h) => h.roll === "Hästskötare");
+  ok(!!skötarsms && skötarsms.typ === "sms",
+    "skötaren hörs från stallgången — stallets tredje röst");
+
+  /* Vilobeslut: sista skadeveckan ger valet, och extra vila verkställs. */
+  spel.stall[1].skada = 1; spel.stall[1].energi = 50;
+  const vetBeslut = byggInkorg(spel).find((h) => h.avsändare === "Veterinären" && h.beslut);
+  ok(!!vetBeslut && vetBeslut.beslut.typ === "vila",
+    "sista skadeveckan: veterinären ger ett riktigt val");
+  verkställBeslut(spel, vetBeslut, "extra");
+  ok(spel.stall[1].skada === 2 && spel.stall[1].energi === 62,
+    "»en vecka extra vila« verkställs: skadan +1, orken +12");
 }
 
 /* ---------- Storyn i inkorgen (v103) ---------- */

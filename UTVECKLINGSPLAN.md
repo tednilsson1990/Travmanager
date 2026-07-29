@@ -472,7 +472,7 @@ komprimeras till milstolpar (max ~40 rader/säsong).
 ## 19.5 Etappordning
 A [KLART v99]: händelseformatet + inkorgsvyn (läsa, prioritetsmärken, genvägar) —
 befintliga källor adapterade. B [KLART v100]: veckoskiftet landar i inkorgen; Nästa steg-panelen och förstamansraderna migrerade in.
-C [PÅBÖRJAD v100, förhand/helskärm v103]: beslutsformatet + verkställBeslut; sponsorerbjudandet och träningsjusteringen besvaras i raden; tre läsdjup med långtextfält och storyn i posten (huvudnyheten + följetongen ur delad källa). Kvar: ägarfrågor, veterinärförslag, hästköpsbud. D: historiken och dagboken. Story-principen från v98
+C [PÅBÖRJAD v100, förhand/helskärm v103]: beslutsformatet + verkställBeslut; sponsorerbjudandet och träningsjusteringen besvaras i raden; tre läsdjup med långtextfält och storyn i posten (huvudnyheten + följetongen ur delad källa). Kvar: ägarfrågor, hästköpsbud. [v108: veterinärens vilobeslut och skötardagen tillkom; läsvyn med FM-anatomi; alla typer i sina riktiga format] D: historiken och dagboken. Story-principen från v98
 gäller: inkorgen är ett EGET rum, inte insprängd i andra vyer.
 
 
@@ -517,7 +517,7 @@ FRAM" — till nästa stopp som har något åt dig. Tomma stopp slås ihop
 (inget åt dig ons+tors ⇒ hoppet går direkt till loppdagen). Det ger
 FM-känslan av levd tid utan att röra motorernas veckologik, och löser
 en verklig skavank: i dag sker anmälan → uttagning → lopp i en enda
-sittning. Etapp: A [KLART v101 — tre stopp (måndag/onsdag/helg), hoppknapp i
+sittning. Etapp: A [KLART v101; v107: delningen enligt verklighetens regler — spontandelning med lottning och reservpåfyllning, delningsproposition med prissummegrupper, arrangörsbroms, stabil anmälningskarta inom veckan, körd per häst. Seedad delning med tränarspridning väntar på serierna 18.10] — tre stopp (måndag/onsdag/helg), hoppknapp i
 stall+inkorg med sammanslagning och förfallovarning, anmälan som
 inlämning, beskedskö på onsdagen, loppdagskö på helgen, stoppnotiser
 i inkorgen], B) loppdagar utspridda över fler dagar, C) notiser
@@ -532,7 +532,7 @@ med nos" (rivaliteterna), "du vann det här loppet förra säsongen"
 inkorgen och efteranalysen. Kräver att facit sparas per säsong med
 loppnamn — kontrollera sparfilstaket.
 
-## 20.3 Statistiklagret (punkt 2 — "grotta ner sig i timmar")
+## 20.3 Statistiklagret (punkt 2 — "grotta ner sig i timmar") [GRUNDEN KLAR v109 — ledningsklassen i målraden (ren observation), banan i resultatraden, engine-statistik med häst- och tränaraggregat, Statistiken under Mer. Kvar: regn/sol och sommar/vinter (kräver väder-/säsongsdata i raderna), open stretch-statistik, rekordår-utmärkning]
 Aggregat ur befintliga resultatrader: tränarstatistik (starter,
 seger-%, plats-%, bästa bana/kusk, rekordår, snittintjäning) och
 häststatistik (per bana, volt/auto, distans, position: ledning/

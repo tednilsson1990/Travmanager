@@ -38,6 +38,7 @@ import { teckna, tackaNej } from "./engine-sponsor.js";
 import { stoppFör } from "./engine-klocka.js";
 import { träningsråd } from "./engine-forstaman.js";
 import { säkraKarriär, nästaMilstolpe } from "./engine-minnen.js";
+import { klamp } from "./engine-util.js";
 import { veckansGenomgång } from "./engine-veckomote.js";
 
 /** Stabil innehållshash — lästmarkeringens ankare. */
@@ -64,7 +65,7 @@ export function byggInkorg(spel) {
      i hans egen röst. Långtexten är byggd för förhand och helskärm. ---- */
   const genomgång = fm ? veckansGenomgång(spel) : null;
   if (genomgång) {
-    lägg({ avsändare: fmNamn, typ: "rapport", prioritet: "info", fäst: true, ...genomgång, flik: "stall" });
+    lägg({ avsändare: fmNamn, roll: "Förstaman", typ: "rapport", prioritet: "info", fäst: true, ...genomgång, flik: "stall" });
   }
 
   /* ---- Vägvisaren → förstamannens sms. Akut ton = beslut krävs.
@@ -74,7 +75,7 @@ export function byggInkorg(spel) {
   nästaSteg(spel).forEach((rad) => {
     if (rad.text.includes("vill sponsra") || rad.text.includes("vill ändra träningen")) return;
     lägg({
-      avsändare: fmNamn, typ: "sms",
+      avsändare: fmNamn, roll: "Förstaman", typ: "sms",
       prioritet: rad.akut ? "beslut" : rad.ton === "gul" ? "rekommendation" : "info",
       rubrik: rad.text.split(":")[0].split("—")[0].trim(),
       text: rad.text, flik: rad.flik ?? "hem",
@@ -86,9 +87,10 @@ export function byggInkorg(spel) {
      teckna/tackaNej som Kontoret använder — ett beslut, en mutation. ---- */
   (spel.sponsorerbjudanden ?? []).forEach((e) => {
     lägg({
-      avsändare: e.namn, typ: "samtal", prioritet: "beslut",
+      avsändare: e.namn, roll: "Sponsorbud", typ: "samtal", prioritet: "beslut",
       rubrik: `Vill sponsra stallet — svar senast v ${e.gällerTill}`,
       text: `${e.typnamn}. »Vi tror på det ni bygger. Här är vårt bud.«`,
+      lång: `— Hej, det är ${e.namn}. Har du en minut?\n— Vi har följt stallet ett tag nu. Sättet ni jobbar på — det är sånt vi vill synas ihop med.\n— Budet är enkelt: ${e.typnamn.toLowerCase()}. Siffrorna står i avtalet nedanför.\n— Kravet från vår sida: ${e.krav.text}. Inget konstigt, men vi menar allvar med det.\n— Fundera inte för länge bara. Erbjudandet står till vecka ${e.gällerTill}.`,
       flik: "kontor",
       detaljer: [
         { namn: "Ersättning", värde: `${kr(e.perVecka)} kr/v + ${kr(e.segerbonus)} kr/seger` },
@@ -108,7 +110,7 @@ export function byggInkorg(spel) {
       && h.träning !== träningsråd(fm, h).träning);
     if (avvikande.length > 0) {
       lägg({
-        avsändare: fmNamn, typ: "sms", prioritet: "beslut",
+        avsändare: fmNamn, roll: "Förstaman", typ: "sms", prioritet: "beslut",
         rubrik: `Vill ändra träningen för ${avvikande.length} ${avvikande.length === 1 ? "häst" : "hästar"}`,
         text: `»${avvikande.map((h) => `${h.namn}: ${h.träning} → ${träningsråd(fm, h).träning}`).join(" · ")}. Säger du ja lägger jag om från i dag.«`,
         flik: "stall",
@@ -133,9 +135,10 @@ export function byggInkorg(spel) {
     }));
     if (passande.size > 0) {
       lägg({
-        avsändare: "Arrangörerna", typ: "mejl", prioritet: "rekommendation",
+        avsändare: "Arrangörerna", roll: "Tävlingsledningen", typ: "mejl", prioritet: "rekommendation",
         rubrik: `${passande.size === 1 ? "En proposition" : `${passande.size} propositioner`} passar stallet`,
-        text: `Veckans lopplista har ${passande.size === 1 ? "ett lopp" : `${passande.size} lopp`} där dina hästar ligger rätt i klassen. Anmälningarna är öppna.`,
+        text: `Veckans lopplista har ${passande.size === 1 ? "ett lopp" : `${passande.size} lopp`} där dina hästar ligger rätt i klassen.`,
+        lång: `Hej ${spel.stallnamn ?? "tränaren"},\n\nVeckans propositioner är publicerade, och vid en genomgång ser vi ${passande.size === 1 ? "ett lopp" : `${passande.size} lopp`} där ${passande.size === 1 ? "en av era hästar ligger" : "era hästar ligger"} rätt i klassen. Anmälningstiden går ut i och med måndagens slut — anmälan är kostnadsfri och besked om uttagning lämnas under onsdagen.\n\nVälkomna med er anmälan.\n\nMed vänlig hälsning,\nTävlingsledningen`,
         flik: "lopp",
       });
     }
@@ -144,9 +147,19 @@ export function byggInkorg(spel) {
   /* ---- Veterinären → skaderapport per skadad häst. ---- */
   (spel.stall ?? []).filter((h) => h.skada > 0).forEach((h) => {
     lägg({
-      avsändare: "Veterinären", typ: "rapport", prioritet: "info",
+      avsändare: "Veterinären", roll: "Stallveterinär", typ: "rapport",
+      prioritet: h.skada === 1 ? "beslut" : "info",
       rubrik: `${h.namn}: ${h.skada} ${h.skada === 1 ? "vecka" : "veckor"} kvar`,
-      text: `Läkningen följer plan. ${h.namn} bör vara i full träning om ${h.skada} ${h.skada === 1 ? "vecka" : "veckor"}.`,
+      text: `Läkningen följer plan. Åter i full träning om ${h.skada} ${h.skada === 1 ? "vecka" : "veckor"}.`,
+      lång: `VETERINÄRRAPPORT · ${h.namn}\n\nSTATUS\nLäkningen följer plan. Hästen är pigg i boxen och rör sig utan besvär i skritt.\n\nBEDÖMNING\nÅter i full träning om ${h.skada} ${h.skada === 1 ? "vecka" : "veckor"}. Vävnaden behöver den tiden — att stressa läkning är att låna av nästa skada.${h.skada === 1 ? "\n\nREKOMMENDATION\nSista veckan. Ni kan släppa på tyglarna enligt plan — eller ge en extra vecka och få tillbaka en mer utvilad häst. Ert beslut." : ""}`,
+      detaljer: [
+        { namn: "Vila kvar", värde: `${h.skada} ${h.skada === 1 ? "vecka" : "veckor"}` },
+        { namn: "Form vid skadan", värde: `${h.form ?? "–"}` },
+      ],
+      ...(h.skada === 1 ? { beslut: { typ: "vila", ref: h.id, alternativ: [
+        { id: "plan", etikett: "Följ planen — åter nästa vecka" },
+        { id: "extra", etikett: "En vecka extra vila", sekundär: true },
+      ] } } : {}),
       flik: "stall",
     });
   });
@@ -157,7 +170,7 @@ export function byggInkorg(spel) {
   const netto = veckonetto(spel);
   if (netto.netto < 0 && (!genomgång || (spel.kassa ?? 0) < -netto.netto * 4)) {
     lägg({
-      avsändare: "Kontoret", typ: "rapport",
+      avsändare: "Kontoret", roll: "Ekonomin", typ: "rapport",
       prioritet: (spel.kassa ?? 0) < -netto.netto * 4 ? "beslut" : "info",
       rubrik: `Veckonettot: −${kr(-netto.netto)} kr`,
       text: `Kostnaderna överstiger intäkterna med ${kr(-netto.netto)} kr i veckan. Kassan: ${kr(spel.kassa ?? 0)} kr.`,
@@ -172,13 +185,43 @@ export function byggInkorg(spel) {
   (spel.sponsorer ?? []).forEach((avtal) => {
     if (avtal.krav && avtal.veckorKvar !== undefined && avtal.veckorKvar <= 3) {
       lägg({
-        avsändare: avtal.namn, typ: "samtal", prioritet: "beslut",
+        avsändare: avtal.namn, roll: "Sponsor", typ: "samtal", prioritet: "beslut",
         rubrik: "Avtalet löper ut",
         text: `${avtal.veckorKvar} ${avtal.veckorKvar === 1 ? "vecka" : "veckor"} kvar på avtalet med ${avtal.namn}. Utvärderingen väger era resultat: ${avtal.krav.nu ?? 0} av ${avtal.krav.mål} (${avtal.krav.text}).`,
         flik: "kontor",
       });
     }
   });
+
+  /* ---- SKÖTARENS SMS (v108, Teds riktning: story med personalen och
+     riktiga dialoger). En röst från stallgången varje vecka — hash-vald
+     häst, text ur hästens verkliga läge, och ibland ett litet val som
+     känns som stallvardag: "ska jag ge henne en lugn dag?" ---- */
+  if ((spel.stall ?? []).length > 0) {
+    const skötare = spel.skötare?.namn ?? "Skötaren";
+    const veckoHash = hash(`skötare:${spel.säsong ?? 1}:${spel.vecka}`);
+    const friska2 = (spel.stall ?? []).filter((h) => h.skada === 0);
+    const h = friska2[parseInt(veckoHash, 36) % Math.max(1, friska2.length)] ?? spel.stall[0];
+    if (h) {
+      const trött = (h.energi ?? 70) < 45;
+      const pigg = (h.form ?? 50) >= 68;
+      lägg({
+        avsändare: skötare.split(" ")[0], roll: "Hästskötare", typ: "sms",
+        prioritet: trött ? "beslut" : "info",
+        rubrik: trött ? `${h.namn} känns sliten` : pigg ? `${h.namn} sprudlar` : `Läget i stallgången`,
+        text: trött
+          ? `${h.namn} åt inte upp i går kväll och hängde lite med huvudet i morse. Inte sjuk — bara sliten, tror jag. Ska jag ge hen en riktigt lugn dag i hagen?`
+          : pigg
+            ? `Du skulle sett ${h.namn} i morse. Drog i linorna redan i stallgången och ville MER hela passet. Hen är på gång, känner jag.`
+            : `Allt lugnt härute. ${h.namn} skötte sitt, åt bra och står och halvsover i boxen nu. Ibland är ingenting det bästa nyheterna.`,
+        ...(trött ? { beslut: { typ: "skötardag", ref: h.id, alternativ: [
+          { id: "ja", etikett: "Ja — lugn dag i hagen" },
+          { id: "nej", etikett: "Nej, håll planen", sekundär: true },
+        ] } } : {}),
+        flik: "stall",
+      });
+    }
+  }
 
   /* ---- Milstolpen som närmar sig (v104, 20.2): förstamannen håller
      räkningen — bara när nästa seger ÄR siffran, och bara med
@@ -188,7 +231,7 @@ export function byggInkorg(spel) {
     const stolpe = nästaMilstolpe(karriär.segrar);
     if (karriär.segrar + 1 === stolpe && stolpe >= 10 && startbara.length > 0) {
       lägg({
-        avsändare: fmNamn, typ: "sms", prioritet: "info",
+        avsändare: fmNamn, roll: "Förstaman", typ: "sms", prioritet: "info",
         rubrik: `Nästa seger är den ${stolpe}:e`,
         text: `»Jag räknade i går kväll. Nästa gång vi vinner är det stallets ${stolpe}:e seger. Bara så du vet vad som står på spel i veckan.«`,
         flik: "lopp",
@@ -202,7 +245,7 @@ export function byggInkorg(spel) {
   const obesvarade = (spel.anmälningar ?? []).filter((a) => !a.status).length;
   if (stopp === "onsdag" && obesvarade > 0) {
     lägg({
-      avsändare: "Arrangörerna", typ: "mejl", prioritet: "beslut",
+      avsändare: "Arrangörerna", roll: "Tävlingsledningen", typ: "mejl", prioritet: "beslut",
       rubrik: `Uttagningsbeskeden har kommit (${obesvarade})`,
       text: "Kom hästen med? Öppna loppfliken och ta beskeden — bekräfta, byt lopp eller avstå.",
       flik: "lopp",
@@ -212,7 +255,7 @@ export function byggInkorg(spel) {
     && !(spel.startadeLopp ?? []).includes(a.loppId));
   if (stopp === "helg" && helgstarter.length > 0) {
     lägg({
-      avsändare: fmNamn, typ: "sms", prioritet: "rekommendation",
+      avsändare: fmNamn, roll: "Förstaman", typ: "sms", prioritet: "rekommendation",
       rubrik: `Loppdag — ${helgstarter.length} ${helgstarter.length === 1 ? "start" : "starter"} i helgen`,
       text: `»${helgstarter.map((a) => spel.stall.find((h) => h.id === a.hästId)?.namn).filter(Boolean).join(" och ")} är klara. Selarna hänger framme.«`,
       flik: "lopp",
@@ -222,8 +265,14 @@ export function byggInkorg(spel) {
   /* ---- Travbladet → veckans nyheter (senaste tre pressnotiserna). ---- */
   (spel.press ?? []).slice(0, 3).forEach((n) => {
     lägg({
-      avsändare: "Travbladet", typ: "nyhet", prioritet: "info",
-      rubrik: n.rubrik, text: n.byline ?? "", flik: "sfar",
+      avsändare: "Travbladet", roll: "Tidningen", typ: "nyhet", prioritet: "info",
+      rubrik: n.rubrik, text: n.byline ?? "",
+      lång: `${n.byline ?? ""}\n\n${n.ton === "positiv"
+        ? `Det är den sortens vecka som får sporten att kännas enkel. I stallgången hos ${spel.stallnamn ?? "stallet"} märks det på tempot: alla vet vad som fungerar just nu, och ingen vill vara den som bryter det.`
+        : n.ton === "negativ"
+          ? `I trav finns inga hemligheter längre än till nästa lopp. Frågorna kommer att ställas — av ägare, av spelare, av oss — och svaren måste komma på banan, ingen annanstans.`
+          : `Travvardagen rullar vidare, och det är i veckorna som den här som säsonger avgörs: i träningslistorna, anmälningarna och de små besluten ingen skriver om förrän efteråt.`}`,
+      flik: "sfar",
     });
   });
 
@@ -234,7 +283,7 @@ export function byggInkorg(spel) {
   const stor = spel.huvudnyhet;
   if (stor && stor.säsong === (spel.säsong ?? 1) && spel.vecka - stor.vecka <= 1) {
     lägg({
-      avsändare: "Travbladet", typ: "nyhet", prioritet: "info",
+      avsändare: "Travbladet", roll: "Tidningen", typ: "nyhet", prioritet: "info",
       etikett: stor.etikett, rubrik: stor.rubrik, text: stor.ingress,
       lång: [stor.ingress, stor.brödtext, stor.citat ? `»${stor.citat}«` : null]
         .filter(Boolean).join("\n\n"),
@@ -243,7 +292,7 @@ export function byggInkorg(spel) {
   }
   berättelsetrådar(spel).slice(0, 2).forEach((t) => {
     lägg({
-      avsändare: "Travbladet", typ: "nyhet", prioritet: "info",
+      avsändare: "Travbladet", roll: "Tidningen", typ: "nyhet", prioritet: "info",
       etikett: "Följetongen", rubrik: t.rubrik, text: t.text, flik: "sfar",
     });
   });
@@ -291,6 +340,16 @@ export function verkställBeslut(spel, händelse, valId) {
     const mål = (spel.sponsorerbjudanden ?? []).find((e) =>
       e.namn === b.ref.namn && e.typId === b.ref.typId);
     if (mål) (valId === "ja" ? teckna : tackaNej)(spel, mål);
+  }
+  if (b.typ === "vila" && valId === "extra") {
+    const h = (spel.stall ?? []).find((x) => x.id === b.ref);
+    /* En vecka till i hagen: senare comeback, men utvilad häst. */
+    if (h && h.skada > 0) { h.skada += 1; h.energi = klamp((h.energi ?? 70) + 12, 0, 100); }
+  }
+  if (b.typ === "skötardag" && valId === "ja") {
+    const h = (spel.stall ?? []).find((x) => x.id === b.ref);
+    /* Lugn dag i hagen: orken tillbaka, udden av träningsveckan mildras. */
+    if (h) { h.energi = klamp((h.energi ?? 70) + 8, 0, 100); h.form = klamp((h.form ?? 50) - 1, 0, 100); }
   }
   if (b.typ === "träningsjustering" && valId === "godkänn" && spel.förstaman) {
     spel.stall.forEach((h) => {

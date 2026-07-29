@@ -84,7 +84,12 @@ export function veckansAnmälningar(spel) {
   const lopp = veckansLopp(vecka);
   lopp.forEach((l) => karta.set(l.id, []));
   värld.hästar.forEach((h) => {
-    if (h.skada > 0 || h.senasteStartVecka === vecka) return;
+    /* v107: ingen filtrering på senasteStartVecka === vecka — anmälan
+       skedde i början av veckan, och kartan måste vara STABIL över
+       spelarens körningar (avdelning 2:s fält ska vara identiskt med
+       onsdagens besked även efter att avdelning 1 körts).
+       Dubbelstartsskyddet bor i körVärldensVecka. */
+    if (h.skada > 0) return;
     const stall = värld.stall.find((s) => s.id === h.stallId);
     const fil = stall?.filosofi ?? FILOSOFIER[0];
     if (h.energi < fil.vilaTröskel) return;
