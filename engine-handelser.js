@@ -229,6 +229,9 @@ export function uppdateraRivalitet(spel, häst, fakta) {
     r.rivalNamn = m.namn ?? r.rivalNamn;
     r.senast = { säsong: spel.säsong ?? 1, vecka: spel.vecka };
     if (m.dinSeger) r.dinaSegrar++; else r.hansSegrar++;
+    /* Kontinuitetsminnet (v104): vem som vann SENAST — det är den
+       raden man minns inför nästa möte. */
+    r.senastVann = m.dinSeger ? "du" : "rival";
     spel.rivaliteter[nyckel] = r;
 
     /* Bara EN rivalitet utropas per lopp, och bara den hårdaste. Två

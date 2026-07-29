@@ -30,8 +30,7 @@ function byggSpel() {
       { rubrik: "Provrubrik ett", byline: "En rad om saken." },
       { rubrik: "Provrubrik två", byline: "En annan rad." },
     ],
-    sponsor: { namn: "Provfirman", krav: { text: "två segrar", mål: 2, nu: 0 }, veckorKvar: 2 },
-    sponsorer: [], sponsorerbjudanden: [{ namn: "Provbolaget", typId: "foder", typnamn: "Foderpartner",
+    sponsorer: [{ namn: "Provfirman", perVecka: 900, krav: { text: "två segrar", mål: 2, nu: 0 }, veckorKvar: 2 }], sponsorerbjudanden: [{ namn: "Provbolaget", typId: "foder", typnamn: "Foderpartner",
       perVecka: 1500, segerbonus: 4000, gällerTill: 8, krav: { text: "en seger", mål: 1, nu: 0 } }],
     kassa2: 0, inkorgLästa: [], inkorgBeslutade: [],
     huvudnyhet: { säsong: 2, vecka: 6, etikett: "Storloppssöndag", rubrik: "Provrubriken över uppslaget",
@@ -57,8 +56,11 @@ console.log("PROV: inkorgen\n");
 {
   const a = byggInkorg(byggSpel());
   const ordning = { beslut: 0, rekommendation: 1, info: 2 };
-  ok(a.every((h, i) => i === 0 || ordning[a[i - 1].prioritet] <= ordning[h.prioritet]),
-    "beslut sorteras först, sedan rekommendationer, sist information");
+  const ofästa = a.filter((h) => !h.fäst);
+  ok(a.findIndex((h) => h.fäst) === 0,
+    "fästa händelser (veckomötet) ligger först — sedan prioriteterna");
+  ok(ofästa.every((h, i) => i === 0 || ordning[ofästa[i - 1].prioritet] <= ordning[h.prioritet]),
+    "bland de ofästa: beslut, sedan rekommendationer, sist information");
   const flikar = new Set(["hem", "inkorg", "stall", "lopp", "sfar", "kontor", "gård", "mer"]);
   ok(a.every((h) => h.avsändare && h.rubrik && h.text !== undefined
       && ["sms", "samtal", "mejl", "rapport", "nyhet"].includes(h.typ)),
@@ -91,6 +93,24 @@ console.log("PROV: inkorgen\n");
   ok(före.beslut >= 1, `${före.beslut} händelse(r) kräver beslut — märket i flikraden har underlag`);
 }
 
+/* ---------- Veckomötet (v105, 20.4) ---------- */
+{
+  const spel = byggSpel();
+  const möte = byggInkorg(spel).find((h) => h.fäst);
+  ok(!!möte && möte.typ === "rapport" && möte.rubrik.includes("genomgång"),
+    "veckans genomgång är måndagens fästa rapport");
+  ok(möte.lång.split("\n\n").length >= 4,
+    `genomgången har sektioner för helskärmen (${möte.lång.split("\n\n").length} stycken)`);
+  ok(möte.lång.includes("Ekonomin") && möte.lång.includes("Formen")
+    && möte.lång.includes("Sponsorn"),
+    "ekonomi, form och sponsorläget står i mötet med riktiga siffror");
+  ok(!byggInkorg(spel).some((h) => !h.fäst && h.rubrik.startsWith("Veckonettot")),
+    "den lösa nettorapporten viker när genomgången bär siffrorna");
+  const utanFm = { ...byggSpel(), förstaman: null };
+  ok(!byggInkorg(utanFm).some((h) => h.fäst),
+    "utan förstaman: inget möte — ingen låtsasröst");
+}
+
 /* ---------- Storyn i inkorgen (v103) ---------- */
 {
   const spel = byggSpel();
@@ -118,8 +138,9 @@ console.log("PROV: inkorgen\n");
   ok(!alla.some((h) => h.typ === "sms" && h.text.includes("vill sponsra")),
     "vägvisarens dubblettrad är filtrerad — en fråga ställs aldrig två gånger");
 
+  const avtalFöre = (spel.sponsorer ?? []).length;
   verkställBeslut(spel, sponsorfråga, "ja");
-  ok((spel.sponsorer ?? []).length === 1 && spel.sponsorerbjudanden.length === 0,
+  ok((spel.sponsorer ?? []).length === avtalFöre + 1 && spel.sponsorerbjudanden.length === 0,
     "»Skriv på« i inkorgen tecknar avtalet — samma mutation som Kontoret");
   ok(spel.inkorgBeslutade.includes(sponsorfråga.id)
     && !synligInkorg(spel).some((h) => h.id === sponsorfråga.id),

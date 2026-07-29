@@ -895,3 +895,6 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .helskärm-inre .förhand-text { font-size: 17px; line-height: 1.65; }
 
 .kompakt.vald { outline: 2px solid var(--marin, #1d2f4e); outline-offset: 1px; }
+
+/* v104: karriärminnets rad i efteranalysen */
+.guldram { border-left: 3px solid var(--guld, #c9a227); padding-left: 10px; font-weight: 600; }

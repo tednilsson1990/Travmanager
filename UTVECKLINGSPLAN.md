@@ -523,7 +523,7 @@ inlämning, beskedskö på onsdagen, loppdagskö på helgen, stoppnotiser
 i inkorgen], B) loppdagar utspridda över fler dagar, C) notiser
 tidsstämplade per stopp i historiken.
 
-## 20.2 Kontinuitetsminnet (punkt 1 — "allt kommer ihåg")
+## 20.2 Kontinuitetsminnet (punkt 1 — "allt kommer ihåg") [GRUNDEN KLAR v104 — engine-minnen.js: karriärtotaler med ärlig grundplåt, loppfacit, rivalernas senast-vann; rader i lottningen, efteranalysen och inkorgen. Kvar: exägarmöten, säsongsfacit per lopp, injektion i kusksamtal och Travbladet]
 En referensmotor (engine-minnen.js): ren läsning av det som redan
 sparas, som producerar KONTEXTRADER överallt: "din 100:e seger om ni
 vinner" (räknat ur facithistoriken), "ni möttes i våras — Stormvind
@@ -540,7 +540,7 @@ dödens/rygg — positionsdata finns i analysens bildrutor men sparas
 inte per start i dag → börja spara position kompakt per resultatrad).
 Egen vy under Mer: "Statistiken", Travbladets tabellestetik.
 
-## 20.4 Veckomötet (punkt 6) — ersätter/utvidgar stallmötets ram
+## 20.4 Veckomötet (punkt 6) [GRUNDEN KLAR v105 — genomgången som fäst måndagsrapport i förstamannens röst; slots kvar som beslutsdel via genväg] — ersätter/utvidgar stallmötets ram
 Förstamannens "veckans genomgång" som inkorgens första notis varje
 vecka (rapport-typ, expanderad: ekonomi, form, kommande starter,
 personal, sponsorläge, problem, rekommendationer). Stallmötets slots

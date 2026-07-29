@@ -15,6 +15,7 @@ import { körStorloppsbåge } from "./engine-storlopp.js";
 import { uppdateraAmbition, prövaAvgång, gamlaBekanta, ägarrelation } from "./engine-personal.js";
 import { verkställVeckoslots } from "./engine-stallmote.js";
 import { veckansAnmälningar, taUtVärldsfält } from "./engine-aitranare.js";
+import { bokförKarriär } from "./engine-minnen.js";
 import { arrangörenKör, delaFält } from "./engine-anmalan.js";
 import { ägarVecka, ägarSport, ägarEfterStart } from "./engine-agare.js";
 import { sponsorVecka, sponsorEfterLopp, sponsorSäsongsskifte, foderrabatt } from "./engine-sponsor.js";
@@ -365,6 +366,12 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   const vann = !min.ur && min.plats === 1;
   const pall = !min.ur && min.plats <= 3;
 
+  /* KONTINUITETSMINNET (v104, 20.2): karriärtotalerna och loppfacit
+     bokförs, och en milstolpsrad kan följa med sammanfattningen. */
+  const karriärminne = bokförKarriär(spel, {
+    vann, brutto, lopp, häst, plats: min.ur ? null : min.plats,
+  });
+
   häst.starter++;
   /* Loppraden. Det första en travmänniska läser om en häst är dess senaste
      starter — inte totalsiffror. Utan den ser hästarna likadana ut. */
@@ -622,5 +629,5 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
     spel.marknadsbild = klamp(snittÖver * 2.2, -1.2, 1.2);
   }
 
-  return { brutto, kuskandel, netto, publik, renΔ, relΔ, hypeΔ, troΔ, ägartext, dagstext, dåligDag };
+  return { brutto, kuskandel, netto, publik, renΔ, relΔ, hypeΔ, troΔ, ägartext, dagstext, dåligDag, karriärminne };
 }

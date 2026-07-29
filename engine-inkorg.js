@@ -37,6 +37,8 @@ import { kr } from "./engine-util.js";
 import { teckna, tackaNej } from "./engine-sponsor.js";
 import { stoppFör } from "./engine-klocka.js";
 import { träningsråd } from "./engine-forstaman.js";
+import { säkraKarriär, nästaMilstolpe } from "./engine-minnen.js";
+import { veckansGenomgång } from "./engine-veckomote.js";
 
 /** Stabil innehållshash — lästmarkeringens ankare. */
 function hash(text) {
@@ -56,6 +58,14 @@ export function byggInkorg(spel) {
   const lägg = (h) => händelser.push({ ...h, id: hash(`${spel.säsong ?? 1}:${spel.vecka}:${h.avsändare}:${h.rubrik}`) });
   const fm = spel.förstaman;
   const fmNamn = fm ? fm.namn.split(" ")[0] : "Stallet";
+
+  /* ---- VECKOMÖTET (v105, 20.4): förstamannens genomgång är veckans
+     FÄSTA första rapport — ekonomi, form, starter, sponsorer, problem
+     i hans egen röst. Långtexten är byggd för förhand och helskärm. ---- */
+  const genomgång = fm ? veckansGenomgång(spel) : null;
+  if (genomgång) {
+    lägg({ avsändare: fmNamn, typ: "rapport", prioritet: "info", fäst: true, ...genomgång, flik: "stall" });
+  }
 
   /* ---- Vägvisaren → förstamannens sms. Akut ton = beslut krävs.
      Rader som blivit RIKTIGA beslutshändelser nedan (sponsorerbjudandet,
@@ -141,9 +151,11 @@ export function byggInkorg(spel) {
     });
   });
 
-  /* ---- Ekonomin → rapport när nettot lutar fel. ---- */
+  /* ---- Ekonomin → egen rapport BARA när det är akut beslut (kassan
+     täcker inte en månad) eller när förstaman saknas — annars bär
+     genomgången siffrorna (v105: en sak sägs på ett ställe). ---- */
   const netto = veckonetto(spel);
-  if (netto.netto < 0) {
+  if (netto.netto < 0 && (!genomgång || (spel.kassa ?? 0) < -netto.netto * 4)) {
     lägg({
       avsändare: "Kontoret", typ: "rapport",
       prioritet: (spel.kassa ?? 0) < -netto.netto * 4 ? "beslut" : "info",
@@ -153,14 +165,35 @@ export function byggInkorg(spel) {
     });
   }
 
-  /* ---- Sponsorn → telefonsamtal när avtalet hänger löst. ---- */
-  if (spel.sponsor?.krav && spel.sponsor.veckorKvar <= 3) {
-    lägg({
-      avsändare: spel.sponsor.namn ?? "Sponsorn", typ: "samtal", prioritet: "beslut",
-      rubrik: "Avtalet löper ut",
-      text: `${spel.sponsor.veckorKvar} ${spel.sponsor.veckorKvar === 1 ? "vecka" : "veckor"} kvar på sponsoravtalet. Utvärderingen väger era resultat.`,
-      flik: "kontor",
-    });
+  /* ---- Sponsorn → telefonsamtal när ett avtal hänger löst. (v105-
+     lagning: läser spel.sponsorer — ARRAYEN spelet faktiskt använder.
+     Singularfältet i v99 fanns bara i provfixturen; notisen har aldrig
+     kunnat avfyras i riktigt spel. Provet avslöjade det.) ---- */
+  (spel.sponsorer ?? []).forEach((avtal) => {
+    if (avtal.krav && avtal.veckorKvar !== undefined && avtal.veckorKvar <= 3) {
+      lägg({
+        avsändare: avtal.namn, typ: "samtal", prioritet: "beslut",
+        rubrik: "Avtalet löper ut",
+        text: `${avtal.veckorKvar} ${avtal.veckorKvar === 1 ? "vecka" : "veckor"} kvar på avtalet med ${avtal.namn}. Utvärderingen väger era resultat: ${avtal.krav.nu ?? 0} av ${avtal.krav.mål} (${avtal.krav.text}).`,
+        flik: "kontor",
+      });
+    }
+  });
+
+  /* ---- Milstolpen som närmar sig (v104, 20.2): förstamannen håller
+     räkningen — bara när nästa seger ÄR siffran, och bara med
+     startklara hästar i stallet. ---- */
+  {
+    const karriär = säkraKarriär(spel);
+    const stolpe = nästaMilstolpe(karriär.segrar);
+    if (karriär.segrar + 1 === stolpe && stolpe >= 10 && startbara.length > 0) {
+      lägg({
+        avsändare: fmNamn, typ: "sms", prioritet: "info",
+        rubrik: `Nästa seger är den ${stolpe}:e`,
+        text: `»Jag räknade i går kväll. Nästa gång vi vinner är det stallets ${stolpe}:e seger. Bara så du vet vad som står på spel i veckan.«`,
+        flik: "lopp",
+      });
+    }
   }
 
   /* ---- Klockans stoppnotiser (v101, 20.1): onsdagens besked och
@@ -216,7 +249,8 @@ export function byggInkorg(spel) {
   });
 
   return händelser.sort((a, b) =>
-    PRIORITETSORDNING[a.prioritet] - PRIORITETSORDNING[b.prioritet]);
+    (b.fäst ? 1 : 0) - (a.fäst ? 1 : 0)
+    || PRIORITETSORDNING[a.prioritet] - PRIORITETSORDNING[b.prioritet]);
 }
 
 /**

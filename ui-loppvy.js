@@ -17,6 +17,7 @@ import { pressfråga } from "./engine-travblad.js";
 import { klassEtikett, loppläge, GRUPPNAMN, klassklättring, startpoäng, startpoängText, bedömningsnivå } from "./engine-proposition.js";
 import { uttagning, alternativlopp, kuskbekräftelse } from "./engine-anmalan.js";
 import { stoppFör, nästaStopp, hoppaFram } from "./engine-klocka.js";
+import { minnenInförLopp } from "./engine-minnen.js";
 import { kuskEfterNamn } from "./data-kuskar.js";
 import { spårkaraktär, spårtrappa, framförSpår } from "./data-lopp.js";
 import { blanda, klamp, kr, kmtid, tidText, plock, slump } from "./engine-util.js";
@@ -851,6 +852,7 @@ function Facit({ körning, facit, onKlart }) {
       </div>
       ${facit.dagstext && html`<div class=${facit.dåligDag ? "skada" : "logg"}>${facit.dagstext}</div>`}
       ${facit.ägartext && html`<div class=${facit.ägartext.ton === "dålig" ? "skada" : "logg"}>${facit.ägartext.text}</div>`}
+      ${facit.karriärminne && html`<div class="logg guldram">❧ ${facit.karriärminne}</div>`}
       ${häst.skada > 0 && html`<div class="skada">Kom ur loppet ömmande — ${häst.skada} vecka(or) vila.</div>`}
     </div>
     <${Efterloppsanalys} analys=${facit.analys} körning=${körning} />
@@ -1081,6 +1083,16 @@ export default function LoppVy({ spel, uppdatera }) {
           <span>Spårläget</span> ${karaktär.text}${framförHäst ? ` — närmast framför står ${framförHäst.namn}` : ""}</div>
         <div><span>Spårtrappan</span> bäst i dag: ${trappa.bäst.join(" och ")} · svårast: ${trappa.svårast.join(" och ")}</div>
       </div>
+      ${(() => {
+        /* KONTINUITETSMINNET (v104, 20.2): det som hänt förut, precis
+           där laddningen inför loppet byggs. Max tre rader. */
+        const minnen = minnenInförLopp(spel, häst, lopp, fält);
+        return minnen.length === 0 ? "" : html`
+          <div class="kort trådar">
+            <div class="meta">Minnet</div>
+            ${minnen.map((m, i) => html`<div key=${i} class="tråd">❧ ${m}</div>`)}
+          </div>`;
+      })()}
       <${Startlista} fält=${fält} favorit=${favorit} visaStreck=${false} />
       <button class="btn" onClick=${() => sättSteg("press")}>Vidare</button>`;
   }

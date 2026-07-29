@@ -475,6 +475,61 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Veckomötet (v105 — kap 20.4, FM-punkt 6)
+
+"Detta saknar nästan alla managerspel." Förstamannens veckans
+genomgång är nu måndagens FÄSTA första rapport i inkorgen (händelse-
+formatet fick fäst-fältet: fästa först, sedan prioriteterna) — skriven
+i hans egen röst, där profilen färgar inledningen: fostraren ("Kaffet
+är i, hästarna är ute"), pådrivaren ("Ingen lång sittning i dag"),
+taktikern ("Jag har läst propositionerna två gånger och räknat en
+tredje"). Sedan sektionerna med RIKTIGA siffror ur samma motorer som
+resten av spelet: ekonomin (kassan, nettot och räckvidden i veckor när
+det lutar fel), formen (vassaste hästen, och den som hänger efter),
+starterna (anmälningsläget — eller förslaget när inget är inskickat),
+sponsorläget (kravet och klockan) och problemen (skadelistan, ägare
+som behöver ett samtal). Bara sektioner med något att säga.
+Långtexten är byggd för v103:s förhand och helskärm: mötet LÄSES.
+
+Plottrighetsprincipen håller: när genomgången bär ekonomisiffrorna
+viker den lösa nettorapporten — den återkommer bara som eget beslut
+när kassan inte täcker en månad. Utan förstaman: inget möte, ingen
+låtsasröst. Stallmötets slots förblir mötets beslutsdel via genvägen.
+
+Och provet betalade för sig direkt: sponsorsamtalet "avtalet löper
+ut" (v99) läste spel.sponsor i SINGULAR — spelet lagrar avtalen i
+spel.sponsorer. Notisen har aldrig kunnat avfyras i riktigt spel.
+Lagad, och samtalet bär nu även kravläget.
+
+## Kontinuitetsminnet (v104 — kap 20.2, FM-punkt 1: "allt kommer ihåg")
+
+Spelet visste redan mycket — resultatrader, rivaliteter, loppnamn —
+men refererade aldrig till det. Ny motor engine-minnen.js: ren läsning
+av det som redan sparas, formulerad som kontextrader där laddningen
+byggs.
+
+**Karriärtotalerna börjar räknas.** spel.karriär (starter, segrar,
+prispengar, storloppssegrar) bokförs i efterLopp, med en ÄRLIG
+grundplåt för pågående karriärer: summan av nuvarande hästars rader —
+sålda hästars starter saknas och det låtsas vi inte om. spel.loppfacit
+minns stallets bästa insats per lopp, så »ni vann det här i fjol«
+fungerar även när hästen är en annan. Rivaliteterna spårar nu också
+VEM som vann senast — det är den raden man minns.
+
+**Raderna landar på tre ställen.** Lottningen: Minnet-kortet (max tre
+rader, viktigast först): »En seger i dag blir stallets 50:e«, »Möte 4
+med Stormvind. Ställningen: 1–2. Senast vann Stormvind.«, »Provhästen
+var 3:a i det här loppet senast — revanschen ligger framdukad.«
+Efteranalysen: milstolpsraden med guldkant när siffran är jämn
+(»Stallets 10:e seger — en siffra att skåla i«, första segern och
+första storloppssegern får egna) — och ALDRIG annars: elfte segern är
+bara en seger, ingen falsk högtid. Inkorgen: förstamannens sms på
+måndagen när nästa seger ÄR siffran: »Jag räknade i går kväll.«
+
+Nittonde provsviten: grundplåtens ärlighet, stolparnas trappa,
+rivalradens ställning, loppminnets egen-mot-stallets, och att
+milstolpsraden kommer exakt när siffran är jämn.
+
 ## Förhandsfönstret, helskärmen och storyn i posten (v103)
 
 Teds riktning: nu när typerna sitter kan storydelarna flytta in i
@@ -1885,4 +1940,8 @@ och Hoppa fram-knappen (Teds tidsidé, kap 20.1) — och v102: klockan
 synlig i headern, inkorgen presenterad per meddelandetyp och
 loppanmälan bantad till läsbarhet. v103 ger inkorgen tre läsdjup —
 lista, stort förhandsfönster och helskärm — och flyttar in storyn:
-huvudnyheten och följetongens trådar ur en delad källa.
+huvudnyheten och följetongens trådar ur en delad källa. v104 ger
+spelet minne: karriärtotaler, loppfacit och rivalhistorik som
+kontextrader i lottningen, efteranalysen och inkorgen (kap 20.2).
+v105 ger måndagen sitt möte: förstamannens genomgång som fäst rapport
+i egen röst (kap 20.4) — och lagar sponsorsamtalets fältbugg.
