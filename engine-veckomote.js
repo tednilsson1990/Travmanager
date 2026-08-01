@@ -20,6 +20,7 @@ import { kr } from "./engine-util.js";
 import { veckonetto } from "./engine-vagvisare.js";
 import { loppläge, bedömningsnivå } from "./engine-proposition.js";
 import { veckansLopp } from "./data-kalender.js";
+import { kravläge } from "./engine-sponsor.js";
 
 const INLEDNING = {
   fostrare: "Kaffet är i, hästarna är ute. Lugnt och metodiskt nu — här är läget.",
@@ -84,8 +85,12 @@ export function veckansGenomgång(spel) {
 
   /* Sponsorläget — kraven och klockan. */
   (spel.sponsorer ?? []).forEach((a) => {
-    if (a.krav && a.veckorKvar !== undefined && a.veckorKvar <= 4) {
-      stycken.push(`SPONSORN\n${a.namn} utvärderar om ${a.veckorKvar} ${a.veckorKvar === 1 ? "vecka" : "veckor"} — kravet står på ${a.krav.text}, läget är ${a.krav.nu ?? 0} av ${a.krav.mål}.`);
+    if (!a.krav) return;
+    /* v113: kravläget ur avtal.status (kravläge), veckorna ur säsongen. */
+    const läge = kravläge(a);
+    const veckorKvar = Math.max(0, (spel.veckor ?? 18) - spel.vecka + 1);
+    if (veckorKvar <= 6 || !läge.klar) {
+      stycken.push(`SPONSORN\n${a.namn}: kravet är ${läge.text} — läget ${läge.nu} av ${läge.mål}${läge.klar ? " (uppfyllt — bonusen är säkrad vid säsongsslutet)" : ` med ${veckorKvar} ${veckorKvar === 1 ? "vecka" : "veckor"} kvar av säsongen`}.`);
     }
   });
 

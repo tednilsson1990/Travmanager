@@ -156,9 +156,15 @@ export function useSpel() {
   const [, sättVersion] = useState(0);
 
   const uppdatera = useCallback((fn) => {
-    if (fn) fn(ref.current);
+    /* KLICKVAKTEN (v114, Teds knapp som "inte gick att trycka på"):
+       kastar mutationen får det ALDRIG bli tyst. Sparning och
+       omritning körs ändå, och felet kastas om asynkront så den
+       globala felbannern garanterat visar rad och meddelande. */
+    let klickfel = null;
+    if (fn) { try { fn(ref.current); } catch (e) { klickfel = e; } }
     spara(ref.current);
     sättVersion((v) => v + 1);
+    if (klickfel) setTimeout(() => { throw klickfel; }, 0);
   }, []);
 
   const nystart = useCallback(() => {

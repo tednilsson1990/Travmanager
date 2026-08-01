@@ -475,6 +475,113 @@ Den totala avvikelsen mot måltalen är oförändrad: 22,1 före stationshållni
 22,3 efter. Ombyggnaden behölls ändå, eftersom den är fysiskt sannare —
 ytterraden ligger nu bredvid innerkön i stället för att följa sig själv.
 
+## Galoppdiskningen som frös loppet (v113 — speltestfynd i motorn)
+
+Ted: "när en häst galopperar avslutas inte loppet." Rotorsaken satt i
+simulatorns slutvillkor: LEVANDE räknades EN GÅNG före loppet, så en
+häst som diskades mitt i (galopp med bortkörning) aldrig nådde mål —
+och klara < levande blev aldrig sant. Loppet malde till maxtiden och
+uppspelningen såg ut att aldrig ta slut.
+
+Lagningen är minsta möjliga: levande räknas om varje varv — start-
+diskade var aldrig med, mittdiskade sänker kravet i samma stund de
+körs bort. Ren räkning, ingen slump, inget beteende i loppet ändras;
+full svitkörning grön efteråt (järnregeln för motorn). Empiriskt
+verifierad över 150 provocerade lopp: 36 mittdiskningar, värsta 462
+rutor mot 481 för rena lopp — diskade lopp slutar i samma takt. Och
+en PERMANENT VAKT i analyssviten provocerar galopper varje körning
+och låser att diskade lopp aldrig drar iväg igen.
+
+(En lärdom ur felsökningen: diskningsorsaken bor på simtillståndet,
+inte på hästen — första detektorn läste fel fält och "hittade" noll
+diskningar. Sonden som avslöjade det ledde rakt till vakten.)
+
+## Klickvakten och sparfilsexporten (v114 — beskedsknappen säsong 2)
+
+Teds rapport: bekräftaknappen i onsdagens uttagningsbesked slutade
+reagera i säsong 2 — utan felbanner. Motorn är frikänd (säsong 2-
+reproduktion med lärlingskusk: uttagningen ger "med", bekräftelsen
+"bekräftad", inkorgen bygger rent), komponentens villkor likaså. Det
+som återstår är att klickets mutation kastar och tystas någonstans på
+vägen. Två åtgärder:
+
+**Klickvakten:** uppdatera-vägen (varje knapptryck i spelet går genom
+den) fångar nu mutationsfel, sparar och ritar om ÄNDÅ, och kastar om
+felet asynkront så den globala felbannern GARANTERAT visar meddelande
+och rad. Tystnad är inte längre ett möjligt utfall — nästa tryck ger
+antingen skärmbyte eller exakt diagnos.
+
+**Sparfilsexporten:** Kontoret har fått en Felsökning-ruta med
+»Exportera sparfilen« — sparfilen som nedladdningsbar fil, så exakt
+samma läge kan återskapas där felet uppstod. (Felbannern hade knappen
+sedan länge — nu finns den även utan krasch.)
+
+## Spelrapportens sex punkter (v113)
+
+**Galoppen och loppet som "inte avslutas".** Inte återskapat: 400
+provlopp med tvingade galoppörer — simulatorn avslutar alltid (värsta
+bildlängd 387 rutor), analysen och efterloppet klarar bortkörda
+hästar. I stället för en gissad lagning: ett FELSKYDD i avslutningen —
+kastar något där visas felet och raden PÅ SKÄRMEN med en
+tillbaka-knapp, i stället för tyst frysning. Nästa gång det händer
+ger skärmen exakt diagnos.
+
+**Sponsorkravet ("massor lopp men inget kört").** Riktig bugg:
+inkorgens och veckomötets kravtexter läste krav.nu/krav.mål — fält
+som aldrig funnits. Framsteget bor i avtalets status via kravläge().
+Lagade, och avtalen är säsongsbundna: "veckor kvar" räknas nu ur
+säsongen. Mötet säger dessutom när kravet är uppfyllt och bonusen
+säkrad.
+
+**Efteranalysen i inkorgen + uttalandet.** Varje start sparar en
+analyspost (avslutningen), och måndagens inkorg bär EFTERANALYSEN som
+rapport: utfallet, förstamannens avgörande och läxa — och PRESSEN
+VÄNTAR: uttalandet som beslut med toner formulerade ur utfallet
+("Svårt att vinna från det läget" vid favoritfall, "Bra prestation
+för den här klassen" vid pallplats, "Sånt händer — hon är bättre än
+så här" vid bortkörning). Valet blir en pressnotis med din signatur
+och en liten hypeeffekt. På köpet: analysens min-extraktion hade
+SAMMA egen-flagg-bugg som v106 lagade i avslutningen — med
+stallkamrater analyserades fel häst. Lagad via identitet.
+
+**Lärlings- och bronsloppen som ställdes in.** Mätt: Lärlingsserien
+7 av 14 inställda (snitt 4,3 anmälda). Två rattar utan motoringrepp:
+lågklassloppen bär UTVECKLINGSVÄRDE i AI-nyttan (en start är värd
+något i sig för vardagshästen), och arrangören VÄRNAR breddloppen —
+nivå under 46 ger upp till +24 procentenheter körvilja i 4–7-spannet,
+som i verkligheten där låga klasser hellre körs tunna än ställs in.
+Efter: 2 av 14, snitt 6,8.
+
+**Open stretch på loppkartan.** Kärnfynd: simulatorn HAR öppna
+innerspåret (kol −1) men bildgenereringen klampade visningsraden till
+0 — hästen på open stretch ritades som INNE. Klampen släppt (ren
+observation, ingen dynamikändring) och närbilden ritar spåret:
+streckad guldlinje och etiketten ÖPPET under INNE när loppet har
+open stretch.
+
+**"Få hästar pressar ledaren?"** Mätt med världens riktiga taktikval:
+100 av 100 lopp har verkliga angrepp (någon rider >12 s utan rygg
+utvändigt), 1,7 ledarbyten per lopp, ~20 s dödens per häst i snitt.
+Pressen finns i motorn — upplevelsen kan vara visuell (närbildens
+tempo). Ingen motorändring utan belägg: fånga gärna ett konkret lopp
+som känns fel, så jämförs det mot siffrorna.
+
+## Stallkamraternas röster i kusksamtalet (v112 — speltestfynd)
+
+Ted körde två hästar i samma lopp — och kusksamtalet handlade bara om
+den ena. Riktigt: samtalet byggdes när det bara fanns en styrd häst,
+och v106:s stallkamrater kom aldrig in i det.
+
+Nu får samtalet ett Stallkamraterna-block: varje kamrats kusk säger
+sitt i ett eget samtalskort — spåret, den redan satta taktiken med
+kuskens egna ord (»Jag laddar för spets — sen får vi se vem som vill
+betala«, »Ryggläge och tålamod», »Jag tar det lugnt tidigt och litar
+på avslutningen«) och en ärlig formkänsla ur hästens verkliga läge
+(»känns riktigt fin i kroppen« / »har känts tyngre än vanligt«).
+Kortare än huvudsamtalet med flit: deras taktik är redan bestämd —
+det här är rösten, inte ett beslut. Ditt eget samtal med din kusk är
+oförändrat: det är fortfarande där taktiken och slutordern sätts.
+
 ## Världens utveckling, etapp A (v111 — kap 20.8, Teds viktigaste)
 
 "När du spelar tio säsonger ska världen vara helt annorlunda."
@@ -2158,4 +2265,6 @@ resultatraden och Statistiken-sidan under Mer (kap 20.3). v110 ger
 löftesbeslut som följs upp, och kuskens måndags-sms ur helgens rad.
 v111 sätter världen i rörelse: kuskgenerationerna (pensioneringar och
 lärlingsdebuter genom hela spelet), sponsoromsättningen och pressen
-som berättar — kap 20.8, etapp A.
+som berättar — kap 20.8, etapp A. v112 ger stallkamraternas kuskar
+röster i kusksamtalet inför loppet. v113 lagar motorbuggen där en
+galoppdiskning mitt i loppet frös slutvillkoret — med permanent vakt.

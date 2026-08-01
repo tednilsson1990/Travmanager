@@ -615,6 +615,26 @@ function Kusksamtal({ häst, lopp, kusk, fält, onVal }) {
           : "Han är ingen maskin — tajmingen avgör."}
       </div>
     </div>
+    ${kamrater.length > 0 && html`
+      <h2>Stallkamraterna</h2>
+      ${kamrater.map(({ häst: kh, kusk: kk }) => {
+        /* Kamratens kusk säger sitt (v112, Teds speltest: "pratade med
+           kusken om en häst bara"). Kortare än huvudsamtalet — deras
+           taktik är redan satt (välTaktik i anmälan), här är rösten. */
+        const spår = fält.indexOf(kh) + 1;
+        const taktikOrd = kh.taktik === "ledning" ? "Jag laddar för spets — sen får vi se vem som vill betala."
+          : kh.taktik === "rygg" ? "Ryggläge och tålamod. Jag sitter still tills det öppnar sig."
+          : kh.taktik === "avvakta" ? "Jag tar det lugnt tidigt och litar på avslutningen."
+          : "Jag kör efter känsla — hästen får bestämma tempot.";
+        const formOrd = (kh.form ?? 50) >= 65 ? `${kh.namn} känns riktigt fin i kroppen just nu.`
+          : (kh.form ?? 50) >= 45 ? `${kh.namn} är okej — inte mer, inte mindre.`
+          : `Jag ska vara ärlig: ${kh.namn} har känts tyngre än vanligt.`;
+        return html`
+          <div key=${kh.id} class="samtal">
+            <div class="meta">✆ ${kk.namn} kör ${kh.namn}${spår > 0 ? ` · spår ${spår}` : ""}</div>
+            <div class="samtal-text">»${taktikOrd} ${formOrd}«</div>
+          </div>`;
+      })}`}
     ${SLUTORDER.map((v) => html`
       <button key=${v.id} class=${"val" + (v.id === rekSlut ? " rek" : "")}
         onClick=${() => onVal({ taktik, slutorder: v.id === "kusken" ? null : v.id })}>
@@ -950,6 +970,15 @@ export default function LoppVy({ spel, uppdatera }) {
 
   const avsluta = () => {
     if (!körning || !körning.sim || facit) return;
+    try { avslutaInre(); } catch (fel) {
+      /* Feldiagnosen (v113): Teds galopprapport gav en tyst frysning
+         som inte gått att återskapa i motorn (400 provlopp). Kastar
+         något här ska det SYNAS — inte frysa loppet. */
+      sättFacit({ nödfacit: true, felrad: `${fel.message} @ ${(fel.stack ?? "").split("\n")[1]?.trim() ?? "?"}` });
+      sättSteg("facit");
+    }
+  };
+  const avslutaInre = () => {
     const { sim, lopp, häst, kusk, favorit, pressval } = körning;
     /* v106: identiteten, inte egen-flaggan — med stallkamrater i fältet
        pekade egen-flaggan på bäst placerade egna häst, inte den styrda. */
@@ -986,6 +1015,20 @@ export default function LoppVy({ spel, uppdatera }) {
     const analys = loppanalys(körning.sim, lopp, {
       häst, kusk, taktik: körning.taktik, slutorder: körning.slutorder,
       förstaman: spel.förstaman,
+    });
+    /* EFTERANALYSEN TILL INKORGEN (v113, Teds önskan): en kort post
+       sparas så måndagens inkorg kan bära analysen och uttalandet. */
+    uppdatera((s) => {
+      (s.senasteAnalyser ??= []).unshift({
+        hästId: häst.id, hästNamn: häst.namn, kuskNamn: kusk.namn,
+        lopp: lopp.kortnamn || lopp.namn, vecka: s.vecka, säsong: s.säsong ?? 1,
+        plats: min.ur ? null : min.plats, ur: !!min.ur,
+        varFavorit: körning.favorit === häst, streck: min.streck,
+        läge: min.läge ?? null, nivå: lopp.nivå ?? 50,
+        avgörande: analys?.avgörande ?? null, läxa: analys?.nästaSteg ?? null,
+        uttalad: false,
+      });
+      s.senasteAnalyser = s.senasteAnalyser.slice(0, 8);
     });
     sättFacit({ ...sammanfattning, min, analys });
     sättSteg("facit");
@@ -1192,5 +1235,9 @@ export default function LoppVy({ spel, uppdatera }) {
       ${kommentarer.map((k, i) => html`<${Rad} key=${i} klass=${"k-rad " + (k.k || "")} html=${k.t} />`)}
     </div>
 
-    ${facit && html`<${Facit} körning=${körning} facit=${facit} onKlart=${nollställ} />`}`;
+    ${facit && (facit.nödfacit
+      ? html`<div class="kort"><div class="skada">Något gick fel när loppet skulle avslutas.
+          Skriv av raden och rapportera: <b>${facit.felrad}</b></div>
+          <button class="btn" onClick=${nollställ}>Tillbaka</button></div>`
+      : html`<${Facit} körning=${körning} facit=${facit} onKlart=${nollställ} />`)}`;
 }

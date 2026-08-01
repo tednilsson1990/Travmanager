@@ -433,9 +433,16 @@ export function simulera(fält, lopp, ingripande = null) {
   frys();
   let klara = 0, förraLedare = null;
   let senasteUtflyttning = -99;   // när någon senast gick ut — driver kedjan
-  const levande = H.filter((s) => !s.ur).length;
+  /* v113-lagningen (Teds speltest: "loppet avslutas inte"): levande
+     räknas om varje varv i stället för en gång före loppet — en häst
+     som diskas MITT I loppet (galopp) når aldrig mål, och ett fruset
+     levande-tal lät slutvillkoret vänta på ett mål som aldrig kommer
+     tills maxtiden. Dynamisk räkning: startdiskade var aldrig med,
+     mittdiskade sänker kravet i samma stund de körs bort. Ren räkning,
+     ingen slump, inget beteende i loppet ändras. */
+  const levande = () => H.filter((s) => !s.ur).length;
 
-  while (t < MAXTID && klara < levande) {
+  while (t < MAXTID && klara < levande()) {
     t += DT;
     frys();
     const ord = iOrdning();
@@ -918,7 +925,7 @@ export function simulera(fält, lopp, ingripande = null) {
         meter: Math.round(l ? Math.min(l.d, dist) : 0),
         pos: H.map((s) => ({
           namn: s.h.namn, spår: s.spår, egen: s.h.egen, ur: s.ur,
-          d: Math.min(s.d, dist), lane: Math.min(6, Math.max(0, s.kol)), iMål: s.mål !== null,
+          d: Math.min(s.d, dist), lane: Math.min(6, Math.max(lopp.openStretch ? -1 : 0, s.kol)), iMål: s.mål !== null,
         })),
         rader: iOrdning().map((s, i) => ({
           namn: s.h.namn, spår: s.spår, egen: s.h.egen,

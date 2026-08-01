@@ -149,6 +149,11 @@ export default function BanVy({ lopp, fält, bild }) {
         ${RADNAMN.map((namn, i) => html`
           <text key=${"r" + i} x="4" y=${nbRad(i) + 4} fill="#8FA0B0" font-size="9"
             font-family="'Roboto Mono',monospace">${namn}</text>`)}
+        ${lopp?.openStretch && html`
+          <line x1=${NB.vänster - 20} y1=${nbRad(-1) - 8} x2=${NB.höger + 10} y2=${nbRad(-1) - 8}
+            stroke="#F2B134" stroke-width="1" stroke-dasharray="5 4" opacity="0.7" />
+          <text x="4" y=${nbRad(-1) + 4} fill="#F2B134" font-size="9"
+            font-family="'Roboto Mono',monospace">ÖPPET</text>`}
         <g>
           ${fält.map((h) => {
             const t = täcke(h.spår);

@@ -96,5 +96,26 @@ console.log("PROV: efterloppsanalysen\n");
 }
 
 sättRng();
+/* ---------- Diskade lopp slutar i tid (v113-vakten) ---------- */
+{
+  /* Teds speltest: en mittdiskning (galopp) fick loppet att mala till
+     maxtiden — levande räknades före start. Vakten provocerar
+     galopper och låser att diskade lopp slutar i samma takt som rena. */
+  let mittDisk = 0, värsta = 0, rentTak = 0;
+  for (let i = 0; i < 30; i++) {
+    const a = byggKörning(80000 + i);
+    a.fält.forEach((h) => { h.trav = Math.min(h.trav ?? 50, 25); h.lynne = 25; });
+    sättRng(seedad(i * 13 + 5));
+    const sim = simulera(a.fält, a.lopp);
+    const första = sim.bild[0]?.pos ?? [];
+    const mitt = sim.resultat.some((r) => r.ur && första.some((p) => p.namn === r.häst.namn && !p.ur));
+    if (mitt) { mittDisk++; värsta = Math.max(värsta, sim.bild.length); }
+    else rentTak = Math.max(rentTak, sim.bild.length);
+  }
+  ok(mittDisk >= 2, `${mittDisk} lopp med diskning mitt i — vakten har underlag`);
+  ok(värsta > 0 && värsta <= rentTak * 1.4,
+    `diskade lopp slutar i tid: värsta ${värsta} rutor mot ${rentTak} för rena`);
+}
+
 console.log(fel === 0 ? "\nALLA PROV OK\n" : `\n${fel} PROV FÖLL\n`);
 process.exit(fel === 0 ? 0 : 1);

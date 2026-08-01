@@ -155,5 +155,21 @@ export default function KontorVy({ spel, uppdatera }) {
     <h2>Stallkontoret</h2>
     <${Ekonomi} spel=${spel} />
     <${Ägare} spel=${spel} uppdatera=${uppdatera} />
-    <${Sponsorer} spel=${spel} uppdatera=${uppdatera} />`;
+    <${Sponsorer} spel=${spel} uppdatera=${uppdatera} />
+    <h2>Felsökning</h2>
+    <div class="kort">
+      <div class="logg">Om något beter sig konstigt: exportera sparfilen och skicka den —
+        med den kan exakt samma läge återskapas.</div>
+      <button class="btn liten sekundär" onClick=${() => {
+        try {
+          const rå = localStorage.getItem("travmanager.sparfil.v1") ?? "{}";
+          const blob = new Blob([rå], { type: "application/json" });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "travmanager-sparfil.json";
+          a.click();
+          URL.revokeObjectURL(a.href);
+        } catch { /* inget att exportera */ }
+      }}>Exportera sparfilen</button>
+    </div>`;
 }

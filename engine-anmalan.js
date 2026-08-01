@@ -37,8 +37,14 @@ import { ärEftertraktad, relation } from "./data-kuskar.js";
 /** Arrangörens beslut vid 4–7 anmälda — deterministiskt och viktat
     (4: 25 %, 5: 43 %, 6: 61 %, 7: 79 %). Samma funktion för spelarens
     lopp och världens, så trösklarna aldrig divergerar. */
-export function arrangörenKör(loppId, vecka, antal) {
-  return hash(`${loppId}:${vecka}:arrangör`) % 100 < 25 + (antal - 4) * 18;
+export function arrangörenKör(loppId, vecka, antal, nivå = 50) {
+  /* v113 (Teds spelrapport: lärlings- och bronsloppen ställdes ofta
+     in): arrangören VÄRNAR breddloppen — i verkligheten körs låga
+     klasser hellre med tunna fält än ställs in, för det är där
+     vardagshästarna får sina starter. Nivå under 46 ger upp till
+     +24 procentenheter körvilja. */
+  const bredd = Math.max(0, (46 - nivå)) * 2;
+  return hash(`${loppId}:${vecka}:arrangör`) % 100 < Math.min(92, 25 + (antal - 4) * 18 + bredd);
 }
 
 /** Stabil hash för deterministiska beslut (samma som UI-hashregeln). */
@@ -109,7 +115,7 @@ export function uttagning(spel, lopp, egenHäst, medEgna = []) {
       text: `Endast ${antal} anmälda — loppet ställs in.` };
   }
   if (antal <= 7) {
-    const körs = arrangörenKör(lopp.id, spel.vecka, antal);
+    const körs = arrangörenKör(lopp.id, spel.vecka, antal, lopp.nivå ?? 50);
     if (!körs) {
       return { utfall: "inställt", antal, platser, arrangör: true,
         text: `${antal} anmälda — arrangören valde att ställa in loppet.` };

@@ -581,3 +581,35 @@ vara HELT annorlunda — och dagboken (19.4) ska kunna visa vägen dit.
    berättelseeffekt per rad kod: datat finns). 3) 20.4 veckomötet.
    4) 20.3 statistiklagret + börja spara positionsdata direkt (ju
    tidigare desto längre historik). 5) 20.5–20.8 i säsongstakt.
+
+
+## 18.11 Tränaren som kusk (Teds idé, juli 2026 — ANTECKNAD, byggs ej ännu)
+I verkligheten kör många tränare sina hästar själva. I spelet:
+- KÖRLICENSEN: spelaren kan välja SIG SJÄLV i kuskväljaren. Inget
+  arvode och ingen kuskandel — men körförmågan är ens egen: start,
+  avslutning och omdöme som EGNA attribut som utvecklas med körda
+  lopp (långsamt, och sämre än proffsen länge).
+- AVVÄGNINGEN som gör det till ett riktigt val: gratis och alltid
+  "bekräftad" — men en sämre kusk kostar placeringar, och
+  kuskrelationerna svalnar hos dem man slutar anlita.
+- VÄRLDEN: AI-tränare med körlicens kör ibland sina egna hästar
+  (hash-avgjort per tränare) — fältrustningen sätter då tränarnamnet
+  som kusk. Knyter till 20.8 (tränarstallen) och 18.6 (licenserna:
+  lärlings-/B-/A-licens som trappa även för spelaren).
+- STATISTIKEN (20.3) får en egen rad: "körda av tränaren själv".
+
+
+## 19.6 Inkorgen som förstasida — Hem avvecklas (Teds fråga, juli 2026 — ANTECKNAD, byggs ej ännu)
+"Hemskärmen, behövs den?" Sedan v100 har Hem tömts på all kommunikation
+— kvar är bara gårdsbilden, bågkortet, Längre fram och ekonomifakta.
+Slutsteget i inkorgsdokumentets logik: inkorgen BLIR förstasidan och
+hela systemets nav.
+- FLIKRADEN: Inkorg först och som startflik; Hem utgår.
+- ARVET fördelas: bågkortet och Längre fram → veckomötets genomgång
+  (fästa raden bär redan veckans läge) eller egen fäst "Planen"-rad;
+  ekonomifakta → veckomötet + Kontoret; gårdsbilden → Gården (och
+  kanske som inkorgens bakgrundston — gården ska synas någonstans).
+- SPELSTART/NYSTART och säsongstexterna behöver ny hemvist (bor de i
+  HemVy i dag? Inventera före rivning).
+- RISK att bevaka: inkorgen får inte bli ett skyltfönster för allt —
+  prioritetssektionerna och Post/Nyheter-segmenten är skyddet.

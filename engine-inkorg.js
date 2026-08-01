@@ -34,10 +34,11 @@ import { nästaSteg, veckonetto } from "./engine-vagvisare.js";
 import { loppläge, bedömningsnivå } from "./engine-proposition.js";
 import { veckansLopp } from "./data-kalender.js";
 import { kr } from "./engine-util.js";
-import { teckna, tackaNej } from "./engine-sponsor.js";
+import { teckna, tackaNej, kravläge } from "./engine-sponsor.js";
 import { stoppFör } from "./engine-klocka.js";
 import { träningsråd } from "./engine-forstaman.js";
 import { säkraKarriär, nästaMilstolpe } from "./engine-minnen.js";
+import { skrivPress } from "./engine-vecka.js";
 import { klamp } from "./engine-util.js";
 import { veckansGenomgång } from "./engine-veckomote.js";
 import { ägartyp, ägarKontakt } from "./engine-agare.js";
@@ -185,11 +186,18 @@ export function byggInkorg(spel) {
      Singularfältet i v99 fanns bara i provfixturen; notisen har aldrig
      kunnat avfyras i riktigt spel. Provet avslöjade det.) ---- */
   (spel.sponsorer ?? []).forEach((avtal) => {
-    if (avtal.krav && avtal.veckorKvar !== undefined && avtal.veckorKvar <= 3) {
+    /* v113-lagning (Teds spelrapport: "gjort massor lopp men notisen
+       säger inget kört"): framsteget bor i avtal.status via kravläge()
+       — inte i krav.nu, som aldrig funnits. Och avtalen är säsongs-
+       bundna: veckorna kvar räknas ur säsongen. */
+    if (!avtal.krav) return;
+    const veckorKvar = Math.max(0, (spel.veckor ?? 18) - spel.vecka + 1);
+    const läge = kravläge(avtal);
+    if (veckorKvar <= 3 && !läge.klar) {
       lägg({
         avsändare: avtal.namn, roll: "Sponsor", typ: "samtal", prioritet: "beslut",
-        rubrik: "Avtalet löper ut",
-        text: `${avtal.veckorKvar} ${avtal.veckorKvar === 1 ? "vecka" : "veckor"} kvar på avtalet med ${avtal.namn}. Utvärderingen väger era resultat: ${avtal.krav.nu ?? 0} av ${avtal.krav.mål} (${avtal.krav.text}).`,
+        rubrik: "Utvärderingen närmar sig",
+        text: `${veckorKvar} ${veckorKvar === 1 ? "vecka" : "veckor"} kvar av säsongen. Kravet: ${läge.text} — läget är ${läge.nu} av ${läge.mål}.`,
         flik: "kontor",
       });
     }
@@ -224,6 +232,65 @@ export function byggInkorg(spel) {
       });
     }
   }
+
+  /* ---- EFTERANALYSEN I INKORGEN (v113, Teds önskan: "saknar analys
+     efter loppet i inkorgen, samt chans att uttala sig"). En rapport
+     per start förra veckan, med förstamannens avgörande och läxa —
+     och UTTALANDET som beslut: tre toner formulerade ur utfallet
+     ("föll som favorit — svårt att vinna från det läget", "trea —
+     bra prestation för klassen"). Uttalandet blir en pressnotis med
+     din signatur och en liten hypeeffekt. ---- */
+  (spel.senasteAnalyser ?? [])
+    .filter((a) => a.vecka === spel.vecka - 1 && a.säsong === (spel.säsong ?? 1))
+    .forEach((a) => {
+      const utfall = a.ur ? "bortkörd"
+        : a.plats === 1 ? "seger"
+        : a.varFavorit && (a.plats ?? 9) > 3 ? "favoritfall"
+        : (a.plats ?? 9) <= 3 ? "pall" : "mitt";
+      const lägesord = a.läge === "dödens" ? " från dödens" : a.läge === "ledningen" ? " från ledningen" : "";
+      const alternativ = {
+        seger: [
+          { id: "lyft", etikett: `»${a.hästNamn} är på väg mot något stort«` },
+          { id: "lugn", etikett: "»Vi tar ett lopp i taget«", sekundär: true },
+        ],
+        favoritfall: [
+          { id: "läget", etikett: `»Svårt att vinna${lägesord || " från det läget"}«` },
+          { id: "ansvar", etikett: "»Det här ska vi göra bättre — mitt ansvar«", sekundär: true },
+        ],
+        pall: [
+          { id: "klass", etikett: "»Bra prestation för den här klassen«" },
+          { id: "mer", etikett: "»Det finns mer att hämta«", sekundär: true },
+        ],
+        bortkörd: [
+          { id: "hästen", etikett: `»Sånt händer — ${a.hästNamn} är bättre än så här«` },
+          { id: "tyst", etikett: "Avstå från kommentar", sekundär: true },
+        ],
+        mitt: [
+          { id: "nykter", etikett: "»Ungefär där vi står just nu«" },
+          { id: "mer", etikett: "»Det finns mer att hämta«", sekundär: true },
+        ],
+      }[utfall];
+      lägg({
+        avsändare: fmNamn, roll: "Förstaman", typ: "rapport",
+        prioritet: a.uttalad ? "info" : "rekommendation",
+        rubrik: `Efteranalysen: ${a.hästNamn} i ${a.lopp}`,
+        text: a.avgörande ?? (a.ur ? "Bortkörd — loppet fick aldrig ett slut för vår del." : `${a.plats}:a av fältet.`),
+        lång: [
+          `EFTERANALYS · ${a.hästNamn} · ${a.lopp}`,
+          `UTFALLET\n${a.ur ? "Bortkörd." : `Plats ${a.plats}.`}${a.varFavorit ? " Loppets mest spelade häst." : ""}${a.läge ? ` Resan: ${a.läge}.` : ""}`,
+          a.avgörande ? `AVGÖRANDET\n${a.avgörande}` : null,
+          a.läxa ? `LÄXAN\n${a.läxa}` : null,
+          !a.uttalad ? `PRESSEN VÄNTAR\nTravbladet vill ha en kommentar. Välj ton nedan — den hamnar i tidningen med ditt namn under.` : null,
+        ].filter(Boolean).join("\n\n"),
+        detaljer: [
+          { namn: "Placering", värde: a.ur ? "bortkörd" : `${a.plats}` },
+          { namn: "Spelprocent", värde: `${(a.streck ?? 0).toFixed?.(0) ?? a.streck} %` },
+        ],
+        ...(a.uttalad ? {} : { beslut: { typ: "uttalande",
+          ref: { hästId: a.hästId, vecka: a.vecka, utfall }, alternativ } }),
+        flik: "lopp",
+      });
+    });
 
   /* ---- ÄGARNAS RÖSTER (v110, Teds punkt 3–4: relationer och
      personligheter). Läser rent — profilerna skapas av ägarmotorn,
@@ -432,6 +499,20 @@ export function verkställBeslut(spel, händelse, valId) {
     const mål = (spel.sponsorerbjudanden ?? []).find((e) =>
       e.namn === b.ref.namn && e.typId === b.ref.typId);
     if (mål) (valId === "ja" ? teckna : tackaNej)(spel, mål);
+  }
+  if (b.typ === "uttalande") {
+    const post = (spel.senasteAnalyser ?? []).find((x) =>
+      x.hästId === b.ref.hästId && x.vecka === b.ref.vecka);
+    const häst = (spel.stall ?? []).find((h) => h.id === b.ref.hästId);
+    if (post && valId !== "tyst") {
+      const alt = händelse.beslut.alternativ.find((a) => a.id === valId);
+      const citat = (alt?.etikett ?? "").replace(/[»«]/g, "");
+      const hype = valId === "lyft" ? 3 : valId === "mer" ? 1 : valId === "lugn" ? -1 : 0;
+      skrivPress(spel, `${post.hästNamn}: »${citat}«`,
+        `Tränarkommentar efter ${post.lopp}.`, post.plats === 1 ? "positiv" : "neutral",
+        häst, hype, spel.stallnamn ?? null);
+    }
+    if (post) post.uttalad = true;
   }
   if (b.typ === "ägarlöfte") {
     if (valId === "lova") {

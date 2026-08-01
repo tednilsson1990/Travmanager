@@ -25,16 +25,18 @@ function byggSpel() {
   stall[1].skada = 3; stall[1].namn = "Provhästen Skadad";
   stall[2].skada = 0; stall[2].intjänat = 40000;
   return {
-    vecka: 6, veckor: 18, säsong: 2, kassa: 40000,
+    vecka: 16, veckor: 18, säsong: 2, kassa: 40000,
     stall, förstaman: { namn: "Ulla Provsson", profil: "taktiker", säsonger: 2 },
     personal: [], byggen: {}, press: [
       { rubrik: "Provrubrik ett", byline: "En rad om saken." },
       { rubrik: "Provrubrik två", byline: "En annan rad." },
     ],
-    sponsorer: [{ namn: "Provfirman", perVecka: 900, krav: { text: "två segrar", mål: 2, nu: 0 }, veckorKvar: 2 }], sponsorerbjudanden: [{ namn: "Provbolaget", typId: "foder", typnamn: "Foderpartner",
+    sponsorer: [{ namn: "Provfirman", perVecka: 900,
+      krav: { typ: "segrar", antal: 2, text: "två segrar" },
+      status: { starter: 6, segrar: 1, hemmastarter: 0 } }], sponsorerbjudanden: [{ namn: "Provbolaget", typId: "foder", typnamn: "Foderpartner",
       perVecka: 1500, segerbonus: 4000, gällerTill: 8, krav: { text: "en seger", mål: 1, nu: 0 } }],
     kassa2: 0, inkorgLästa: [], inkorgBeslutade: [],
-    huvudnyhet: { säsong: 2, vecka: 6, etikett: "Storloppssöndag", rubrik: "Provrubriken över uppslaget",
+    huvudnyhet: { säsong: 2, vecka: 16, etikett: "Storloppssöndag", rubrik: "Provrubriken över uppslaget",
       ingress: "Ingressen som sätter tonen.", brödtext: "Brödtexten som bara helskärmen visar i sin helhet." },
     båge: { lopp: "Provpokalen", veckorKvar: 3 },
   };
@@ -150,7 +152,7 @@ console.log("PROV: inkorgen\n");
 
   /* Kuskens måndags-sms ur färskaste raden. */
   const spel3 = byggSpel();
-  spel3.stall[0].resultat = [{ säsong: 2, vecka: 5, lopp: "P", plats: 1, km: 14.9,
+  spel3.stall[0].resultat = [{ säsong: 2, vecka: 15, lopp: "P", plats: 1, km: 14.9,
     läge: "rygg/inner", kusk: "Ann Provkusk", pris: 30000 }];
   const kusksms = byggInkorg(spel3).find((h) => h.roll === "Kusk");
   ok(!!kusksms && kusksms.text.includes("svarade direkt"),

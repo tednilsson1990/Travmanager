@@ -318,7 +318,7 @@ export function körVärldensVecka(spel, anmälningar = null, taUt = null, arran
       const anmälda = anmälningar.get(l.id).filter((h) => !upptagna.has(h.id)
         && h.senasteStartVecka !== vecka && h.skada === 0);
       if (anmälda.length <= 3) return;
-      if (anmälda.length <= 7 && arrangör && !arrangör(l.id, vecka, anmälda.length)) return;
+      if (anmälda.length <= 7 && arrangör && !arrangör(l.id, vecka, anmälda.length, l.nivå ?? 50)) return;
       /* Delningen (v96): samma regel som spelarens uttagning — stor
          överanmälan i vardagslopp ger avdelningar via dela-funktionen
          (skickas in av veckomotorn), annars uttagning. */

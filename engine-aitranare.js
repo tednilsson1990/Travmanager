@@ -108,7 +108,12 @@ export function veckansAnmälningar(spel) {
     let toppNytta = 0;
     lopp.forEach((l) => {
       if (startförbud(h, l)) return;
-      const n = loppnytta(h, l, stall);
+      let n = loppnytta(h, l, stall);
+      /* v113: lågklassloppen (lärlings- och bottenserierna) bär
+         UTVECKLINGSVÄRDE utöver prispengarna — en start är värd något
+         i sig för vardagshästen. Utan det svalt Lärlingsserien
+         (7 av 14 inställda i mätningen). */
+      if ((l.nivå ?? 50) <= 42) n *= 1.3;
       if (n >= 0.10) { kandidater.push({ l, n }); toppNytta = Math.max(toppNytta, n); }
     });
     const nära = kandidater.filter((k) => k.n >= toppNytta * 0.85);

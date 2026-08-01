@@ -39,7 +39,11 @@ function positionVid(bild, dist, kvar) {
  * Returnerar null om egen häst saknas i loppet (ska inte hända).
  */
 export function loppanalys(sim, lopp, { häst, kusk, taktik, slutorder, förstaman } = {}) {
-  const min = sim.resultat.find((r) => r.häst.egen);
+  /* v113: identiteten före egen-flaggan — med stallkamrater i fältet
+     pekade flaggan på bäst placerade egna häst, inte den styrda
+     (samma bugg som avslutningen bar till v106). */
+  const min = (häst && sim.resultat.find((r) => r.häst === häst))
+    ?? sim.resultat.find((r) => r.häst.egen);
   if (!min) return null;
   const dist = lopp.dist;
   const bild = sim.bild;
