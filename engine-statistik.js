@@ -1,3 +1,4 @@
+import { VÄDER } from "./engine-vader.js";
 /**
  * STATISTIKLAGRET (v109, utvecklingsplanen 20.3 — FM-punkt 2:
  * "man ska kunna grotta ner sig i siffror i timmar")
@@ -53,6 +54,8 @@ export function hästStatistik(häst) {
       : r.dist <= 2000 ? "Kort (–2000 m)" : r.dist <= 2400 ? "Medel (2100–2400 m)" : "Lång (2500 m–)"),
     positioner: grupp(rader, (r) => POSITIONSNAMN[r.läge] ?? null),
     kuskar: grupp(rader, (r) => r.kusk),
+    /* Vädret (v154, 20.3): raderna bär det från och med nu. */
+    väder: grupp(rader, (r) => VÄDER[r.väder]?.namn ?? null),
     bevarade: starter,
   };
 }

@@ -22,6 +22,12 @@ export const ÄGARTYPER = {
   travfamilj: { namn: "Travfamiljen", tålamod: 1.2, resultatkänsla: 0.9, kommvikt: 0.45,
     vill: "göra det ordentligt — traditioner, kontakter och tydliga åsikter",
     beskrivning: "Tredje generationen i sporten. Har åsikter om kuskval — och minns allt." },
+  /* ANDELSLAGET (v160, 28.4 b): travklubben — många delägare, en häst.
+     Andelshästar är stora i svensk trav: tåliga (glädjen är poängen),
+     men dialogen är ALLT — femtio personer vill veta hur hon mår. */
+  andelslag: { namn: "Andelslaget", tålamod: 1.6, resultatkänsla: 0.5, kommvikt: 0.6,
+    vill: "folkfesten — femtio delägare som reser till banan tillsammans",
+    beskrivning: "En hel travklubb bakom en häst. Tål det mesta — utom tystnad." },
 };
 
 export const ÄGARKRAV = [

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { html } from "htm/preact";
 import { TAKTIKER } from "./data-lopp.js";
 import { veckansLopp, startförbud, kravText, inbjudningslopp, medInbjudningspengar } from "./data-kalender.js";
-import { KUSKAR, aktivaKuskar, villig, svar, uppbokad, uppbokadeI, kuskstatus, lärlingsberättigad } from "./data-kuskar.js";
+import { KUSKAR, aktivaKuskar, villig, svar, uppbokad, uppbokadeI, kuskstatus, lärlingsberättigad, relation } from "./data-kuskar.js";
 import { veckansMinneslopp } from "./engine-mentor.js";
 import { Bild } from "./ui-grafik.js";
 import { BANOR } from "./data-namnpaket.js";
@@ -10,7 +10,8 @@ import { distanspassning } from "./engine-hast.js";
 import { byggFält, rustaFält, bokför, välTaktik } from "./engine-varld.js";
 import { beräknaStreck } from "./engine-streck.js";
 import { simulera } from "./engine-simulera.js";
-import { efterLopp, bokförStallkamrat } from "./engine-vecka.js";
+import { efterLopp, bokförStallkamrat, skrivPress } from "./engine-vecka.js";
+import { registreraHändelse } from "./engine-handelser.js";
 import { resekostnad } from "./engine-sponsor.js";
 import { loppanalys } from "./engine-analys.js";
 import { pressfråga } from "./engine-travblad.js";
@@ -22,6 +23,7 @@ import { justeraFörBanutveckling } from "./engine-sallskap.js";
 import { arkiveraTelefonen } from "./engine-inkorg.js";
 import { TRÄNARKUSKEN, spelarKusk, bokförKörning } from "./engine-korlicens.js";
 import { UTRUSTNING, sättBalans, släppBalans, vinterbana } from "./engine-utrustning.js";
+import { väderläge } from "./engine-vader.js";
 import { stoppFör, nästaStopp, hoppaFram } from "./engine-klocka.js";
 import { minnenInförLopp } from "./engine-minnen.js";
 import { kuskEfterNamn } from "./data-kuskar.js";
@@ -184,14 +186,48 @@ function Anmälan({ spel, onStart, inskickade = [], draTillbaka }) {
       </select>
       ${/* Stängda lopp och aspirationer bor i Visa detaljer (v102). */ ""}
 
-      <label class="fält" for="v-kusk">Kusk</label>
-      <select id="v-kusk" value=${kusk.namn} onChange=${(e) => sättKusk(e.target.value)}>
+      <label class="fält">Kusk</label>
       ${lärlingslopp && html`<div class="hint" style=${{ marginBottom: "4px" }}>Lärlingsserien körs med lärlingslicens — väljaren visar kårens återväxt.</div>`}
-        ${valbaraHär.filter((k) => !uppbokad(spel, k, lopp)).map((k) => html`
-          <option key=${k.namn} value=${k.namn}>
-            ${k.namn} — ${k.stil} · st ${k.start}/av ${k.avslutning} · ${kuskstatus(spel, k, lopp).status === "preliminär" ? "preliminärt ja" : uppbokad(spel, k, lopp) ? "uppbokad i loppet" : svar(spel, k).t} · ${kr(k.arvode)}
-          </option>`)}
-      </select>
+      ${(() => {
+        /* MINA KUSKAR (v144, Teds riktning: "man bygger relation med
+           3–5 kuskar som man använder frekvent, och när de inte kan
+           väljer man andra"). Kärntruppen HÄRLEDS ur relationen —
+           anlitande ger +1, alla förfaller −0,4/vecka, så de du kör
+           ofta med samlas här av sig själva. Resten bor under Fler. */
+        const spelaren = valbaraHär.find((k) => k.tränarkusk);
+        const övriga = valbaraHär.filter((k) => !k.tränarkusk);
+        const mina = övriga.filter((k) => relation(spel, k) >= 56)
+          .sort((a, b) => relation(spel, b) - relation(spel, a)).slice(0, 5);
+        const minaNamn = new Set(mina.map((k) => k.namn));
+        const fler = övriga.filter((k) => !minaNamn.has(k.namn));
+        const kuskRad = (k, extra = "") => {
+          const upp = uppbokad(spel, k, lopp);
+          const ks = kuskstatus(spel, k, lopp);
+          return html`
+            <button key=${k.namn} type="button" disabled=${upp}
+              class=${"kuskrad" + (kusk.namn === k.namn ? " vald" : "") + extra}
+              onClick=${() => sättKusk(k.namn)}>
+              <span class="kuskrad-namn">${k.namn}${k.tränarkusk ? " — du kör själv" : ""}</span>
+              <span class="kuskrad-meta">st ${k.start} / av ${k.avslutning}${k.tränarkusk ? " · inget arvode" : ` · ${kr(k.arvode)} kr`}</span>
+              <span class="kuskrad-status">${upp ? "uppbokad i loppet" : ks.status === "preliminär" ? "preliminärt ja" : svar(spel, k).t}</span>
+            </button>`;
+        };
+        return html`
+          ${spelaren && kuskRad(spelaren, " tränarrad")}
+          <div class="kusk-sektion">Dina kuskar</div>
+          ${mina.length === 0 && html`
+            <div class="hint">Anlita samma kuskar ofta — de du bygger relation med samlas här, och när de inte kan finns resten under Fler.</div>`}
+          ${mina.map((k) => kuskRad(k))}
+          <details class="detaljer" open=${mina.length === 0}>
+            <summary>Fler kuskar (${fler.filter((k) => !uppbokad(spel, k, lopp)).length} lediga)</summary>
+            <select id="v-kusk" value=${kusk.namn} onChange=${(e) => sättKusk(e.target.value)}>
+              ${fler.filter((k) => !uppbokad(spel, k, lopp)).map((k) => html`
+                <option key=${k.namn} value=${k.namn}>
+                  ${k.namn} — ${k.stil} · st ${k.start}/av ${k.avslutning} · ${kuskstatus(spel, k, lopp).status === "preliminär" ? "preliminärt ja" : svar(spel, k).t} · ${kr(k.arvode)}
+                </option>`)}
+            </select>
+          </details>`;
+      })()}
     </div>
 
     ${/* BANTAT (v102, Teds läsbarhetskrav): synligt är bara det som
@@ -219,7 +255,7 @@ function Anmälan({ spel, onStart, inskickade = [], draTillbaka }) {
         return kl && html`<div class=${kl.läge === "låg" ? "dålig" : ""}>
           <span>Klassen</span> ${klassnivå(häst).etikett} — ${kl.text.toLowerCase()}</div>`;
       })()}
-      <div><span>Loppet</span> ${lopp.dist} m ${lopp.start === "volt" ? "volt" : "auto"} · ${lopp.banaNamn} · ${kr(lopp.förstapris)} kr i förstapris · insats ${kr(kusk.arvode + resa)} kr</div>
+      <div><span>Loppet</span> ${lopp.dist} m ${lopp.start === "volt" ? "volt" : "auto"} · ${lopp.banaNamn} · ${väderläge(spel).glyf} ${väderläge(spel).namn.toLowerCase()} · ${kr(lopp.förstapris)} kr i förstapris · insats ${kr(kusk.arvode + resa)} kr</div>
     </div>
 
     <details class="detaljer">
@@ -434,7 +470,15 @@ function marknadensSkäl(h, fält) {
   return skäl.slice(0, 3);
 }
 
-function Startlista({ fält, favorit, visaStreck }) {
+/* ODDSET (v159, 28.2 a): travspelarens språk. Härlett ur strecket med
+   ~25 % spelbolagsmarginal — ren presentation, ingen ny sanning. */
+const oddsText = (streck) => {
+  if (!streck || streck <= 0) return "";
+  const odds = Math.max(1.1, 75 / streck);
+  return odds >= 20 ? `~${Math.round(odds / 5) * 5} ggr` : `~${odds.toFixed(1).replace(".", ",")} ggr`;
+};
+
+function Startlista({ fält, favorit, visaStreck, lopp = {} }) {
   return html`
     <div class="kort">
       <div class="meta" style="margin-bottom:6px">
@@ -449,7 +493,7 @@ function Startlista({ fält, favorit, visaStreck }) {
             <summary class="atg-summering">
               <${Täcke} nr=${h.spår} />
               <div class="atg-mitt">
-                <div class="atg-namn">${h.namn}
+                <div class="atg-namn">${h.namn}${h.raritet ? html`<span class="raritet-marke" title="Vit stjärna i pannan — en på femhundra"> ✶</span>` : ""}${lopp.storlopp && visaStreck && h === favorit ? html` <span class="klasstagg" title="Travbladets förhandssida har spikat">SPIKEN</span>` : ""}
                   <span class="atg-kön">${h.ålder} år · ${(h.kön ?? "h")[0]}</span></div>
                 <div class="atg-data">${h.kusk.ryktbarhet >= 78 ? "★ " : ""}${h.kusk.namn}
                   · ${h.starter ?? 0} st ${h.segrar ?? 0} seg
@@ -457,6 +501,7 @@ function Startlista({ fält, favorit, visaStreck }) {
               </div>
               ${visaStreck && html`<span class="streckstapel">
                 <span class="streck">${h.streck.toFixed(1)} %</span>
+                <span class="oddsrad">${oddsText(h.streck)}</span>
                 ${Math.abs(trend) >= 0.8 && html`<span class=${"trend " + (trend > 0 ? "upp" : "ner")}>${trend > 0 ? "▲" : "▼"}${Math.abs(trend).toFixed(0)}</span>`}
               </span>`}
             </summary>
@@ -473,6 +518,8 @@ function Startlista({ fält, favorit, visaStreck }) {
                   </span></div>`}
               ${visaStreck && html`
                 <div class="atg-detaljrad skäl"><span>Marknaden</span>${marknadensSkäl(h, fält).join(" · ") || "inga tydliga signaler"}</div>`}
+              ${visaStreck && h.streck < 8 && (h.form ?? 50) >= 60 && html`
+                <div class="atg-detaljrad skäl"><span>Travbladet</span>⚡ Skrällvarning — lågt spelad men formen är bättre än procenten.</div>`}
             </div>
           </details>`; })}
       </div>
@@ -565,7 +612,40 @@ function kuskensRåd(häst, lopp, kusk) {
   return { råd: lista, rekommenderad };
 }
 
-function Kusksamtal({ häst, lopp, kusk, fält, onVal }) {
+/* BALANSEN (v162, kap 29 — och v138:s försvunna väljare, återfunnen i
+   enkelhetsgranskningen: motorn har läst häst.balansVal sedan v138 men
+   inget UI satte det). Hopfälld som standard — skor är aldrig fel, och
+   den som vill ha travets unika val hittar det här, med förstamannens
+   råd överst så även en Harry Boy-spelare vågar. */
+function Balansen({ häst, spel }) {
+  const [, rita] = useState(0);
+  const vinter = vinterbana(spel);
+  const väder = väderläge(spel);
+  const fm = spel.förstaman?.namn?.split(" ")[0] ?? "Förstamannen";
+  const råd = vinter ? "Vinterbana — skor på. Det är regler, inte en åsikt."
+    : väder.id === "regn" ? "Tung bana i dag. Jag låter skorna sitta kvar."
+    : väder.id === "sol" && (häst.lynne ?? 50) >= 55 ? `Torrt och fint — barfota i dag. ${häst.namn} tål det.`
+    : "Inget självklart i dag. Skor är aldrig fel.";
+  return html`
+    <details class="kort">
+      <summary class="meta">Balansen — skor och vagn${häst.balansVal && Object.values(häst.balansVal).some(Boolean) ? " · vald" : ""}</summary>
+      <div class="samtal" style=${{ marginTop: "8px" }}>
+        <div class="samtal-vem">${fm} om balansen</div>
+        <div class="samtal-text">${råd}</div>
+      </div>
+      ${Object.entries(UTRUSTNING).map(([id, u]) => html`
+        <label key=${id} class="autorad" style=${{ marginTop: "8px" }}>
+          <input type="checkbox" disabled=${id === "barfota" && vinter}
+            checked=${!!häst.balansVal?.[id]}
+            onChange=${(e) => { (häst.balansVal ??= {})[id] = e.target.checked; rita((x) => x + 1); }} />
+          <span><b>${u.namn}</b>${u.kostnad ? ` · ${kr(u.kostnad)} kr` : ""}${id === "barfota" && vinter ? " · förbjudet på vinterbana" : ""}
+            <div class="relmini">${u.text}</div></span>
+        </label>`)}
+      <div class="hint">Gäller den här starten. Utan val: skor och vanlig vagn — aldrig fel.</div>
+    </details>`;
+}
+
+function Kusksamtal({ häst, lopp, kusk, fält, kamrater = [], onVal, minnen = [], spel = null }) {
   const [taktik, sättTaktik] = useState(null);
   const { råd, rekommenderad } = kuskensRåd(häst, lopp, kusk);
   const favorit = [...fält].sort((a, b) => b.streck - a.streck)[0];
@@ -615,6 +695,10 @@ function Kusksamtal({ häst, lopp, kusk, fält, onVal }) {
         </div>
       </div>
       <div class="hint">Din rekommendation för resan — kusken är den som sitter bakom hästen</div>
+      <button class="btn" onClick=${() => onVal({ taktik: rekommenderad, slutorder: null })}>
+        Lita på ${kusk.namn.split(" ")[0]} — kör loppet
+      </button>
+      <div class="hint">Kusken väljer både resa och tajming. Vill du styra själv: välj nedan.</div>
       ${råd.map((r) => html`
         <button key=${r.taktik} class=${"val" + (r.taktik === rekommenderad ? " rek" : "")}
           onClick=${() => sättTaktik(r.taktik)}>
@@ -623,7 +707,8 @@ function Kusksamtal({ häst, lopp, kusk, fält, onVal }) {
             ${r.taktik === rekommenderad && html`<span class="rek-marke">kuskens förslag</span>`}
           </div>
           <div class="val-citat">”${r.text}”</div>
-        </button>`)}`;
+        </button>`)}
+      ${spel && html`<${Balansen} häst=${häst} spel=${spel} />`}`;
   }
 
   return html`
@@ -640,6 +725,11 @@ function Kusksamtal({ häst, lopp, kusk, fält, onVal }) {
           : "Han är ingen maskin — tajmingen avgör."}
       </div>
     </div>
+    ${minnen.length > 0 && html`
+      <div class="samtal minnes-replik">
+        <div class="meta">✆ ${kusk.namn} minns</div>
+        <div class="samtal-text">»${minnen[0].text}${minnen.length > 1 ? ` Och en sak till: ${minnen[1].text.charAt(0).toLowerCase()}${minnen[1].text.slice(1)}` : ""}«</div>
+      </div>`}
     ${kamrater.length > 0 && html`
       <h2>Stallkamraterna</h2>
       ${kamrater.map(({ häst: kh, kusk: kk }) => {
@@ -1042,6 +1132,48 @@ export default function LoppVy({ spel, uppdatera }) {
             rivalPlats: rivalRad.ur ? null : rivalRad.plats };
         }
       }
+      if (favorit) {
+        /* TIPSFACIT (v159, 28.2 b): Travbladets spik är favoriten —
+           och tidningen ska stå för sina tips. Facit bokförs per lopp
+           och redovisas i säsongsbokslutet. */
+        s.tipsfacit = s.tipsfacit ?? { spikar: 0, rätt: 0 };
+        s.tipsfacit.spikar += 1;
+        const först = sim.resultat.find((r) => r.plats === 1);
+        if (först && först.häst === favorit) s.tipsfacit.rätt += 1;
+      }
+      if (lopp.storlopp) {
+        /* SKRÄLLEN (v158, 28.2 e): lågstreckad vinnare i det stora
+           loppet är travspelarens största rubrik — spelet skriver den. */
+        const v = sim.resultat.find((r) => r.plats === 1);
+        if (v && (v.streck ?? 100) < 6) {
+          skrivPress(s, `SKRÄLL i ${lopp.kortnamn || lopp.namn}`,
+            `${v.häst.namn} — ${v.streck.toFixed(1)} procent spelad — vann det stora loppet. ${(s.stall ?? []).includes(v.häst) ? "Och det var DIN häst. Kuponger revs över hela landet." : "Kuponger revs över hela landet."}`,
+            (s.stall ?? []).includes(v.häst) ? "positiv" : "neutral");
+        }
+      }
+      if (s.legendar?.status === "aktiv") {
+        /* LEGENDARMÖTET (v146, 21.12): stod fenomenet i ditt lopp är
+           det en nyhet — och slog du det är det en karriärrubrik. */
+        const legRad = sim.resultat.find((r) =>
+          r.häst?.id === s.legendar.id || r.häst?.legendar);
+        if (legRad) {
+          s.legendar.möten = (s.legendar.möten ?? 0) + 1;
+          const slog = !min.ur && !legRad.ur && min.plats < legRad.plats;
+          if (slog && !s.legendar.slagen) {
+            s.legendar.slagen = true;
+            skrivPress(s, `${häst.namn} SLOG ${s.legendar.namn}`,
+              `Fenomenet besegrat — av ${s.stallnamn ?? "ett uppstickarstall"}. Det här kommer att pratas om i åratal.`, "positiv");
+            registreraHändelse(s, {
+              typ: "slog_legendaren", betydelse: 88,
+              aktörer: { hästId: häst.id, hästNamn: häst.namn },
+              data: { legendar: s.legendar.namn, lopp: lopp.kortnamn || lopp.namn },
+            });
+          } else if (s.legendar.möten === 1) {
+            skrivPress(s, `${häst.namn} mötte ${s.legendar.namn}`,
+              `Första gången stallet ställdes mot generationens fenomen. ${min.ur ? "Det slutade i galopp." : `Det blev en ${min.plats}:e-plats.`}`, "neutral");
+          }
+        }
+      }
       sammanfattning = efterLopp(s, {
         häst: h, kusk, lopp, min,
         /* Simuleringen följer med: händelsemotorn läser position vid
@@ -1241,7 +1373,7 @@ export default function LoppVy({ spel, uppdatera }) {
             ${minnen.map((m, i) => html`<div key=${i} class="tråd">❧ ${m}</div>`)}
           </div>`;
       })()}
-      <${Startlista} fält=${fält} favorit=${favorit} visaStreck=${false} />
+      <${Startlista} fält=${fält} favorit=${favorit} visaStreck=${false} lopp=${lopp} />
       <button class="btn" onClick=${() => sättSteg("press")}>Vidare</button>`;
   }
 
@@ -1251,8 +1383,10 @@ export default function LoppVy({ spel, uppdatera }) {
 
   if (steg === "kusk") {
     return html`
-      <${Startlista} fält=${fält} favorit=${favorit} visaStreck=${true} />
-      <${Kusksamtal} häst=${häst} lopp=${lopp} kusk=${kusk} fält=${fält} onVal=${kör} />`;
+      <${Startlista} fält=${fält} favorit=${favorit} visaStreck=${true} lopp=${lopp} />
+      <${Kusksamtal} häst=${häst} lopp=${lopp} kusk=${kusk} fält=${fält} onVal=${kör}
+        spel=${spel} kamrater=${körning?.kamrater ?? []}
+        minnen=${minnenInförLopp(spel, häst, lopp, fält)} />`;
   }
 
   const bild = körning.sim.bild[Math.min(ruta, körning.sim.bild.length - 1)];

@@ -1,6 +1,6 @@
 import { html } from "htm/preact";
 import { useState } from "preact/hooks";
-import { TRÄNING } from "./engine-hast.js";
+import { TRÄNING, anlagsvetskap, anlagsbedömning, veterinärtest, VETERINÄRTEST_PRIS } from "./engine-hast.js";
 import { nästaStopp, hoppaFram } from "./engine-klocka.js";
 import { nySäsong, säsongstext } from "./engine-sasong.js";
 import { kr, klamp } from "./engine-util.js";
@@ -190,8 +190,8 @@ function Formkurva({ dagbok }) {
  * kring hästen). Hästen ska kännas som en individ med en historia — inte
  * som en rad värden.
  */
-function HästSida({ häst, spel, uppdatera, tillbaka }) {
-  const [flik, sättFlik] = useState("översikt");
+function HästSida({ häst, spel, uppdatera, tillbaka, startflik }) {
+  const [flik, sättFlik] = useState(startflik ?? "översikt");
   const fm = spel.förstaman;
   const råd = fm ? träningsråd(fm, häst) : null;
   const status = häst.starter === 0 ? "oprövad"
@@ -236,6 +236,24 @@ function HästSida({ häst, spel, uppdatera, tillbaka }) {
           <${Stapel} etikett="Energi" värde=${häst.energi} variant="energi" />
         </div>
         <div class="prisrad"><span>Personlighet</span><span class="pris">${lynneText}</span></div>
+        ${(() => {
+          /* DOLDA ANLAG (v148, 21.4): taket är dolt tills hästen visat
+             det — eller tills veterinären fått titta. Upptäcktsglädjen:
+             siffrorna är hästen i dag, anlagen är vad den kan bli. */
+          const vet = anlagsvetskap(häst);
+          return html`
+            <div class="prisrad"><span>Anlagen</span><span class="pris">${anlagsbedömning(häst)}</span></div>
+            ${vet !== "känd" && häst.skada === 0 && html`
+              <button class="btn liten sekundär" disabled=${spel.kassa < VETERINÄRTEST_PRIS}
+                onClick=${() => uppdatera((s) => {
+                  const h = s.stall.find((x) => x.id === häst.id) || häst;
+                  veterinärtest(s, h);
+                })}>
+                Veterinärtest — ${kr(VETERINÄRTEST_PRIS)} kr
+              </button>
+              <div class="hint">Röntgen och kapacitetstest: anlagen svart på vitt, direkt.
+                ${vet === "okänd" ? " Annars talar loppen — tre starter ger en aning, åtta ger facit." : ""}</div>`}`;
+        })()}
         ${rekord && html`<div class="prisrad"><span>Rekord</span><span class="pris">${rekord.km.toFixed(1)} / ${rekord.dist ?? "?"} m</span></div>`}
         ${(häst.resultat ?? []).length > 0 && html`
           <div class="prisrad"><span>Senaste fem</span>
@@ -380,7 +398,7 @@ function Hästkort({ häst, spel, uppdatera, dräkt, öppna }) {
         onClick=${öppna}>
         <${HästEllerFoto} namn=${häst.namn} dräkt=${dräkt} storlek=${76} />
         <div style=${{ flex: 1 }}>
-          <div class="namn">${häst.namn}<span class="klasstagg">${klassnivå(häst).etikett}</span>${häst.genombrott ? html` <span class="genombrott-marke" title=${"Genombrottet: " + häst.genombrott.lopp + ", säsong " + häst.genombrott.säsong}>✦</span>` : ""}</div>
+          <div class="namn">${häst.namn}<span class="klasstagg">${klassnivå(häst).etikett}</span>${häst.genombrott ? html` <span class="genombrott-marke" title=${"Genombrottet: " + häst.genombrott.lopp + ", säsong " + häst.genombrott.säsong}>✦</span>` : ""}${häst.raritet ? html` <span class="raritet-marke" title="Född med en vit stjärna i pannan — en på femhundra">✶</span>` : ""}</div>
           ${(() => {
             /* PARTYRADEN (v117, Game Boy-enkelheten): orken är HP-stapeln —
                grön, gul, röd. Statusen är brickor, inte meningar. Hela
@@ -506,8 +524,9 @@ function Säsongsavslut({ spel, uppdatera }) {
     </div>`;
 }
 
-export default function StallVy({ spel, uppdatera, nystart, efterVecka }) {
-  const [valdHästId, sättValdHäst] = useState(null);
+export default function StallVy({ spel, uppdatera, nystart, efterVecka, startHästId, startHästflik }) {
+  /* startHästId (v155): bara för UI-vakten — provet renderar HästSidan. */
+  const [valdHästId, sättValdHäst] = useState(startHästId ?? null);
   const slut = spel.vecka > spel.veckor;
   if (slut && spel.säsongAvslutad) {
     return html`<${Säsongsavslut} spel=${spel} uppdatera=${uppdatera} />`;
@@ -515,13 +534,23 @@ export default function StallVy({ spel, uppdatera, nystart, efterVecka }) {
   const valdHäst = valdHästId && spel.stall.find((h) => h.id === valdHästId);
   if (valdHäst) {
     return html`<${HästSida} häst=${valdHäst} spel=${spel} uppdatera=${uppdatera}
-      tillbaka=${() => sättValdHäst(null)} />`;
+      startflik=${startHästflik} tillbaka=${() => sättValdHäst(null)} />`;
   }
   return html`
     <${Mentorkort} spel=${spel} />
     <${Banflytt} spel=${spel} uppdatera=${uppdatera} />
     <${Erbjudande} spel=${spel} uppdatera=${uppdatera} />
     <${Träningsplan} spel=${spel} uppdatera=${uppdatera} />
+    ${spel.förstaman && html`
+      <div class="kort">
+        <label class="autorad">
+          <input type="checkbox" checked=${!!spel.autoTräning}
+            onChange=${(e) => uppdatera((s) => { s.autoTräning = e.target.checked; })} />
+          <span><b>${spel.förstaman.namn.split(" ")[0]} sköter träningen</b>
+            <div class="relmini">Träningen sätts efter förstamannens råd inför varje vecka.
+              Du kan alltid ändra enskilda hästar — och stänga av när du vill.</div></span>
+        </label>
+      </div>`}
     <h2>Veckans jobb</h2>
     ${spel.stall.map((h) => html`<${Hästkort} key=${h.id} häst=${h} spel=${spel} uppdatera=${uppdatera} dräkt=${spel.dräkt}
       öppna=${() => sättValdHäst(h.id)} />`)}

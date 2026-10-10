@@ -77,6 +77,15 @@ export const JOURNALISTER = {
   nyheter: "Sara Lindeberg",
 };
 
+/* Återväxten på redaktionen (v152, 20.8 C): namnen som tar över när en
+   signatur lägger ner pennan. Journalistbytet bor i världsutvecklingen —
+   här bor bara namnen, enligt husregeln. */
+export const JOURNALISTPOOL = [
+  "Marianne Qvist", "Tommy Ehrling", "Nadja Severin", "Bosse Alvarsson",
+  "Elin Tiderman", "Göran Flyckt", "Rebecka Stolt", "Åke Munter",
+  "Linnéa Dahlvik", "Pierre Ohlin",
+];
+
 /**
  * Kön ur förnamnet — EXAKT uppslagning, ingen gissning: varenda person i
  * spelet kommer ur poolerna i den här filen och prologens mentorlista,

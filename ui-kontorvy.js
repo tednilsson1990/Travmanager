@@ -21,14 +21,16 @@
  * motorerna, och varje handling går genom dem.
  */
 import { html } from "htm/preact";
+import { invalsläge, INVALSKRAV, MOTIONER } from "./engine-sallskap.js";
 import { useState } from "preact/hooks";
 import { kr } from "./engine-util.js";
 import { ARVODE_PER_VECKA, ÄGARTYPER } from "./data-agare.js";
 import { boxplats } from "./engine-gard.js";
 import { veckonetto } from "./engine-vagvisare.js";
-import { ägarlista, hållMöte, MÖTESVAL } from "./engine-agare.js";
+import { ägarlista, hållMöte, MÖTESVAL, styrelsemått, förtroendetext } from "./engine-agare.js";
 import { säkraSponsorer, teckna, tackaNej, kravläge } from "./engine-sponsor.js";
 import { Stapel } from "./ui-delar.js";
+import { importeraSparfil, listaBackuper, återställBackup } from "./state-spel.js";
 import { Bild } from "./ui-grafik.js";
 
 
@@ -89,7 +91,25 @@ function Ägarkort({ rad, spel, uppdatera }) {
 
 function Ägare({ spel, uppdatera }) {
   const lista = ägarlista(spel);
+  /* STYRELSEMÅTTET (v151, 20.7): ägarkretsens samlade förtroende —
+     tränarens riktiga styrelse. Fyra delmått ur siffror som redan
+     levs; högt förtroende ger fler och bättre hästerbjudanden. */
+  const styrelsen = styrelsemått(spel);
   return html`
+    <h2>Ägarkretsen</h2>
+    <div class="kort">
+      <div class="prisrad"><span><b>Förtroendet</b></span><span class="pris">${styrelsen.total} / 100</span></div>
+      <div class="logg">${förtroendetext(styrelsen.total)}</div>
+      <div class="bars">
+        <${Stapel} etikett="Resultat" värde=${styrelsen.resultat} />
+        <${Stapel} etikett="Ekonomi" värde=${styrelsen.ekonomi} />
+        <${Stapel} etikett="Kommunikation" värde=${styrelsen.kommunikation} />
+        <${Stapel} etikett="Utveckling" värde=${styrelsen.utveckling} />
+      </div>
+      <div class="hint">Kretsens förtroende styr hur ofta nya hästägare hör av sig —
+        och hur bra hästar de vågar skicka hit.</div>
+    </div>
+
     <h2>Hästägarna</h2>
     ${lista.length === 0
       ? html`<div class="tom">Inga externa ägare ännu. De hör av sig när renommét växer —
@@ -156,6 +176,36 @@ export default function KontorVy({ spel, uppdatera }) {
     <${Ekonomi} spel=${spel} />
     <${Ägare} spel=${spel} uppdatera=${uppdatera} />
     <${Sponsorer} spel=${spel} uppdatera=${uppdatera} />
+    <h2>Travsällskapet</h2>
+    <div class="kort">
+      ${(() => {
+        /* SÄLLSKAPSSIDAN (v145, 24-resten): styrelsearbetet synligt
+           mellan mejlen — status, bordets motion, historiken. */
+        const sk = spel.sällskap;
+        const läge = invalsläge(spel);
+        if (!sk?.ledamot) {
+          return html`
+            <div class="logg">${läge.kvalar
+              ? "Valberedningen har hört av sig — svaret väntar i Telefonen."
+              : `Styrelseplats förtjänas: renommé ${INVALSKRAV.renommé}+ och ${INVALSKRAV.säsonger} fulla säsonger på banan. Du står på ${Math.round(spel.renommé ?? 0)} efter ${Math.max(0, (spel.säsong ?? 1) - 1)}.`}</div>`;
+        }
+        const motion = (sk.motioner ?? []).find((m) => m.säsong === (spel.säsong ?? 1) && !m.utfall);
+        const historik = (sk.motioner ?? []).filter((m) => m.utfall).slice(-5).reverse();
+        return html`
+          <div class="prisrad"><span>Uppdraget</span><span class="pris">Ledamot sedan säsong ${sk.invaldSäsong ?? "?"}</span></div>
+          ${motion
+            ? html`<div class="logg">På bordet: <b>${MOTIONER[motion.id]?.rubrik ?? motion.id}</b> — din röst väntar i Telefonen.</div>`
+            : html`<div class="logg">Inga motioner på bordet just nu.</div>`}
+          ${historik.length > 0 && html`
+            <div class="stat-rubrik" style=${{ marginTop: "10px" }}>Protokollet</div>
+            ${historik.map((m) => html`
+              <div key=${m.id + m.säsong} class="prisrad">
+                <span>s${m.säsong} · ${MOTIONER[m.id]?.rubrik ?? m.id}${m.dinRöst ? ` · du röstade ${m.dinRöst}` : ""}</span>
+                <span class="pris">${m.utfall === "bifall" ? `bifall ${m.röster?.ja ?? "?"}–${m.röster?.nej ?? "?"}` : `avslag ${m.röster?.nej ?? "?"}–${m.röster?.ja ?? "?"}`}</span>
+              </div>`)}`}`;
+      })()}
+    </div>
+
     <h2>Felsökning</h2>
     <div class="kort">
       <div class="logg">Om något beter sig konstigt: exportera sparfilen och skicka den —
@@ -171,5 +221,45 @@ export default function KontorVy({ spel, uppdatera }) {
           URL.revokeObjectURL(a.href);
         } catch { /* inget att exportera */ }
       }}>Exportera sparfilen</button>
-    </div>`;
+      <button class="btn liten sekundär" onClick=${() => {
+        /* IMPORTEN (v149): valideras hårt i importeraSparfil — den
+           liggande karriären röres inte förrän filen bevisat sig. */
+        const input = document.createElement("input");
+        input.type = "file"; input.accept = ".json,application/json";
+        input.onchange = async () => {
+          const fil = input.files?.[0];
+          if (!fil) return;
+          try {
+            importeraSparfil(await fil.text());
+            location.reload();
+          } catch (e) { alert(`Importen avbröts: ${e.message ?? "filen gick inte att läsa."}`); }
+        };
+        input.click();
+      }}>Importera sparfil</button>
+    </div>
+
+    ${(() => {
+      /* SÄKERHETSKOPIORNA (v149, kap 26 G): tre rullande generationer,
+         tagna automatiskt inför varje ny vecka. En trasig vecka är
+         aldrig värre än "återställ förra veckan". */
+      const backuper = listaBackuper();
+      return html`
+        <h2>Säkerhetskopior</h2>
+        <div class="kort">
+          <div class="logg">Tas automatiskt inför varje ny vecka — läget som det var
+            INNAN veckan kördes. Tre generationer sparas.</div>
+          ${backuper.length === 0
+            ? html`<div class="tom">Inga säkerhetskopior än. Den första tas när nästa vecka körs.</div>`
+            : backuper.map((b) => html`
+              <div key=${b.nyckel} class="prisrad">
+                <span>Säsong ${b.säsong}, vecka ${b.vecka}
+                  <div class="relmini">${b.stallnamn} · ${kr(b.kassa)} kr i kassan</div></span>
+                <button class="btn liten sekundär" onClick=${() => {
+                  if (!confirm(`Återställa karriären till säsong ${b.säsong}, vecka ${b.vecka}? Nuvarande läge skrivs över.`)) return;
+                  try { återställBackup(b.nyckel); location.reload(); }
+                  catch (e) { alert(`Återställningen avbröts: ${e.message}`); }
+                }}>Återställ</button>
+              </div>`)}
+        </div>`;
+    })()}`;
 }

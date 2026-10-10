@@ -1,11 +1,12 @@
 import { rnd, int, klamp, plock, kr, slump as slumpTal } from "./engine-util.js";
-import { nyHäst } from "./engine-hast.js";
+import { nyHäst, prövaRaritet, anlag } from "./engine-hast.js";
 import { nyttNamn } from "./data-namn.js";
 import { tränarliga } from "./engine-varld.js";
 import { registreraHändelse } from "./engine-handelser.js";
 import { invalIHallOfFame } from "./engine-rekord.js";
+import { bokförStamÖde } from "./engine-stambok.js";
 import { prövaMentornsBortgång } from "./engine-mentor.js";
-import { utvecklaVärlden } from "./engine-varldsutveckling.js";
+import { utvecklaVärlden, prövaLegendaren } from "./engine-varldsutveckling.js";
 import { koraSeriemästare } from "./engine-serie.js";
 import { avgörRykten } from "./engine-rykten.js";
 
@@ -40,11 +41,16 @@ export function utvecklingssteg(ålder) {
 export function åldraHäst(h) {
   h.ålder += 1;
   const steg = utvecklingssteg(h.ålder);
+  /* DOLDA ANLAG (v148, 21.4): talangen multiplicerar de unga årens
+     utveckling — en häst med enastående anlag växer dubbelt så fort
+     som en med begränsade. Åldrandets förfall skonar den inte:
+     anlaget höjer taket, inte ålderdomen. */
+  const a = steg > 0 ? anlag(h) : 1;
   /* Egenskaperna utvecklas olika snabbt. Startsnabbheten mognar tidigt,
      orken sist — och toppfarten är det första som försvinner med åldern. */
-  h.start = klamp(h.start + steg * rnd(0.7, 1.3));
-  h.fart = klamp(h.fart + steg * rnd(0.8, 1.4));
-  h.styrka = klamp(h.styrka + steg * rnd(0.6, 1.2));
+  h.start = klamp(h.start + steg * a * rnd(0.7, 1.3));
+  h.fart = klamp(h.fart + steg * a * rnd(0.8, 1.4));
+  h.styrka = klamp(h.styrka + steg * a * rnd(0.6, 1.2));
   h.form = klamp(rnd(42, 62));
   h.energi = klamp(rnd(78, 95));
   h.skada = 0;
@@ -125,6 +131,20 @@ export function nySäsong(spel) {
   utvecklaVärlden(spel).forEach((p) => {
     spel.press.unshift({ rubrik: p.rubrik, byline: p.byline, ton: p.ton, vecka: 1, signatur: null });
   });
+  /* Tipsens facit (v159, 28.2): tidningen står för sina spikar — och
+     redovisar dem. Räknaren nollställs: varje år får sitt eget facit. */
+  if ((spel.tipsfacit?.spikar ?? 0) >= 6) {
+    const f = spel.tipsfacit;
+    const andel = Math.round(100 * f.rätt / f.spikar);
+    spel.press.unshift({
+      rubrik: `Travbladets spikar: ${f.rätt} av ${f.spikar} satt i år`,
+      byline: andel >= 55 ? `${andel} procent — tipsredaktionen kan kosta på sig att vara nöjd.`
+        : andel >= 35 ? `${andel} procent. Som alltid i trav: favoriterna vinner inte så ofta som folk tror.`
+        : `${andel} procent. Ett år att glömma för tipsredaktionen — och ett argument för skrällspelarna.`,
+      ton: "neutral", vecka: 1, signatur: null,
+    });
+    spel.tipsfacit = { spikar: 0, rätt: 0 };
+  }
   /* Ryktenas facit (v139): generationsmaskinen har talat. */
   avgörRykten(spel).forEach((p) => {
     spel.press.unshift({ rubrik: p.rubrik, byline: p.byline, ton: p.ton, vecka: 1, signatur: null });
@@ -177,6 +197,13 @@ export function nySäsong(spel) {
   if (spel.förstaman) spel.förstaman.säsongerHosDig = (spel.förstaman.säsongerHosDig ?? 0) + 1;
   spel.avelsston = spel.avelsston.filter((m) => m.ålder <= 20).slice(-6);
 
+  /* STAMBOKEN (v146): ödet skrivs in där det avgörs. Den som flyttade
+     till hagen står som avelssto — resten som pensionerade. */
+  pensionerade.forEach((h) => {
+    const iHagen = spel.avelsston.some((m) => m.id === h.id);
+    bokförStamÖde(spel, h, iHagen ? "avelssto" : "pensionerad");
+  });
+
   /* Väggen i stallgången: de största går in i hall of fame vid pensionen.
      Tio platser, meriten avgör — att någon petas är poängen. */
   pensionerade.forEach((h) => {
@@ -219,9 +246,30 @@ export function nySäsong(spel) {
         .slice(0, överskott)
         .forEach((h) => { h.pensionerad = true; });
       värld.hästar = värld.hästar.filter((h) => !h.pensionerad);
-      for (let i = 0; i < nya; i++) värld.hästar.push(nyÅrgång(st.id, st.styrka || 0.6));
+      for (let i = 0; i < nya; i++) {
+        const årgång = nyÅrgång(st.id, st.styrka || 0.6);
+        /* RARITETEN (v147, 21.5): en på 400 av världens nya hästar bär
+           vit stjärna — nära planens "1 på ~500". Att möta henne i en
+           startlista är en händelse; snabbare är hon inte. */
+        if (prövaRaritet(`raritet:värld:${årgång.namn}:${spel.säsong}`, 400)) {
+          årgång.raritet = "stjärna";
+          spel.press.unshift({
+            rubrik: `En vit stjärna född i sporten`,
+            byline: `${årgång.namn} sägs bära en teckning man ser en gång per decennium. Uppfödaren lär inte sälja.`,
+            ton: "positiv", vecka: 1, signatur: null,
+          });
+        }
+        värld.hästar.push(årgång);
+      }
     });
   }
+
+  /* LEGENDAREN (v146, 21.12): prövas SIST, efter världens nya årgångar —
+     fenomenet väljs ur den värld som faktiskt ska tävla i år. */
+  prövaLegendaren(spel).forEach((p) => {
+    spel.press.unshift({ rubrik: p.rubrik, byline: p.byline, ton: p.ton, vecka: 1, signatur: null });
+  });
+  spel.press = spel.press.slice(0, 20);
 
   /* Ett nytt år, en ny start för dem som varit i skottgluggen. */
   spel.stall.forEach((h) => { if (h.krav) h.kravStarter = 0; });

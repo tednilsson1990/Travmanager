@@ -27,7 +27,7 @@
  * vanliga. Minnet bor på hästen (presshistorik, skriven av veckomotorn).
  */
 import { tränarliga } from "./engine-varld.js";
-import { JOURNALISTER } from "./data-namnpaket.js";
+import { signaturen } from "./engine-varldsutveckling.js";
 
 /* ------------------------------------------------------------------ */
 /* Förstasidan — nyhetsvärderingen (5.3)                               */
@@ -90,7 +90,7 @@ export function statistikern(spel) {
   if (Math.abs(m) > 0.25) rader.push(m > 0
     ? "Stallets hästar har överpresterat mot spelet — marknaden justerar upp."
     : "Stallets hästar har underpresterat mot spelet — oddsen ger utrymme.");
-  return { rader, signatur: JOURNALISTER.siffror };
+  return { rader, signatur: signaturen(spel, "siffror") };
 }
 
 /**
@@ -114,7 +114,7 @@ export function krönikan(spel) {
   } else {
     text = `Ingen kris, ingen rubrik — bara ett stall som gör jobbet. Det är i sådana veckor grunden läggs, även om ingen skriver hem om det. Utom vi, här, nu.`;
   }
-  return { text, signatur: JOURNALISTER.krönikör };
+  return { text, signatur: signaturen(spel, "krönikör") };
 }
 
 /* ------------------------------------------------------------------ */

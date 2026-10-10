@@ -18,7 +18,8 @@ import { påHändelse } from "./engine-handelser.js";
 import { skrivPress } from "./engine-vecka.js";
 import { klamp, kr, plock } from "./engine-util.js";
 import { köScen } from "./engine-scener.js";
-import { JOURNALISTER, TIDNINGSNAMN } from "./data-namnpaket.js";
+import { TIDNINGSNAMN } from "./data-namnpaket.js";
+import { signaturen } from "./engine-varldsutveckling.js";
 import { bildvariant } from "./data-bilder.js";
 
 /* ------------------------------------------------------------------ */
@@ -74,7 +75,7 @@ påHändelse("storloppsseger", (spel, h) => {
   if (!m) return;
   skrivPress(spel, `${m.namn}: »Nu är gården i bättre händer än mina«`,
     `Den gamle tränaren om ${h.aktörer?.hästNamn ?? "stallets"} triumf`, "positiv",
-    null, 0, JOURNALISTER.krönikör);
+    null, 0, signaturen(spel, "krönikör"));
 });
 
 påHändelse("gårdsrekord", (spel, h) => {
@@ -151,7 +152,7 @@ påHändelse("storloppsseger", (spel, h) => {
   köScen(spel, {
     betydelse: h.betydelse, bild: bildvariant("seger-storlopp", (spel.säsong ?? 1) * 100 + spel.vecka),
     bildreserv: "seger", stil: "tidning",
-    signatur: JOURNALISTER.krönikör,
+    signatur: signaturen(spel, "krönikör"),
     etikett: spel.huvudnyhet.etikett, rubrik: spel.huvudnyhet.rubrik,
     ingress: spel.huvudnyhet.ingress, fakta: spel.huvudnyhet.fakta,
     citat: spel.huvudnyhet.citat, citatVem: spel.huvudnyhet.citatVem,
@@ -171,7 +172,7 @@ påHändelse("storloppsseger", (spel, h) => {
 påHändelse("miljonen", (spel, h) => {
   const namn = h.aktörer?.hästNamn ?? "Hästen";
   skrivPress(spel, `${namn} passerade miljonen`,
-    `${spel.stallnamn} har fostrat en miljonär.`, "bra", null, 0, JOURNALISTER.siffror);
+    `${spel.stallnamn} har fostrat en miljonär.`, "bra", null, 0, signaturen(spel, "siffror"));
   läggTrofé(spel, {
     typ: "miljonen", rubrik: "Miljonären", häst: namn,
     hästId: h.aktörer?.hästId, text: `${namn} passerade en miljon i insprunget.`,
@@ -184,7 +185,7 @@ påHändelse("rivalitet", (spel, h) => {
   const namn = h.aktörer?.hästNamn ?? "Hästen";
   skrivPress(spel, `${namn} mot ${d.rival} — igen`,
     `Femte mötet på kort tid. Ställningen ${d.dinaSegrar}–${d.hansSegrar}.`, "neutral",
-    null, 0, JOURNALISTER.nyheter);
+    null, 0, signaturen(spel, "nyheter"));
 });
 
 påHändelse("gårdsrekord", (spel, h) => {
@@ -197,7 +198,7 @@ påHändelse("gårdsrekord", (spel, h) => {
      vara. */
   köScen(spel, {
     betydelse: h.betydelse, bild: "rekord", bildreserv: "gard-hero", stil: "tidning",
-    signatur: JOURNALISTER.siffror,
+    signatur: signaturen(spel, "siffror"),
     etikett: "GÅRDENS HISTORIA",
     rubrik: "REKORDET FALLER",
     ingress: h.data?.text ?? "Ett gårdsrekord har fallit.",
@@ -275,7 +276,7 @@ påHändelse("pensionering", (spel, h) => {
       : 0;
     köScen(spel, {
       betydelse: h.betydelse, bild: "avsked", bildreserv: "gard-hero", stil: "tidning",
-      signatur: JOURNALISTER.krönikör,
+      signatur: signaturen(spel, "krönikör"),
       etikett: "AVSKED",
       rubrik: `${namn.toUpperCase()} SLUTAR`,
       ingress: `${d.starter ?? 0} starter, ${d.segrar ?? 0} segrar och ${kr(d.intjänat ?? 0)} kr insprunget.`,
@@ -326,7 +327,7 @@ påHändelse("pensionering", (spel, h) => {
   }
   skrivPress(spel, `${namn} avslutar karriären`,
     `${d.starter ?? 0} starter och ${d.segrar ?? 0} segrar för ${spel.stallnamn}.`,
-    d.segrar > 0 ? "bra" : "neutral", null, 0, JOURNALISTER.krönikör);
+    d.segrar > 0 ? "bra" : "neutral", null, 0, signaturen(spel, "krönikör"));
 });
 
 /* ------------------------------------------------------------------ */
@@ -365,7 +366,7 @@ påHändelse("arvet", (spel, h) => {
 
   köScen(spel, {
     betydelse: h.betydelse, bild: "arv", bildreserv: "seger", stil: "tidning",
-    signatur: JOURNALISTER.krönikör,
+    signatur: signaturen(spel, "krönikör"),
     etikett: spel.huvudnyhet.etikett, rubrik: spel.huvudnyhet.rubrik,
     ingress: spel.huvudnyhet.ingress, fakta: spel.huvudnyhet.fakta,
     citat: spel.huvudnyhet.citat, citatVem: spel.huvudnyhet.citatVem,
@@ -405,7 +406,7 @@ påHändelse("eleven_slog_mästaren", (spel, h) => {
   });
   köScen(spel, {
     betydelse: h.betydelse, bild: "rivaler", bildreserv: "bana-kvall", stil: "tidning",
-    signatur: JOURNALISTER.nyheter,
+    signatur: signaturen(spel, "nyheter"),
     etikett: "GAMLA BEKANTA",
     rubrik: "ELEVEN SLOG MÄSTAREN",
     ingress: `${d.tränare} vann med ${d.häst} — före sitt gamla stall. Ni skildes som vänner. Ni möts som konkurrenter.`,

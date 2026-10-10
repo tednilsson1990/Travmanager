@@ -41,11 +41,15 @@ import { säkraKarriär, nästaMilstolpe } from "./engine-minnen.js";
 import { skrivPress } from "./engine-vecka.js";
 import { klamp } from "./engine-util.js";
 import { veckansGenomgång } from "./engine-veckomote.js";
-import { ägartyp, ägarKontakt } from "./engine-agare.js";
+import { ägartyp, ägarKontakt, ägarSport } from "./engine-agare.js";
 const STARTERPROFILNAMN = { spetsaren: "Spetsaren", stayern: "Stayern", talangen: "Talangen" };
-import { KUSKAR, relation as kuskrelation } from "./data-kuskar.js";
+import { KUSKAR, aktivaKuskar, relation as kuskrelation } from "./data-kuskar.js";
 import { invalsläge, säkraSällskap, säsongsmotion, rösta, MOTIONER } from "./engine-sallskap.js";
 import { SERIENAMN, finalkandidater } from "./engine-serie.js";
+import { marknaden } from "./engine-marknad.js";
+import { nästaStorlopp, kvalläge, ärComeback } from "./engine-storlopp.js";
+import { signaturen, journalistvinkel } from "./engine-varldsutveckling.js";
+import { anlag, anlagsklass } from "./engine-hast.js";
 
 /** Stabil innehållshash — lästmarkeringens ankare. */
 function hash(text) {
@@ -344,13 +348,18 @@ export function byggInkorg(spel) {
         avsändare: spel.rival.tränare.split(" ")[0], roll: "Rivaltränare", typ: "sms",
         prioritet: "info",
         rubrik: jagVann ? "Om helgen" : "Som jag sa",
-        text: jagVann
+        text: (jagVann
           ? (möte.minPlats === 1
             ? `Grattis till segern. Jag menar det — nästan. ${spel.rival.hästNamn} var inte sig själv. Nästa gång blir det annorlunda.`
             : `Ni var före oss i mål. Noterat. Det händer inte igen.`)
           : (möte.rivalPlats === 1
             ? `${spel.rival.hästNamn} vann. Jag tänker inte låtsas att det inte känns bra. Tack för motståndet — sånt det nu var.`
-            : `Före er i mål, i alla fall. Små steg. Vi räknar vidare.`),
+            : `Före er i mål, i alla fall. Små steg. Vi räknar vidare.`))
+          /* Räkningen (v153): rivalen håller koll på exakt samma siffra
+             som du — det är det som gör mötena till en följetong. */
+          + (spel.rivalfacit?.möten >= 2
+            ? ` Räkningen: ${spel.rivalfacit.mina}–${spel.rivalfacit.hans}${spel.rivalfacit.mina === spel.rivalfacit.hans ? ". Delat. Än." : spel.rivalfacit.mina > spel.rivalfacit.hans ? " till er. Än." : " till mig."}`
+            : ""),
         flik: "lopp",
       });
     }
@@ -384,6 +393,120 @@ export function byggInkorg(spel) {
         text: `»Hela pressläktaren pratade om loppet. Har du två minuter?«`,
         lång: `— Hej, Travbladet här. Stör jag?\n— Jag ringer om ${gh.namn}. Hela pressläktaren pratade om loppet — det där var inte en vanlig seger.\n— Jag skriver till helgbilagan. Säg som det är: visste ni att klivet var på väg?\n— Tack. Och grattis — sånt här är därför vi håller på.`,
         flik: "stall",
+      });
+    }
+  }
+
+  /* ---- RAMPLJUSET (v158, 28.1 — Teds exempel): storloppshelgen drar
+     allt ljus mot sig. Journalisten ringer FÖRE loppet när din häst
+     står anmäld, och ägaren ringer när hans kvalade häst INTE gör det.
+     Ren derivation — effekterna verkställs i verkställBeslut. ---- */
+  {
+    const nästa = nästaStorlopp(spel, 1);
+    if (nästa) {
+      const loppnamn = nästa.lopp.kortnamn || nästa.lopp.namn;
+      /* a) Journalistens förhandssamtal: din häst är med i det stora. */
+      const anmäld = (spel.anmälningar ?? []).find((a) =>
+        a.loppId === nästa.lopp.id && a.status !== "avstod");
+      const häst = anmäld && (spel.stall ?? []).find((h) => h.id === anmäld.hästId);
+      if (häst && !(spel.inkorgBeslutade ?? []).includes(hash(`${spel.säsong ?? 1}:${spel.vecka}:${signaturen(spel, "nyheter")}:Inför ${loppnamn}`))) {
+        const comeback = ärComeback(spel, häst);
+        lägg({
+          avsändare: signaturen(spel, "nyheter"), roll: "Journalist", typ: "samtal",
+          prioritet: "beslut",
+          rubrik: `Inför ${loppnamn}`,
+          text: `»${häst.namn} i det stora loppet${comeback ? " — och som comeback dessutom" : ""}. Hur ska jag skriva?«`,
+          lång: `— ${signaturen(spel, "nyheter")}, Travbladet. Stör jag mitt i verkningen?
+— ${häst.namn} står bland de anmälda till ${loppnamn}. ${comeback ? "Comebacken rakt in i det stora — det är DEN vinkeln hela sporten vill läsa." : "Helgen alla pratar om — och ni är med."}
+${journalistvinkel(spel, "nyheter").samtalston}
+— Förhandssidan går i tryck i kväll. Vad säger tränaren: ska publiken räkna med er?
+— Som du vet spelar folk efter vad vi skriver. Välj orden.`,
+          flik: "lopp",
+          beslut: { typ: "förhandsord", ref: { hästId: häst.id, lopp: loppnamn },
+            alternativ: [
+              { id: "upp", etikett: "»Vi är här för att vinna«" },
+              { id: "lugn", etikett: "»Hästen är fin — mer säger jag inte»" },
+              { id: "ned", etikett: "»Räkna inte med oss«", sekundär: true },
+            ] },
+        });
+      }
+      /* b) Ägartrycket: kvalad ägarhäst som inte är anmäld — ägaren ringer. */
+      const kval = kvalläge(spel, nästa.lopp);
+      const ägarhäst = kval.kvalade.find((h) => h.ägare
+        && !(spel.anmälningar ?? []).some((a) => a.hästId === h.id)
+        && !(spel.startadeLopp ?? []).includes(nästa.lopp.id));
+      if (ägarhäst && nästa.veckorKvar <= 1) {
+        lägg({
+          avsändare: ägarhäst.ägare, roll: "Hästägare", typ: "samtal", prioritet: "beslut",
+          rubrik: `${ägarhäst.namn} och ${loppnamn}`,
+          text: `»Hon är kvalad. Jag vill se min häst i det stora loppet.«`,
+          lång: `— Det är ${ägarhäst.ägare}. Du vet varför jag ringer.
+— ${ägarhäst.namn} är kvalad till ${loppnamn}. Kvalad! Och jag ser ingen anmälan.
+— Jag har vänner på läktaren den helgen. Hela stan tittar.
+— Du är tränaren, du avgör. Men säg det till mig rakt ut i så fall.`,
+          flik: "lopp",
+          beslut: { typ: "ägartryck", ref: { namn: ägarhäst.ägare, hästId: ägarhäst.id, lopp: loppnamn },
+            alternativ: [
+              { id: "anmäler", etikett: "»Vi anmäler — hon är redo«" },
+              { id: "avstår", etikett: "»Hon är inte redo. Jag tar det ansvaret«", sekundär: true },
+            ] },
+        });
+      }
+    }
+  }
+
+  /* ---- SCOUTRAPPORTEN (v148, 20.7): förstamannen har varit ute och
+     tittat. Ungefär var tredje vecka landar ett mejl om veckans mest
+     intressanta unghäst i marknaden — och anlagsordet är SANT: scouten
+     ser taket du inte ser. Marknaden är seedad per vecka (v148), så
+     hästen finns kvar när du öppnar Marknaden. Ren derivation. ---- */
+  if (fm && spel.värld && parseInt(hash(`scout:${spel.säsong ?? 1}:${spel.vecka}`), 36) % 100 < 34) {
+    const unga = marknaden(spel).filter((p) => (p.häst.ålder ?? 9) <= 5 && !p.häst.egen);
+    if (unga.length) {
+      const fynd = [...unga].sort((a, b) => anlag(b.häst) - anlag(a.häst))[0];
+      const h = fynd.häst;
+      const klass = anlagsklass(h);
+      const dom = klass.nivå >= 4
+        ? `Jag har sett ${h.kön === "sto" ? "henne" : "honom"} jobba. Det här är ett fynd — taket sitter högt, högre än priset antyder. Sådana här kommer inte ut varje säsong.`
+        : klass.nivå === 3
+        ? `Ingen stjärna, men en ärlig häst — taket är som folk är mest. Till rätt pris gör ${h.kön === "sto" ? "hon" : "han"} nytta i stallet.`
+        : `Jag ska vara rak: taket sitter lågt. Fin att se på, men pengarna gör mer nytta någon annanstans. Ville bara att du skulle veta innan någon pratar upp ${h.kön === "sto" ? "henne" : "honom"} för dig.`;
+      lägg({
+        avsändare: fmNamn, roll: "Förstaman", typ: "mejl", prioritet: "info",
+        rubrik: `Scoutrapport: ${h.namn}`,
+        text: `»${h.namn}, ${h.ålder} år, ute på marknaden för ${kr(fynd.pris)} kr — min bedömning: ${klass.ord}.«`,
+        lång: `Hej,\n\nJag tog en sväng förbi ${fynd.ursprung} i veckan och tittade på ${h.namn}, ${h.ålder}-årig ${h.kön}. Begärt pris ${kr(fynd.pris)} kr.\n\n${dom}\n\nMin bedömning: ${klass.ord}.\n\nHästen ligger ute på Marknaden om du vill gå vidare.\n\n${fm.namn}`,
+        flik: "stall",
+      });
+    }
+  }
+
+  /* ---- KUSKSCOUTEN (v157, 20.7 etapp B): förstamannen har ögon även
+     på kuskbacken. Ungefär var fjärde vecka (förskjuten gate från
+     hästscouten) ett tips om kårens mest underskattade sulky — värdet
+     är kvoten mellan förmåga och vad den kostar, och lärlingarna är
+     billigast innan de blivit namn. Ren derivation; relationen byggs
+     som vanligt genom att BOKA, inte genom mejlet. ---- */
+  if (fm && parseInt(hash(`kuskscout:${spel.säsong ?? 1}:${spel.vecka}`), 36) % 100 < 25) {
+    const kår = aktivaKuskar(spel)
+      .filter((k) => !k.tränarkusk && (k.ryktbarhet ?? 99) <= 45
+        && ((spel.kuskrelation ?? {})[k.namn] ?? k.startrelation ?? 50) < 56);
+    if (kår.length) {
+      const värde = (k) => (k.start + k.avslutning + k.omdöme) / 3
+        - (k.arvode ?? 0) / 120 - (k.ryktbarhet ?? 0) * 0.2 + (k.lärling ? 6 : 0);
+      const fynd = [...kår].sort((a, b) => värde(b) - värde(a))[0];
+      lägg({
+        avsändare: fmNamn, roll: "Förstaman", typ: "mejl", prioritet: "info",
+        rubrik: `Kusktipset: ${fynd.namn}`,
+        text: `»${fynd.namn} — ${fynd.lärling ? "lärling, kör för nästan ingenting" : "underskattad i kåren"}. Boka innan de stora stallen gör det.«`,
+        lång: `Hej,
+
+Stod vid provloppen i veckan och tittade på kuskarna i stället för hästarna. ${fynd.namn} fastnade jag för${fynd.lärling ? ` — lärling, ${fynd.arvode} kr i arvode och allt att bevisa. Lärlingsserien är gjord för sådana` : ` — ryktbarheten är låg men handlaget är det inte. Spelarna har inte hittat ${fynd.namn.split(" ")[0]} än, och arvodet (${fynd.arvode} kr) märker det`}.
+
+Körningar bygger relationen. Ett par bokningar nu, så har du en trogen sulky när andra stall börjar ringa.
+
+${fm.namn}`,
+        flik: "lopp",
       });
     }
   }
@@ -780,6 +903,33 @@ export function verkställBeslut(spel, händelse, valId) {
         skrivPress(spel, `Jävsfrågan: gynnade ${spel.stallnamn} sig självt?`,
           `Ledamoten röstade ja till en motion som gynnar den egna verksamheten. »Jag redovisade min vinning öppet«, säger tränaren.`, "negativ");
       }
+    }
+  }
+  if (b.typ === "förhandsord") {
+    /* Rampljuset (v158): orden till förhandssidan flyttar publikens
+       pengar — hypen är strecket i vardande. Tona upp = tryck och
+       förväntan; tona ned = luft, och kanske bättre odds för ägaren. */
+    const häst = (spel.stall ?? []).find((h) => h.id === b.ref.hästId);
+    if (häst) {
+      if (valId === "upp") {
+        häst.hype = klamp((häst.hype ?? 12) + 7);
+        skrivPress(spel, `»Vi är här för att vinna«`,
+          `${spel.stallnamn} tonar inte ner något inför ${b.ref.lopp}: ${häst.namn} kommer för att ta det. Spelarna lyssnar.`, "positiv");
+      } else if (valId === "ned") {
+        häst.hype = klamp((häst.hype ?? 12) - 6);
+        skrivPress(spel, `${spel.stallnamn} tonar ned inför ${b.ref.lopp}`,
+          `»Räkna inte med oss«, säger tränaren om ${häst.namn}. Antingen ärlighet — eller rökridå.`, "neutral");
+      }
+    }
+  }
+  if (b.typ === "ägartryck") {
+    /* Rampljuset (v158): svaret är ett ord till ägaren, inte en
+       anmälan — den görs som vanligt i loppfliken. Men ord väger. */
+    if (valId === "anmäler") {
+      ägarKontakt(spel, b.ref.namn, 6);
+    } else {
+      ägarKontakt(spel, b.ref.namn, 2);
+      ägarSport(spel, b.ref.namn, -3);
     }
   }
   if (b.typ === "uttalande") {

@@ -195,6 +195,12 @@ export default function StartVy({ spel, uppdatera }) {
   /* STEG 4 — hemmabanan, och dörren öppnas. */
   const små = Object.entries(BANOR).filter(([, b]) => b.storlek === 1);
   const öppna = (valdHäst) => uppdatera((s) => {
+    /* v141 (Teds livekrasch "BANOR[bana].namn"): öppningen får ALDRIG
+       dö på banvalet — saknas det av någon väg tar första lilla banan
+       vid, och karriären startar. Roten jagas vidare, skyddet står. */
+    const banaId = (bana && BANOR[bana]) ? bana
+      : Object.keys(BANOR).find((k) => BANOR[k].storlek === 1);
+    const hemmabanan = BANOR[banaId];
     /* Arvtagaren in i stallet — vald med mentorns välsignelse. */
     if (valdHäst) {
       const h = (s.startval ?? []).find((x) => x.id === valdHäst.id) ?? valdHäst;
@@ -206,19 +212,19 @@ export default function StartVy({ spel, uppdatera }) {
     s.stallnamn = namn.trim() || "Björkhaga";
     s.tränarnamn = tränarnamn.trim() || "Tränaren";
     s.dräkt = DRÄKTER.find((d) => d.id === dräkt) ?? DRÄKTER[0];
-    s.hemmabana = bana;
+    s.hemmabana = banaId;
     s.uppstartKlar = true;
     skrivPress(s, `${s.prolog.mentor.namn} går i pension — förstamannen tar över ${s.stallnamn}`,
-      `${TIDNINGSNAMN} om generationsskiftet vid ` + BANOR[bana].namn, "neutral");
+      `${TIDNINGSNAMN} om generationsskiftet vid ` + hemmabanan.namn, "neutral");
     /* Generationsskiftet som Travbladets förstasida — spelarens första
        tidningssida av många. Den möter en direkt innanför dörren. */
     köScen(s, {
       betydelse: 80, stil: "tidning", bild: "gard-hero",
       signatur: JOURNALISTER.krönikör,
-      etikett: `${BANOR[bana].namn} · GENERATIONSSKIFTE`,
+      etikett: `${hemmabanan.namn} · GENERATIONSSKIFTE`,
       rubrik: `${s.prolog.mentor.namn.toUpperCase()} GÅR I PENSION`,
       ingress: `Efter mer än trettio år vid tömmarna lämnar ${s.prolog.mentor.namn} travsporten. `
-        + `${s.stallnamn} vid ${BANOR[bana].namn} tas över av gårdens förstaman — en okänd i tabellerna, `
+        + `${s.stallnamn} vid ${hemmabanan.namn} tas över av gårdens förstaman — en okänd i tabellerna, `
         + `men den gamle tränaren är trygg i valet.`,
       brödtext: [
         `»Jag trodde länge att allt skulle behöva säljas«, säger ${s.prolog.mentor.namn}. `
@@ -229,7 +235,7 @@ export default function StartVy({ spel, uppdatera }) {
         { etikett: "Gården", värde: s.stallnamn },
         { etikett: "Grundad", värde: String(s.gårdshistoria?.grundad ?? "") },
         { etikett: "Största seger", värde: s.gårdshistoria?.störstaSeger ?? "" },
-        { etikett: "Hemmabana", värde: BANOR[bana].namn },
+        { etikett: "Hemmabana", värde: hemmabanan.namn },
       ],
       citat: "Tre veckor går du bredvid mig. Sedan är nyckelknippan din.",
       citatVem: s.prolog.mentor.namn,
@@ -272,7 +278,7 @@ export default function StartVy({ spel, uppdatera }) {
     kan=${!!bana}
     knapp="Vidare — en sak återstår"
     påNästa=${() => (spel.startval?.length ? gå(5) : öppna(null))}
-    påTillbaka=${() => gå(4)}
+    påTillbaka=${() => gå(3)}
     barn=${html`
       <div class="helscen-ingress mörk">Bara de små banorna har plats för en okänd
         tränare — de stora får man förtjäna. Hemma slipper du resekostnader och

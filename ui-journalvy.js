@@ -12,6 +12,7 @@
 import { html } from "htm/preact";
 import { useState } from "preact/hooks";
 import { kr } from "./engine-util.js";
+import { stamträd, härstamning, ödestext } from "./engine-stambok.js";
 import { Tom } from "./ui-delar.js";
 import { Bild } from "./ui-grafik.js";
 
@@ -21,6 +22,7 @@ import { Bild } from "./ui-grafik.js";
 const ALBUMBILD = {
   storloppsseger: "seger-storlopp", arvet: "arv", minnesloppsseger: "krans",
   eleven_slog_mästaren: "rivaler", mentorns_bortgång: "mentor",
+  slog_legendaren: "rivaler", raritetsfödsel: "hage",
   tackade_nej_storbanan: "gard-hero", gårdsrekord: "rekord", stallrekord: "rekord",
   pensionering: "avsked", banflytt: "bana-kvall", förstaman_lämnade: "avsked-forsteman",
 };
@@ -51,6 +53,8 @@ const TYPTEXT = {
   miljonen: "Miljonen", gårdsrekord: "Gårdsrekord", rivalitet: "Rivalitet",
   pensionering: "Pensionering", övertagande: "Övertagandet",
   förstaman_anställd: "Ny förstaman", comeback: "Comeback",
+  slog_legendaren: "Fenomenet besegrat",
+  raritetsfödsel: "Vit stjärna",
 };
 const typtext = (t) => TYPTEXT[t] ?? TYPTEXT[String(t).split("_")[0]] ?? t;
 
@@ -79,13 +83,18 @@ function radtext(h) {
         + `${d.segrar} segrar, ${kr(d.intjänat ?? 0)} kr.`;
     case "gårdsrekord":
       return d.text ?? "Nytt gårdsrekord.";
+    case "slog_legendaren":
+      return `${namn} besegrade ${d.legendar} i ${d.lopp} — generationens fenomen, slaget.`;
+    case "raritetsfödsel":
+      return `${namn} föddes med en vit stjärna i pannan${d.mor ? ` — undan ${d.mor}` : ""}. En på femhundra.`;
     default:
       return d.text ?? `${namn ?? ""} — ${typtext(h.typ)}`.trim();
   }
 }
 
-export default function JournalVy({ spel }) {
-  const [flik, sättFlik] = useState("krönika");
+export default function JournalVy({ spel, startflik }) {
+  /* startflik (v155): bara för UI-vakten — provet renderar varje flik. */
+  const [flik, sättFlik] = useState(startflik ?? "krönika");
   const [bara, sättBara] = useState("allt");
 
   const krönika = [...(spel.krönika ?? [])].reverse();
@@ -100,7 +109,7 @@ export default function JournalVy({ spel }) {
 
   return html`
     <div class="flikar">
-      ${["krönika", "album", "säsonger", "rekord", "troférum", "rivaler"].map((f) => html`
+      ${["krönika", "album", "stambok", "säsonger", "rekord", "troférum", "rivaler"].map((f) => html`
         <button key=${f} class="flik" aria-selected=${flik === f}
           onClick=${() => sättFlik(f)}>${f}</button>`)}
     </div>
@@ -147,10 +156,16 @@ export default function JournalVy({ spel }) {
       <div class="hint">Krönikörens bokslut, år för år. Texterna skrevs när det hände.</div>
       ${(spel.historik ?? []).length === 0
         ? html`<${Tom}>Första säsongen pågår. Krönikan skrivs när den är slut.<//>`
-        : (spel.historik ?? []).map((rad) => html`
+        : (() => {
+            /* REKORDÅRET (v156, 20.3-resten): den bästa säsongen märks ut
+               — mest insprunget vinner, segrar skiljer. En utmärkelse i
+               boken, som i varje riktig stallkrönika. */
+            const bästa = [...(spel.historik ?? [])].sort((a, b) =>
+              (b.intjänat ?? 0) - (a.intjänat ?? 0) || (b.segrar ?? 0) - (a.segrar ?? 0))[0];
+            return (spel.historik ?? []).map((rad) => html`
             <details key=${rad.säsong} class="kort sasongsrad">
               <summary>
-                <span class="sasongsnr">Säsong ${rad.säsong}</span>
+                <span class="sasongsnr">Säsong ${rad.säsong}${rad === bästa && (spel.historik ?? []).length >= 2 ? html` <span class="klasstagg">REKORDÅR</span>` : ""}</span>
                 <span class="meta">${rad.plats}:a av ${rad.avStall} · ${rad.segrar} segrar · ${kr(rad.intjänat)} kr</span>
               </summary>
               ${rad.krönika
@@ -158,7 +173,8 @@ export default function JournalVy({ spel }) {
                   ${rad.krönika.stycken.map((st, i) => html`<p key=${i} class="kronika-stycke">${st}</p>`)}
                   <div class="byline">Text: ${rad.krönika.signatur}</div>`
                 : html`<div class="logg">Säsongen är förd till protokollet${rad.bästaHäst ? `. Årets häst: ${rad.bästaHäst}` : ""}. Krönikor skrivs från och med i år.</div>`}
-            </details>`)}`}
+            </details>`);
+          })()}`}
 
     ${flik === "rekord" && html`
       <div class="hint">Tavlan i stallgången — noteringarna genom tiderna.</div>
@@ -237,5 +253,42 @@ export default function JournalVy({ spel }) {
                   ${r.dinaSegrar}–${r.hansSegrar}
                 </div>
               </div>`)}
-          </div>`}`}`;
+          </div>`}`}
+
+    ${flik === "stambok" && (() => {
+      /* STAMBOKEN (v146, 21.3): gårdens hästar familjevis under sina
+         stammödrar, med travets egen notation — e. pappan u. mamman —
+         och varje hästs öde. Boken skrivs av motorn; vyn läser bara. */
+      const träd = stamträd(spel);
+      const Postrad = ({ p }) => html`
+        <div class="prisrad">
+          <span>
+            <b>${p.namn}</b>${p.kön ? `, ${p.kön}` : ""}
+            ${härstamning(p) && html`<div class="relmini">${härstamning(p)}</div>`}
+            <div class="relmini">
+              ${ödestext(p, spel.säsong)}${p.hallOfFame ? " · Hall of fame" : ""}${p.uppfödd ? " · uppfödd på gården" : ""}${p.raritet ? " · ✶ vit stjärna" : ""}
+            </div>
+          </span>
+          <span class="pris">${p.segrar ?? 0} seg · ${kr(p.intjänat ?? 0)} kr</span>
+        </div>`;
+      return html`
+        <div class="hint">
+          Gårdens stambok — härstamning, meriter och öden. Familjerna
+          läses som traven alltid läst dem: undan stammodern.
+        </div>
+        ${träd.familjer.length === 0 && träd.övriga.length === 0
+          ? html`<${Tom}>Boken är tom än. Den skrivs av hästarna som passerar gården.<//>`
+          : html`
+            ${träd.familjer.map((f) => html`
+              <h2 key=${f.stammoder}>Undan ${f.stammoder}</h2>
+              <div class="kort">
+                ${f.moderpost && html`<${Postrad} p=${f.moderpost} />`}
+                ${f.avkommor.map((p) => html`<${Postrad} key=${p.namn} p=${p} />`)}
+              </div>`)}
+            ${träd.övriga.length > 0 && html`
+              <h2>Förvärven</h2>
+              <div class="kort">
+                ${träd.övriga.map((p) => html`<${Postrad} key=${p.namn} p=${p} />`)}
+              </div>`}`}`;
+    })()}`;
 }

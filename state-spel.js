@@ -44,8 +44,63 @@ export function nyttSpel() {
   };
 }
 
+/* ------------------------------------------------------------------ */
+/* AUTOBACKUPEN (v149, kap 26 G — karriären får aldrig gå förlorad)    */
+/* ------------------------------------------------------------------ */
+/*
+ * Tre rullande generationer. Varje gång en NY vecka ska sparas läggs
+ * det förra tillståndet — läget INNAN veckan kördes — överst i
+ * backupkedjan. En trasig sparfil, en bugg i ett veckoskifte eller
+ * ett misslyckat experiment är därmed aldrig värre än "återställ
+ * förra veckan" under Kontoret → Felsökning.
+ */
+const BACKUPNYCKLAR = ["travmanager.backup.1", "travmanager.backup.2", "travmanager.backup.3"];
+let senasteBackupLäge = null;
+
+function säkraBackup(spel) {
+  const läge = `${spel.säsong ?? 0}:${spel.vecka ?? 0}`;
+  if (läge === senasteBackupLäge) return;          /* samma vecka — redan tagen */
+  const rå = localStorage.getItem(NYCKEL);
+  senasteBackupLäge = läge;
+  if (!rå) return;                                 /* första sparningen någonsin */
+  try {
+    const [b1, b2] = [BACKUPNYCKLAR[0], BACKUPNYCKLAR[1]].map((n) => localStorage.getItem(n));
+    if (b2) localStorage.setItem(BACKUPNYCKLAR[2], b2);
+    if (b1) localStorage.setItem(BACKUPNYCKLAR[1], b1);
+    localStorage.setItem(BACKUPNYCKLAR[0], rå);
+  } catch { /* fullt lagringsutrymme — huvudsparningen är viktigare */ }
+}
+
+/** Backupkedjan, läsbar för Felsökningen: vad finns att gå tillbaka till? */
+export function listaBackuper() {
+  const ut = [];
+  BACKUPNYCKLAR.forEach((nyckel) => {
+    try {
+      const rå = localStorage.getItem(nyckel);
+      if (!rå) return;
+      const d = JSON.parse(rå);
+      ut.push({ nyckel, säsong: d.säsong ?? "?", vecka: d.vecka ?? "?",
+        stallnamn: d.stallnamn ?? "?", kassa: d.kassa ?? 0 });
+    } catch { /* trasig backup visas inte */ }
+  });
+  return ut;
+}
+
+/**
+ * Återställer en backup till huvudsparfilen. Samma hårda validering
+ * som importen: den gamla sparfilen röres inte förrän backuppen
+ * bevisat sig parsbar. Anroparen laddar om sidan efteråt.
+ */
+export function återställBackup(nyckel) {
+  if (!BACKUPNYCKLAR.includes(nyckel)) throw new Error("Okänd backup.");
+  const rå = localStorage.getItem(nyckel);
+  if (!rå) throw new Error("Backuppen finns inte längre.");
+  return importeraSparfil(rå);
+}
+
 export function spara(spel) {
   try {
+    säkraBackup(spel);
     spel.nästaId = idRäknare();
     spel.nästaHändelseId = händelseRäknare();
     localStorage.setItem(NYCKEL, JSON.stringify(spel));

@@ -989,6 +989,11 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 
 /* v115: genombrottsmärket — guld, diskret, för alltid */
 .genombrott-marke { color: var(--guld, #F2B134); font-size: 0.85em; }
+.raritet-marke { color: var(--marin, #1d2f4e); font-size: 0.85em; opacity: 0.85; }
+.hemskärm-vader { font-size: 13px; opacity: 0.75; margin-top: 3px; letter-spacing: 0.04em; }
+.oddsrad { display: block; font-size: 10px; opacity: 0.65; text-align: right; }
+.autorad { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.autorad input { margin-top: 4px; transform: scale(1.3); accent-color: var(--marin, #1d2f4e); }
 
 
 /* ==================== Klasstrappan (v116) ==================== */
@@ -1138,3 +1143,116 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .balans-rad.spärrad { opacity: 0.55; cursor: default; }
 .balans-namn { font-weight: 600; font-size: 13px; white-space: nowrap; }
 .balans-text { font-size: 11px; opacity: 0.75; }
+
+
+/* ==================== Hemskärmen (v143) ==================== */
+.hemskärm { display: flex; flex-direction: column; min-height: 60vh; }
+.hemskärm-klocka { text-align: center; margin: 14px 0 18px; }
+.hemskärm-vecka {
+  font-size: 34px; font-weight: 700; letter-spacing: 0.02em;
+  color: var(--marin, #1d2f4e); line-height: 1.05;
+}
+.hemskärm-dag { font-size: 12px; opacity: 0.65; margin-top: 3px; }
+.app-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 6px;
+  padding: 0 6px; margin-bottom: 14px;
+}
+.app-ikon {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  background: none; border: none; padding: 0; font-family: inherit; cursor: pointer;
+}
+.app-ikon-ruta {
+  position: relative; width: 58px; height: 58px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  color: #faf7ef; font-size: 24px;
+  box-shadow: 0 2px 5px rgba(20, 28, 40, 0.28), inset 0 1px 0 rgba(255,255,255,0.14);
+}
+.app-ikon-namn { font-size: 10.5px; color: var(--marin, #1d2f4e); }
+.app-ikon .app-badge { top: -5px; right: -5px; border: 2px solid #EDEAE2; }
+.hemskärm-oläst { align-self: center; margin-bottom: 14px; }
+.hemskärm-dock {
+  margin-top: auto; padding: 10px 8px; border-radius: 16px;
+  background: rgba(29,47,78,0.08); border: 1px solid rgba(29,47,78,0.14);
+}
+.hemskärm-dock .btn { width: 100%; margin: 0; }
+.app-topp {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  padding-bottom: 7px; border-bottom: 1px solid rgba(29,47,78,0.16);
+}
+.app-topp-namn { font-weight: 700; font-size: 15px; display: flex; gap: 6px; align-items: center; }
+.app-topp-glyf { font-size: 17px; }
+.app-badge.still { position: static; margin-left: auto; }
+
+/* Samtalsdialogen (v143): replikbubblor och berättarrader */
+.samtalsdialog { padding: 6px 0 10px; }
+.samtal-berättare {
+  text-align: center; font-size: 11.5px; font-style: italic; opacity: 0.6;
+  margin: 9px 0 4px;
+}
+
+
+/* ==================== Telefonens premiumpass (v144) ==================== */
+.hemskärm {
+  background: linear-gradient(175deg, rgba(29,47,78,0.05) 0%, rgba(237,234,226,0) 34%, rgba(242,177,52,0.05) 100%);
+  border-radius: 14px; padding: 4px 4px 8px;
+}
+.hemskärm-vecka { font-family: 'Roboto Mono', monospace; letter-spacing: -0.01em; }
+.rytmrad {
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 8px;
+}
+.rytmsteg { display: flex; align-items: center; }
+.rytmstreck { width: 26px; height: 1px; background: rgba(29,47,78,0.3); margin: 0 5px; }
+.rytmpunkt {
+  width: 22px; height: 22px; border-radius: 11px; display: flex;
+  align-items: center; justify-content: center;
+  font-family: 'Roboto Mono', monospace; font-size: 10px;
+  color: var(--marin, #1d2f4e); border: 1.4px solid rgba(29,47,78,0.4);
+  background: transparent;
+}
+.rytmpunkt.aktiv {
+  background: var(--marin, #1d2f4e); color: #faf7ef;
+  border-color: var(--marin, #1d2f4e);
+  box-shadow: 0 0 0 3px rgba(242,177,52,0.35);
+}
+.app-ikon-ruta { transition: transform 0.12s ease; }
+.app-ikon:active .app-ikon-ruta { transform: scale(0.92); }
+@keyframes tel-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+.chatt .bubbelrad, .samtalsdialog .bubbelrad, .samtal-berättare { animation: tel-in 0.22s ease both; }
+.chatt .bubbelrad:nth-child(1), .samtalsdialog .bubbelrad:nth-child(1) { animation-delay: 0.02s; }
+.chatt .bubbelrad:nth-child(2), .samtalsdialog .bubbelrad:nth-child(2) { animation-delay: 0.08s; }
+.chatt .bubbelrad:nth-child(3), .samtalsdialog .bubbelrad:nth-child(3) { animation-delay: 0.14s; }
+.chatt .bubbelrad:nth-child(4), .samtalsdialog .bubbelrad:nth-child(4) { animation-delay: 0.20s; }
+.chatt .bubbelrad:nth-child(5), .samtalsdialog .bubbelrad:nth-child(5) { animation-delay: 0.26s; }
+.chatt .bubbelrad:nth-child(n+6), .samtalsdialog .bubbelrad:nth-child(n+6) { animation-delay: 0.30s; }
+.läsvy, .post-rad, .möteskort { animation: tel-in 0.18s ease both; }
+@keyframes badge-puls { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+.app-ikon .app-badge { animation: badge-puls 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .chatt .bubbelrad, .samtalsdialog .bubbelrad, .samtal-berättare,
+  .läsvy, .post-rad, .möteskort, .app-ikon .app-badge { animation: none; }
+  .app-ikon-ruta { transition: none; }
+}
+
+/* Mina kuskar (v144) */
+.kusk-sektion {
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--marin, #1d2f4e); opacity: 0.6; margin: 10px 0 4px;
+  font-family: 'Roboto Mono', monospace;
+}
+.kuskrad {
+  display: grid; grid-template-columns: 1fr auto; grid-template-areas: "namn status" "meta status";
+  gap: 0 8px; width: 100%; text-align: left; padding: 8px 10px; margin-bottom: 5px;
+  background: rgba(29,47,78,0.05); border: 1px solid rgba(29,47,78,0.18);
+  border-radius: 9px; font-family: inherit; color: inherit; cursor: pointer;
+}
+.kuskrad.vald { border-color: var(--marin, #1d2f4e); background: rgba(29,47,78,0.1); box-shadow: inset 2.5px 0 0 var(--guld, #F2B134); }
+.kuskrad:disabled { opacity: 0.5; cursor: default; }
+.kuskrad.tränarrad { border-style: dashed; }
+.kuskrad-namn { grid-area: namn; font-weight: 600; font-size: 13.5px; }
+.kuskrad-meta { grid-area: meta; font-size: 11px; opacity: 0.7; }
+.kuskrad-status { grid-area: status; align-self: center; font-size: 10.5px; opacity: 0.8; text-align: right; max-width: 96px; }
+
+/* v145: kuskens minnesreplik i samtalet */
+.minnes-replik { border-left: 3px solid var(--guld, #F2B134); }
+.minnes-replik .meta { color: var(--guld-mörk, #B3831D); }

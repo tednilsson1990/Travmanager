@@ -2,6 +2,7 @@ import { html } from "htm/preact";
 import { useState } from "preact/hooks";
 import { synligInkorg, verkställBeslut } from "./engine-inkorg.js";
 import { nästaStopp, hoppaFram, stoppFör, STOPPNAMN } from "./engine-klocka.js";
+import { väderläge } from "./engine-vader.js";
 import { arkiveraTelefonen } from "./engine-inkorg.js";
 
 /**
@@ -43,17 +44,26 @@ const APP_AV_TYP = (h) =>
   : h.typ === "nyhet" ? "nyheter" : "mejl";
 
 const APPAR = [
-  { id: "meddelanden", namn: "Meddelanden", glyf: "❞" },
-  { id: "samtal", namn: "Samtal", glyf: "✆" },
-  { id: "mejl", namn: "Mejl", glyf: "✉" },
-  { id: "nyheter", namn: "Travbladet", glyf: "¶" },
+  { id: "meddelanden", namn: "Meddelanden", glyf: "❞", färg: "#3E8E5A" },
+  { id: "samtal", namn: "Samtal", glyf: "✆", färg: "#2E6FB3" },
+  { id: "mejl", namn: "Mejl", glyf: "✉", färg: "#1d2f4e" },
+  { id: "nyheter", namn: "Travbladet", glyf: "¶", färg: "#1c1c1a" },
 ];
 
-export default function InkorgVy({ spel, uppdatera, gåTill }) {
+/** Replikparsern (v143, dialogerna): rader med tankstreck blir
+ *  pratbubblor, övriga blir berättarrader — ett samtal ska SE UT
+ *  som ett samtal. */
+const replikRader = (text) => (text ?? "").split("\n")
+  .map((r) => r.trim()).filter(Boolean)
+  .map((r) => r.startsWith("—")
+    ? { typ: "replik", t: r.replace(/^—\s*/, "") }
+    : { typ: "berättare", t: r });
+
+export default function InkorgVy({ spel, uppdatera, gåTill, startApp }) {
   const händelser = synligInkorg(spel);
   const lästa = new Set(spel.inkorgLästa ?? []);
   const [läsId, sättLäs] = useState(null);
-  const [app, sättApp] = useState("meddelanden");
+  const [app, sättApp] = useState(startApp ?? null);   /* null = hemskärmen; startApp (v155) är UI-vaktens */
   const [trådNamn, sättTråd] = useState(null);
 
   const perApp = (id) => händelser.filter((h) => APP_AV_TYP(h) === id);
@@ -74,7 +84,9 @@ export default function InkorgVy({ spel, uppdatera, gåTill }) {
   };
   const nästaOläst = () => {
     const ordning = ["meddelanden", "samtal", "mejl", "nyheter"];
-    const kö = [...olästaI(perApp(app)), ...ordning.filter((a) => a !== app).flatMap((a) => olästaI(perApp(a)))];
+    const kö = app
+      ? [...olästaI(perApp(app)), ...ordning.filter((a) => a !== app).flatMap((a) => olästaI(perApp(a)))]
+      : ordning.flatMap((a) => olästaI(perApp(a)));
     const nästa = kö.find((h) => h.id !== läsId);
     if (nästa) { sättApp(APP_AV_TYP(nästa)); öppna(nästa); }
     else { sättLäs(null); sättTråd(null); }
@@ -163,8 +175,18 @@ export default function InkorgVy({ spel, uppdatera, gåTill }) {
         <div class="läs-inre">
           ${h.typ === "nyhet" && html`<div class="klipp-etikett">${h.etikett ?? "Travbladet"}</div>`}
           <h1 class="helskärm-rubrik">${h.rubrik}</h1>
-          <div class=${"förhand-text" + (ärSamtal ? " replikväxling" : "")}>${(h.lång ?? h.text).split("\n\n").map((stycke, i) =>
-            html`<p key=${i}>${stycke}</p>`)}</div>
+          ${ärSamtal
+            ? html`<div class="samtalsdialog">
+                ${replikRader(h.lång ?? h.text).map((r, i) => r.typ === "replik"
+                  ? html`<div key=${i} class="bubbelrad">
+                      <div class=${"bubbla bubbla-in " + rollklass(h.roll)}>
+                        <div class="bubbla-text">${r.t}</div>
+                      </div>
+                    </div>`
+                  : html`<div key=${i} class="samtal-berättare">${r.t}</div>`)}
+              </div>`
+            : html`<div class="förhand-text">${(h.lång ?? h.text).split("\n\n").map((stycke, i) =>
+                html`<p key=${i}>${stycke}</p>`)}</div>`}
           ${(h.detaljer ?? []).length > 0 && html`
             <div class="läs-tabell">
               ${h.detaljer.map((d) => html`
@@ -273,19 +295,54 @@ export default function InkorgVy({ spel, uppdatera, gåTill }) {
       })}`,
   }[app];
 
+  /* ==================== HEMSKÄRMEN (v143) ==================== */
+  if (!app) {
+    return html`
+      ${statusrad}
+      <div class="hemskärm">
+        <div class="hemskärm-klocka">
+          <div class="hemskärm-vecka">Vecka ${Math.min(spel.vecka, spel.veckor)}</div>
+          <div class="hemskärm-dag">${STOPPNAMN[stoppFör(spel)]} · ${spel.stallnamn}</div>
+          <div class="hemskärm-vader">${väderläge(spel).glyf} ${väderläge(spel).namn}</div>
+        </div>
+        <div class="app-grid">
+          ${APPAR.map((a) => html`
+            <button key=${a.id} class="app-ikon" onClick=${() => { sättApp(a.id); sättTråd(null); }}>
+              <span class="app-ikon-ruta" style=${{ background: a.färg }}>${a.glyf}
+                ${badge(a.id) > 0 && html`<span class="app-badge">${badge(a.id)}</span>`}</span>
+              <span class="app-ikon-namn">${a.namn}</span>
+            </button>`)}
+        </div>
+        ${alltOläst > 0 && html`
+          <button class="btn liten hemskärm-oläst" onClick=${nästaOläst}>
+            Läs nästa olästa (${alltOläst}) →</button>`}
+        <div class="hemskärm-dock">
+          <div class="rytmrad" aria-label="Veckans rytm">
+            ${["måndag", "onsdag", "helg"].map((st, i) => html`
+              <span key=${st} class="rytmsteg">
+                ${i > 0 && html`<span class="rytmstreck"></span>`}
+                <span class=${"rytmpunkt" + (stoppFör(spel) === st ? " aktiv" : "")}
+                  title=${STOPPNAMN[st]}>${STOPPNAMN[st]?.[0]?.toUpperCase() ?? "?"}</span>
+              </span>`)}
+          </div>
+          <button class="btn" onClick=${() => {
+            let mål;
+            uppdatera((s) => { arkiveraTelefonen(s); mål = hoppaFram(s); });
+            sättLäs(null); sättTråd(null);
+            if (mål !== "vecka") gåTill("lopp");
+          }}>${nästaStopp(spel).etikett}</button>
+        </div>
+      </div>`;
+  }
+
+  const aktivApp = APPAR.find((a) => a.id === app);
   return html`
     ${statusrad}
-    <div class="app-rad">
-      ${APPAR.map((a) => html`
-        <button key=${a.id} class=${"app-knapp" + (app === a.id ? " aktiv" : "")}
-          onClick=${() => { sättApp(a.id); sättTråd(null); }}>
-          <span class="app-glyf">${a.glyf}</span>${a.namn}
-          ${badge(a.id) > 0 && html`<span class="app-badge">${badge(a.id)}</span>`}
-        </button>`)}
+    <div class="app-topp">
+      <button class="ikonknapp" onClick=${() => { sättApp(null); sättTråd(null); }}>‹ Hem</button>
+      <span class="app-topp-namn"><span class="app-topp-glyf" style=${{ color: aktivApp.färg }}>${aktivApp.glyf}</span> ${aktivApp.namn}</span>
+      ${badge(app) > 0 && html`<span class="app-badge still">${badge(app)}</span>`}
     </div>
-    ${alltOläst > 0 && html`
-      <button class="btn liten" style=${{ marginBottom: "10px" }} onClick=${nästaOläst}>
-        Läs nästa olästa (${alltOläst}) →</button>`}
     ${innehåll}
     <button class="btn" style=${{ marginTop: "12px" }} onClick=${() => {
       let mål;

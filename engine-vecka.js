@@ -1,27 +1,29 @@
 import { klamp, kr, int, plock, rnd, slump } from "./engine-util.js";
-import { nyHäst, TRÄNING } from "./engine-hast.js";
+import { nyHäst, TRÄNING, prövaRaritet } from "./engine-hast.js";
 import { KUSKAR } from "./data-kuskar.js";
 import { ÄGARNAMN, ÄGARKRAV, ARVODE_PER_VECKA } from "./data-agare.js";
 import { körVärldensVecka, körVärldsfinaler, skötVärlden, handelIVärlden } from "./engine-varld.js";
 import { avslutaSäsong, säsongstext } from "./engine-sasong.js";
-import { säkraFörstaman } from "./engine-forstaman.js";
+import { säkraFörstaman, träningsråd } from "./engine-forstaman.js";
 import { säkraAnläggning, gårdseffekt, gåraugifter, läkning, boxplats } from "./engine-gard.js";
 import { registreraHändelse, hästmilstolpar, säsongsHändelser, loppfakta,
          uppdateraRivalitet } from "./engine-handelser.js";
 /* Sidoeffektsimport: att importera lyssnarna kopplar in dem på bussen.
    Måste ske innan något lopp körs — därför här, i veckomotorn. */
 import "./engine-lyssnare.js";
-import { körStorloppsbåge } from "./engine-storlopp.js";
+import { körStorloppsbåge, rampljusPress } from "./engine-storlopp.js";
 import { uppdateraAmbition, prövaAvgång, gamlaBekanta, ägarrelation } from "./engine-personal.js";
 import { verkställVeckoslots } from "./engine-stallmote.js";
 import { veckansAnmälningar, taUtVärldsfält } from "./engine-aitranare.js";
 import { bokförKarriär } from "./engine-minnen.js";
 import { följUppÄgarlöften } from "./engine-agare.js";
+import { säkraStambok, bokförStamÖde, uppfödarpremie } from "./engine-stambok.js";
+import { veckansVäder } from "./engine-vader.js";
 import { säkraKörlicens } from "./engine-korlicens.js";
 import { väckRykten } from "./engine-rykten.js";
 import { FÖRSTAMANSNAMN } from "./data-namnpaket.js";
 import { arrangörenKör, delaFält } from "./engine-anmalan.js";
-import { ägarVecka, ägarSport, ägarEfterStart } from "./engine-agare.js";
+import { ägarVecka, ägarSport, ägarEfterStart, styrelsemått } from "./engine-agare.js";
 import { sponsorVecka, sponsorEfterLopp, sponsorSäsongsskifte, foderrabatt } from "./engine-sponsor.js";
 import { uppdateraRekordEfterLopp, skrivSäsongskrönika } from "./engine-rekord.js";
 import { mentornsNärvaro, efterMinneslopp } from "./engine-mentor.js";
@@ -70,17 +72,64 @@ export function körVecka(spel) {
   /* Äldre karriärer saknar förstaman — en dyker upp med en pressnotis. */
   säkraAnläggning(spel);
   säkraKörlicens(spel);
+  /* Stamboken (v146): idempotent synk — stallets meriter in i boken,
+     äldre sparfiler migreras. Ren bokföring, ingen slump. */
+  säkraStambok(spel);
+  /* AUTOTRÄNINGEN (v162, kap 29 — låga tröskeln): med förstamannen vid
+     rodret sätts varje hästs träning efter hans råd inför veckan.
+     Spelaren kan när som helst ändra enskilda hästar — nästa vecka
+     tar förstamannen över igen tills läget stängs av. */
+  if (spel.autoTräning && spel.förstaman) {
+    (spel.stall ?? []).forEach((h) => {
+      if ((h.skada ?? 0) > 0) return;
+      h.träning = träningsråd(spel.förstaman, h).träning;
+    });
+  }
   följUppÄgarlöften(spel);
   /* Rivalmötet i pressen (v132): ett avgjort direktmöte är en nyhet —
-     skrivs en gång, veckan efter loppet. */
+     skrivs en gång, veckan efter loppet. RÄKNINGEN (v153, 21.6-resten):
+     mötena ackumuleras över hela karriären — det är den siffran som
+     gör rivaliteten till en följetong och inte en serie engångsnyheter. */
   if (spel.rival && spel.rivalmöte?.läge === "avgjort" && !spel.rivalmöte.skrivet) {
     const m = spel.rivalmöte;
     const jagVann = (m.minPlats ?? 99) < (m.rivalPlats ?? 99);
+    spel.rivalfacit = spel.rivalfacit ?? { mina: 0, hans: 0, möten: 0 };
+    spel.rivalfacit.möten += 1;
+    if (jagVann) spel.rivalfacit.mina += 1; else spel.rivalfacit.hans += 1;
+    const f = spel.rivalfacit;
     skrivPress(spel,
       jagVann ? `${spel.stallnamn} vann rivalmötet` : `${spel.rival.stallnamn} tog rivalmötet`,
-      `${m.lopp}: stallen som startade samma år möttes öga mot öga — ${jagVann ? spel.stallnamn : spel.rival.stallnamn} var före i mål. Räkningen fortsätter.`,
+      `${m.lopp}: stallen som startade samma år möttes öga mot öga — ${jagVann ? spel.stallnamn : spel.rival.stallnamn} var före i mål. Räkningen efter ${f.möten} ${f.möten === 1 ? "möte" : "möten"}: ${f.mina}–${f.hans}.`,
       jagVann ? "positiv" : "negativ");
     m.skrivet = true;
+  }
+
+  /* GAMLA BEKANTA (v153, 20.2 — kontinuitetsminnet): hästarna som
+     lämnat gården lever vidare i världen, och när en av dem vinner är
+     det en notis hemma. Stamboken bär snapshotet; högst en rad per
+     vecka — det ska sorla, inte svämma. */
+  for (const p of (spel.stambok ?? [])) {
+    if (p.öde !== "såld" && p.öde !== "flyttad") continue;
+    const h = (spel.värld?.hästar ?? []).find((x) =>
+      (p.id != null && x.id === p.id) || x.namn === p.namn);
+    if (!h) continue;
+    /* UPPFÖDARPREMIEN (v160): dina uppfödda ger premie var de än står —
+       deltat på intjänat synkas varje vecka, oavsett seger. */
+    const intjänatDelta = (h.intjänat ?? 0) - (p.intjänat ?? 0);
+    if (p.uppfödd && intjänatDelta > 0) {
+      const premie = uppfödarpremie(intjänatDelta);
+      spel.kassa += premie;
+      spel.logg.push(`Uppfödarpremie: <b>${kr(premie)} kr</b> — ${p.namn} tjänar pengar åt sitt nya stall, och åt sin uppfödare.`);
+    }
+    if (intjänatDelta > 0) p.intjänat = h.intjänat;
+    if ((h.segrar ?? 0) <= (p.segrar ?? 0)) continue;
+    const nyaSegrar = h.segrar - (p.segrar ?? 0);
+    p.segrar = h.segrar;
+    const st = spel.värld.stall.find((s) => s.id === h.stallId);
+    skrivPress(spel, `Gamla bekanta: ${h.namn} ${nyaSegrar > 1 ? "vinner igen" : "vann"}`,
+      `Hästen som ${p.öde === "flyttad" ? "ägaren flyttade" : "såldes"} från ${spel.stallnamn} tog ${nyaSegrar > 1 ? "nya segrar" : "en seger"} för ${st?.namn ?? "sitt nya stall"}. ${p.uppfödd ? "Uppfödd på din gård — det går inte att ta ifrån er." : "Rätt eller fel affär? Tiden dömer."}`,
+      "neutral");
+    break;
   }
   /* Skötaren (v108): stallets tredje röst — namnet ur namnpaketet,
      deterministiskt på stallnamnet så varje karriär får sin egen. */
@@ -200,7 +249,19 @@ export function körVecka(spel) {
   const lämnade = ägarVecka(spel, skrivPress);
   if (lämnade.length) {
     spel.stall = spel.stall.filter((h) => !lämnade.includes(h));
-    lämnade.forEach((h) => spel.logg.push(`<b>${h.namn}</b> hämtades av ${h.ägare}. Boxen står tom.`));
+    lämnade.forEach((h) => {
+      spel.logg.push(`<b>${h.namn}</b> hämtades av ${h.ägare}. Boxen står tom.`);
+      /* KONTINUITETEN (v153, 20.2): hästen försvinner inte ur världen —
+         ägaren sätter den hos en annan tränare, och ni kan mötas igen.
+         Samma väg som sälj; stamboken minns med eget öde. */
+      bokförStamÖde(spel, h, "flyttad");
+      if (spel.värld?.stall?.length) {
+        const st = spel.värld.stall[int(0, spel.värld.stall.length - 1)];
+        h.egen = false;
+        h.stallId = st.id;
+        spel.värld.hästar.push(h);
+      }
+    });
   }
 
   /* Kassagolv. Utan det kan stallet driva hur långt som helst under noll
@@ -272,6 +333,8 @@ export function körVecka(spel) {
   /* Storloppsbågen: loppet som närmar sig kastar sin skugga i pressen och
      på Hem. Läser bara — rör aldrig fältbygget eller loppmotorn. */
   körStorloppsbåge(spel, skrivPress);
+  /* Rampljuset (v158, 28.1): comebacken mot storloppet får förstasidan. */
+  rampljusPress(spel, skrivPress);
 
   /* Förstamannens egen kurva: ambitionen växer med stallets framgång,
      och en dag kommer samtalet. */
@@ -287,8 +350,13 @@ export function körVecka(spel) {
       "neutral");
   }
 
-  if (!spel.erbjudande && boxplats(spel) > 0 && slump() < 0.1 + spel.renommé / 220) {
-    const nivå = 30 + spel.renommé * 0.55;
+  /* STYRELSEMÅTTET (v151, 20.7): ägarkretsens samlade förtroende styr
+     om det kommer fler hästar — och hur bra. Högt förtroende öppnar
+     plånböcker, lågt stänger dem. Samma antal slumpanrop som förut. */
+  const styrelsen = styrelsemått(spel).total;
+  if (!spel.erbjudande && boxplats(spel) > 0
+    && slump() < klamp(0.1 + spel.renommé / 220 + (styrelsen - 50) / 400, 0.02, 0.4)) {
+    const nivå = 30 + spel.renommé * 0.55 + (styrelsen - 50) * 0.1;
     const h = nyHäst({
       start: klamp(Math.round(rnd(nivå - 12, nivå + 14))),
       fart: klamp(Math.round(rnd(nivå - 12, nivå + 14))),
@@ -315,6 +383,19 @@ export function körVecka(spel) {
     h.far = f.far ?? null;
     h.form = 42;
     h.energi = 80;
+    /* RARITETEN (v147, 21.5): en på 64 av gårdens egna föl bär en vit
+       stjärna i pannan. Hash-avgjort vid kläckningen — ren teckning,
+       noll egenskaper. Pressen och journalen gör resten. */
+    if (prövaRaritet(`raritet:${f.namn}:${spel.säsong ?? 1}:${spel.vecka}`, 64)) {
+      h.raritet = "stjärna";
+      skrivPress(spel, `En vit stjärna född på ${spel.stallnamn ?? "gården"}`,
+        `${h.namn} kom in från hagen med en teckning man ser en gång per uppfödarliv. Snabbare blir ingen av det — men vackrare blir dagen.`, "positiv");
+      registreraHändelse(spel, {
+        typ: "raritetsfödsel", betydelse: 76,
+        aktörer: { hästId: h.id, hästNamn: h.namn },
+        data: { mor: h.mor ?? null, far: h.far ?? null },
+      });
+    }
     spel.stall.push(h);
     spel.logg.push(`<b>${h.namn}</b> är inkörd och redo att tävla.`);
     /* FÖLVISNINGEN: en stilla sida i hagen när gårdens egen uppfödning
@@ -330,11 +411,12 @@ export function körVecka(spel) {
     köScen(spel, {
       betydelse: 55, bild: bildvariant("hage", spel.säsong ?? 1),
       bildreserv: "hage",
-      etikett: "HAGEN · GÅRDENS EGEN",
+      etikett: h.raritet ? "HAGEN · EN PÅ FEMHUNDRA" : "HAGEN · GÅRDENS EGEN",
       rubrik: h.namn.toUpperCase(),
       ingress: `Uppfödd här${h.mor ? `, undan ${h.mor}` : ""}${h.far ? ` efter ${h.far}` : ""}. `
-        + `I dag togs ${h.kön === "sto" ? "hon" : "han"} in från hagen för första gången med sele på riktigt.`,
-      citat: ledtråd,
+        + `I dag togs ${h.kön === "sto" ? "hon" : "han"} in från hagen för första gången med sele på riktigt.`
+        + (h.raritet ? " Och alla som var där såg samma sak: den vita stjärnan i pannan." : ""),
+      citat: h.raritet ? `${ledtråd} Och stjärnan där i pannan — en sådan har jag bara sett en gång förut i hela mitt liv.` : ledtråd,
       citatVem: spel.förstaman?.namn ?? "Förstamannen",
     });
     return false;
@@ -411,7 +493,7 @@ export function bokförStallkamrat(spel, { häst, kusk, lopp, rad }) {
   häst.resultat = [{
     säsong: spel.säsong || 1, vecka: spel.vecka,
     lopp: lopp.kortnamn || lopp.namn, bana: lopp.banaNamn ?? null,
-    dist: lopp.dist, start: lopp.start,
+    dist: lopp.dist, start: lopp.start, väder: veckansVäder(spel),
     plats: rad?.ur ? null : rad?.plats ?? null, startande: lopp.startande,
     km: rad?.ur ? null : rad?.km ?? null, läge: rad?.läge, spår: rad?.spår,
     kusk: kusk.namn, pris: brutto,
@@ -452,7 +534,7 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   häst.resultat = [{
     säsong: spel.säsong || 1, vecka: spel.vecka,
     lopp: lopp.kortnamn || lopp.namn, bana: lopp.banaNamn ?? null,
-    dist: lopp.dist, start: lopp.start,
+    dist: lopp.dist, start: lopp.start, väder: veckansVäder(spel),
     plats: min.ur ? null : min.plats, startande: lopp.startande,
     km: min.ur ? null : min.km, läge: min.läge, spår: min.spår,
     kusk: kusk.namn, pris: brutto,
@@ -461,6 +543,13 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
      får starta i — den räknas brutto, precis som för världens hästar.
      Kuskens andel dras från kassan, inte från hästens merit. */
   häst.intjänat += brutto;
+  /* UPPFÖDARPREMIEN (v160, 28.4 c): egenuppfödd häst ger uppfödaren —
+     dig — premie på prispengarna, utöver dem. Generationsspelets lön. */
+  if (häst.mor && brutto > 0) {
+    const premie = uppfödarpremie(brutto);
+    spel.kassa += premie;
+    spel.logg.push(`Uppfödarpremie: <b>${kr(premie)} kr</b> — ${häst.namn} är uppfödd på gården.`);
+  }
   if (vann) häst.segrar++;
   if (pall) häst.pallplatser++;
   häst.energi = klamp(häst.energi - int(14, 24));

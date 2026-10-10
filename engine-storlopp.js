@@ -176,3 +176,78 @@ export function körStorloppsbåge(spel, skrivPress) {
 
   return spel.båge;
 }
+
+/* ------------------------------------------------------------------ */
+/* RAMPLJUSET (v158, plan 28.1 — Teds exempel som system)              */
+/* ------------------------------------------------------------------ */
+/*
+ * Bågen skriver storloppets skugga — rampljuset är KASKADEN runt den:
+ * journalister som ringer, ägare som trycker på, comebacken som blir
+ * en följetong. Samtalen bor i inkorgen (ren derivation); här bor
+ * detektorerna och pressen, innanför filens designgräns: läser
+ * världen, skriver press — rör aldrig loppmotorn.
+ */
+
+/**
+ * Comebacken: nyss friskförklarad (≤4 veckor) eller lång frånvaro
+ * (≥8 veckor sedan senaste start, med karriär bakom sig). Det är
+ * hästen novembertidningarna skriver om.
+ */
+export function ärComeback(spel, häst) {
+  if (!häst || (häst.skada ?? 0) > 0) return false;
+  if (häst.friskVecka != null && häst.friskVecka <= spel.vecka
+    && spel.vecka - häst.friskVecka <= 4) return true;
+  return (häst.starter ?? 0) > 0
+    && spel.vecka - (häst.senasteStartVecka ?? 0) >= 8
+    && (häst.senasteStartVecka ?? 0) > 0;
+}
+
+/**
+ * Rampljuspressen — anropas i veckoskiftet. Comebacken mot storloppet
+ * får sin förstasida EN gång (bågeSkrivet-nyckeln, bågens eget minne).
+ */
+export function rampljusPress(spel, skrivPress) {
+  const nästa = nästaStorlopp(spel, 1);
+  if (!nästa) return;
+  /* OMGÅNGEN (v161, 28.2 c etapp A): veckan före storloppet skriver
+     Travbladet förhandstexten — vilka av världens namn som väntas.
+     Läst deterministiskt ur världens meriter; fältet lottas som
+     vanligt först på loppdagen. Travspelaren läser startlistor för
+     nöjes skull — det här är aptitretaren. */
+  if (nästa.veckorKvar === 1) {
+    const nyckel = `omgång:${spel.säsong ?? 1}:${nästa.lopp.id}`;
+    spel.bågeSkrivet = spel.bågeSkrivet ?? {};
+    if (!spel.bågeSkrivet[nyckel]) {
+      spel.bågeSkrivet[nyckel] = true;
+      const väntas = (spel.värld?.hästar ?? [])
+        .filter((h) => !startförbud(h, nästa.lopp) && (h.skada ?? 0) === 0)
+        .sort((a, b) => (b.intjänat ?? 0) - (a.intjänat ?? 0))
+        .slice(0, 3)
+        .map((h) => h.namn);
+      const fenomenet = spel.legendar?.status === "aktiv"
+        && (spel.värld?.hästar ?? []).some((h) => h.legendar && !startförbud(h, nästa.lopp))
+        ? ` Och fenomenet ${spel.legendar.namn} kan stå i fältet.` : "";
+      if (väntas.length >= 2) {
+        skrivPress(spel,
+          `Omgången: ${nästa.lopp.kortnamn || nästa.lopp.namn} nästa helg`,
+          `Hela sporten vrider sig mot samma eftermiddag. ${väntas.join(", ")} väntas till start.${fenomenet} Startlistan lottas på loppdagen.`,
+          "neutral");
+      }
+    }
+  }
+  const anmälda = (spel.anmälningar ?? []).filter((a) => a.loppId === nästa.lopp.id);
+  for (const a of anmälda) {
+    const häst = (spel.stall ?? []).find((h) => h.id === a.hästId);
+    if (!häst || !ärComeback(spel, häst)) continue;
+    const nyckel = `comeback:${spel.säsong ?? 1}:${häst.id}:${nästa.lopp.id}`;
+    spel.bågeSkrivet = spel.bågeSkrivet ?? {};
+    if (spel.bågeSkrivet[nyckel]) continue;
+    spel.bågeSkrivet[nyckel] = true;
+    const borta = häst.friskVecka != null && spel.vecka - häst.friskVecka <= 4
+      ? "skadan" : "den långa pausen";
+    skrivPress(spel,
+      `Comebacken: ${häst.namn} mot ${nästa.lopp.kortnamn || nästa.lopp.namn}`,
+      `Tillbaka efter ${borta} — och ${spel.stallnamn} siktar direkt på det stora. Hela sporten kommer att titta.`,
+      "positiv");
+  }
+}

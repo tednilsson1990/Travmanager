@@ -57,6 +57,8 @@ export default function StatistikVy({ spel }) {
           <${Tabell} rubrik="Banorna" rader=${hs.banor}
             tom="Banor sparas per start från och med nu — kör lopp så växer tabellen." />
           <${Tabell} rubrik="Startmetod" rader=${hs.startmetod} />
+          <${Tabell} rubrik="Vädret" rader=${hs.väder}
+            tom="Vädret sparas per start från och med nu — snart vet du om hon är en regnhäst." />
           <${Tabell} rubrik="Distanser" rader=${hs.distanser} />
           <${Tabell} rubrik="Kuskarna" rader=${hs.kuskar} />
         </div>`}`}

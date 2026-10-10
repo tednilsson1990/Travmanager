@@ -71,6 +71,22 @@ export function minnenInförLopp(spel, häst, lopp, fält = []) {
     }
   }
 
+  /* EXÄGARMÖTET (v156, 20.2-resten): någon i fältet har stått i din
+     stallgång — såld eller hämtad av ägaren. Kusken ska veta det innan
+     bilen släpper: ni känner varandra, och publiken minns. */
+  for (const s of fält) {
+    if (s === häst || s.egen) continue;
+    const post = (spel.stambok ?? []).find((p) =>
+      (p.öde === "såld" || p.öde === "flyttad")
+      && ((p.id != null && p.id === s.id) || p.namn === s.namn));
+    if (post) {
+      rader.push(post.öde === "flyttad"
+        ? `${s.namn} i fältet — hästen ägaren hämtade från er. I dag mäts ni på riktigt.`
+        : `${s.namn} i fältet — hästen ni sålde${post.uppfödd ? ", uppfödd på er gård" : ""}. Ingen i publiken har glömt det.`);
+      break;
+    }
+  }
+
   /* Loppminnet: hästens egen rad i samma lopp, eller stallets facit. */
   const egen = (häst.resultat ?? []).find((r) => r.lopp === namn && r.plats);
   if (egen) {

@@ -1,6 +1,7 @@
-import { rnd, int, klamp, blanda, slump } from "./engine-util.js";
+import { rnd, int, klamp, blanda, slump, seedad, sättRng } from "./engine-util.js";
 import { nyHäst } from "./engine-hast.js";
 import { nyttNamn } from "./data-namn.js";
+import { bokförStamÖde } from "./engine-stambok.js";
 
 /**
  * HÄSTMARKNADEN
@@ -63,6 +64,18 @@ export function marknaden(spel) {
   const värld = spel.värld;
   if (!värld) return [];
   const nyckel = (spel.säsong || 1) * 100 + spel.vecka;
+  /* v148: kommentaren ovan LOVADE determinism, men slumpen var oseedad
+     — utbudet byttes vid varje omritning (köpte man en häst ritades
+     listan om till ett nytt utbud). Nu hålls löftet: seedat per vecka,
+     återställt i finally. Det gör också scoutrapporten (20.7) ärlig —
+     hästen scouten pekar på FINNS kvar när du öppnar marknaden. */
+  sättRng(seedad(nyckel * 7919 + 11));
+  try {
+    return byggUtbud(spel, värld, nyckel);
+  } finally { sättRng(); }
+}
+
+function byggUtbud(spel, värld, nyckel) {
 
   /* Hästar som världens stall vill bli av med: äldre, sämre, eller ur form.
      Ett stall säljer sällan sin bästa häst. */
@@ -144,6 +157,8 @@ export function sälj(spel, häst) {
   const pris = Math.round(värdera(häst) * rnd(0.78, 0.92) / 5000) * 5000;
   spel.kassa += pris;
   spel.stall = spel.stall.filter((h) => h !== häst);
+  /* Stamboken (v146): såld är ett öde, inte en radering — boken minns. */
+  bokförStamÖde(spel, häst, "såld");
   /* Hästen försvinner inte ur världen — den hamnar i ett annat stall och
      kan mycket väl möta dig igen. */
   if (spel.värld && spel.värld.stall.length) {

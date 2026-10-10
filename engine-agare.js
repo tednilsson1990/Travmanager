@@ -100,7 +100,10 @@ export function ägarVecka(spel, skrivPress) {
     const r = säkraÄgarprofil(spel, namn);
     r.komm = klamp(r.komm - 1.2);
     vägSamman(r);
-    if (r.relation < 18 && slump() < 0.5) {
+    /* Tålamodet (v151, 20.7): vid högt samlat förtroende sitter en
+       enskild sur ägare kvar längre — kretsen lugnar honom. */
+    const flyttgräns = styrelsemått(spel).total >= 70 ? 12 : 18;
+    if (r.relation < flyttgräns && slump() < 0.5) {
       const häst = spel.stall.find((h) => h.ägare === namn);
       if (häst) {
         lämnar.push(häst);
@@ -203,4 +206,49 @@ export function följUppÄgarlöften(spel) {
       delete löften[namn];
     }
   });
+}
+
+/* ------------------------------------------------------------------ */
+/* STYRELSEMÅTTET (v151, plan 20.7 — ägarkretsen som styrelse)         */
+/* ------------------------------------------------------------------ */
+/*
+ * Ägarna är tränarens riktiga styrelse: deras samlade förtroende
+ * avgör om det kommer fler hästar eller färre. Fyra delmått, alla ur
+ * siffror som redan levs i spelet — inget nytt att underhålla:
+ *
+ *   RESULTAT       stallformen (vinner stallet mot förväntan?)
+ *   EKONOMI        kassan mot en rimlig buffert
+ *   KOMMUNIKATION  snittet av ägarnas komm-dimension (mötena!)
+ *   UTVECKLING     snittet av ägarnas sportsliga nöjdhet
+ *
+ * Effekterna är verkliga: högt förtroende ger fler och bättre
+ * hästägarerbjudanden (körVecka) och mer tålamod när en enskild
+ * ägare surnar (kretsen lugnar honom). Ren derivation — läses, aldrig
+ * sparas.
+ */
+export function styrelsemått(spel) {
+  const ägare = Object.entries(spel.ägarrelationer ?? {})
+    .filter(([namn]) => (spel.stall ?? []).some((h) => h.ägare === namn))
+    .map(([, r]) => r);
+  const snitt = (fält) => ägare.length
+    ? ägare.reduce((a, r) => a + (r[fält] ?? 50), 0) / ägare.length
+    : 50;                                        /* utan ägare: neutralt */
+  const resultat = klamp(spel.stallform ?? 50);
+  const ekonomi = klamp((spel.kassa ?? 0) / 3000);      /* 300 tkr = fullt */
+  const kommunikation = klamp(snitt("komm"));
+  const utveckling = klamp(snitt("sport"));
+  const total = Math.round(resultat * 0.35 + ekonomi * 0.15
+    + kommunikation * 0.2 + utveckling * 0.3);
+  return { total, resultat: Math.round(resultat), ekonomi: Math.round(ekonomi),
+    kommunikation: Math.round(kommunikation), utveckling: Math.round(utveckling),
+    antalÄgare: ägare.length };
+}
+
+/** Förtroendet i ord — kontorets språk. */
+export function förtroendetext(total) {
+  if (total >= 75) return "Fullt förtroende — det pratas gott om stallet i ägarkretsarna.";
+  if (total >= 60) return "Gott förtroende. Kretsen är nöjd, fler kan vara på väg.";
+  if (total >= 45) return "Avvaktande. Ägarna ser vad som händer innan de satsar mer.";
+  if (total >= 30) return "Oroligt. Det ställs frågor på middagarna — svara med resultat.";
+  return "Förtroendekris. Ingen ny häst kommer förrän kurvan vänt.";
 }

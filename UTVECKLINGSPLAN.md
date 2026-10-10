@@ -43,7 +43,7 @@ Arbetslistan framåt; bocka av med [KLART vNN].
 - Kopiera felrapport.
 - Återgå till Hem.
 - Exportera sparfil för felsökning.
-## 2.5 Sparsäkerhet [DELVIS v79 — indikator, export/import; kvar: sparplatser, autobackup]
+## 2.5 Sparsäkerhet [KLAR v149 — indikator, export/import (v79); autobackup: 3 rullande generationer inför varje ny vecka, återställning + filimport under Kontoret → Felsökning. Manuella sparplatser bedömda överflödiga: backupkedjan + export täcker behovet]
 - Synlig sparindikator och tidpunkt för senaste lyckade sparning.
 - Varning om sparningen misslyckas.
 - Export och import av karriär.
@@ -523,7 +523,7 @@ inlämning, beskedskö på onsdagen, loppdagskö på helgen, stoppnotiser
 i inkorgen], B) loppdagar utspridda över fler dagar, C) notiser
 tidsstämplade per stopp i historiken.
 
-## 20.2 Kontinuitetsminnet (punkt 1 — "allt kommer ihåg") [GRUNDEN KLAR v104 — engine-minnen.js: karriärtotaler med ärlig grundplåt, loppfacit, rivalernas senast-vann; rader i lottningen, efteranalysen och inkorgen. Kvar: exägarmöten, säsongsfacit per lopp, injektion i kusksamtal och Travbladet]
+## 20.2 Kontinuitetsminnet (punkt 1 — "allt kommer ihåg") [GRUNDEN KLAR v104 — engine-minnen.js: karriärtotaler med ärlig grundplåt, loppfacit, rivalernas senast-vann; rader i lottningen, efteranalysen och inkorgen. KONTINUITETSPASSET v153 — gamla bekanta: sålda OCH ägarflyttade hästar lever vidare i världen (flytten raderade dem förut — lagat), stamboken följer deras segrar och pressen skriver "Gamla bekanta" (högst en rad/vecka); rivalfacit över karriären (spel.rivalfacit, räkningen i press + rivalens sms från möte 2); öde "flyttad" i stamboken. MINNESPUTSEN v156 — exägarmötet: står en såld/flyttad häst i fältet säger kusksamtalet det (minnenInförLopp läser stamboken); Travbladet-injektionen täcks av v153:s Gamla bekanta; säsongsfacit per lopp täcks av loppfacit (v104). 20.2 KOMPLETT]
 En referensmotor (engine-minnen.js): ren läsning av det som redan
 sparas, som producerar KONTEXTRADER överallt: "din 100:e seger om ni
 vinner" (räknat ur facithistoriken), "ni möttes i våras — Stormvind
@@ -532,7 +532,7 @@ med nos" (rivaliteterna), "du vann det här loppet förra säsongen"
 inkorgen och efteranalysen. Kräver att facit sparas per säsong med
 loppnamn — kontrollera sparfilstaket.
 
-## 20.3 Statistiklagret (punkt 2 — "grotta ner sig i timmar") [GRUNDEN KLAR v109 — ledningsklassen i målraden (ren observation), banan i resultatraden, engine-statistik med häst- och tränaraggregat, Statistiken under Mer. Kvar: regn/sol och sommar/vinter (kräver väder-/säsongsdata i raderna), open stretch-statistik, rekordår-utmärkning]
+## 20.3 Statistiklagret (punkt 2 — "grotta ner sig i timmar") [GRUNDEN KLAR v109 — ledningsklassen i målraden (ren observation), banan i resultatraden, engine-statistik med häst- och tränaraggregat, Statistiken under Mer. VÄDRET ETAPP A v154 — engine-vader.js: deterministiskt veckoväder (sol/mulet/regn, snö bara i vinterfönstret = barfota-reglerna), på telefonens hemskärm, i loppfakta och stämplat på varje resultatrad; statistiken grupperar ('är hon en regnhäst?'). EFFEKTEN (tider/galopprisk i väta) är motorändring — byggs med Ted vaken. REKORDÅRET v156 — bästa säsongen märks ut i Journalens säsongsflik (mest insprunget, segrar skiljer, kräver ≥2 säsonger). Kvar: open stretch-statistik (kräver open stretch-användning i raderna — motordata)]
 Aggregat ur befintliga resultatrader: tränarstatistik (starter,
 seger-%, plats-%, bästa bana/kusk, rekordår, snittintjäning) och
 häststatistik (per bana, volt/auto, distans, position: ledning/
@@ -560,14 +560,14 @@ Fler medieröster ovanpå krönikören: expertpanelen och podden som
 återkommande format med egna personligheter (journalistprofiler:
 positiv/skeptisk/sensationslysten — punkt 4).
 
-## 20.7 Hästägargruppen som styrelse (15) + scouting (14)
+## 20.7 Hästägargruppen som styrelse (15) + scouting (14) [SCOUTINGEN ETAPP A BYGGD v148: förstamannens scoutmejl ~var 3:e vecka om bästa unghästen i marknaden, anlagsordet sant — kräver seedad marknad (v148-fixen). STYRELSEMÅTTET BYGGT v151: ägarkretsens förtroende (resultat 35 % + utveckling 30 % + komm 20 % + ekonomi 15 %, ren derivation i engine-agare), kort på Kontoret, verkliga effekter — erbjudandeflöde/nivå i körVecka och flyttgränsens tålamod i ägarVecka. KUSKSCOUTEN v157 — förstamannens kusktips ~var 4:e vecka (förskjuten gate): kårens mest underskattade sulky (förmåga mot arvode och ryktbarhet, lärlingar premieras), mejl som pekar på relationsbygget. Kvar: scouting av personal/sponsorer]
 Ägarnas samlade förtroende som styrelsemått (resultat, ekonomi,
 kommunikation, utveckling — de två sista finns redan i ägarmotorns
 nöjdhet). Högt förtroende ⇒ fler hästar, större investeringar,
 tålamod. Scoutrapporter som inkorgshändelser: unghästar (finns i
 marknaden), men även kuskar, personal, sponsorer och ägare.
 
-## 20.8 Världens utveckling (17 — "viktigast") [ETAPP A KLAR v111 — kuskgenerationerna (hash-ålder, pension 58+, max 2/skifte, lärlingsdebut per säsong med krocksäkrade namn, aktiva kåren genom kuskväljare/reserver/världsrustning), sponsoromsättning varannan säsong, press för allt. Kvar B: tränarstall, journalister, banor; lärlingsreglerna hör till 18.6]
+## 20.8 Världens utveckling (17 — "viktigast") [ETAPP A KLAR v111 — kuskgenerationerna (hash-ålder, pension 58+, max 2/skifte, lärlingsdebut per säsong med krocksäkrade namn, aktiva kåren genom kuskväljare/reserver/världsrustning), sponsoromsättning varannan säsong, press för allt. ETAPP B v150 — tränargenerationerna (hash-ålder 38–61, pension 64+, max 1/skifte, arvtagare börjar unga 30–45 räknat från tillträdet, styrka ±0,08, krocksäkrade namn, spel.tränarvärld.skiften) och banrenoveringarna (~var 4:e säsong, spel.banvärld, press; publik-/underlagseffekter hör till 20.3-vädret). ETAPP C v152 — journalisterna: signaturen(spel, roll)-wrapper genom hela presslagret (11 ställen i lyssnare/travblad), byte ~var 5:e säsong ur JOURNALISTPOOL (datalagret), spel.pressvärld med historik, press om varje penna som läggs ner. 20.8 KOMPLETT]
 Generationsskiften för MÄNNISKORNA, inte bara hästarna: tränare
 lägger av (stall tas över/läggs ner), kuskar pensioneras och nya
 lärlingar kliver in (knyter till lärlingslicenserna 18.6), journalister
@@ -624,13 +624,13 @@ Nivå 0-ärligt: karaktär i ord, inga siffror.
 ## 21.2 Genombrottet [BYGGT v115] — utvecklingen finns men firas inte.
 Första stora klivet för en ung häst får ceremoni: press, guldrad i
 efteranalysen, märke på hästkortet. Transformationen ska KÄNNAS.
-## 21.3 Stamboken — karriärvy över varje häst du ägt och mött:
+## 21.3 Stamboken [ETAPP A BYGGD v146: egna hästar — register, öden (såld/pensionerad/avelshagen), familjer undan stammödrarna i Journalen, e./u.-notation; mötta hästar parkerat] — karriärvy över varje häst du ägt och mött:
 blodslinjer, öden efter försäljning. Knyter till aveln och dagboken
 (19 D). Samlarglädjen.
-## 21.4 Dolda anlag — hästens sanna tak delvis dolt, avslöjas genom
+## 21.4 Dolda anlag [BYGGD v148: anlaget härleds ur hash (0,65–1,35, snitt 1,0 — ingen lagring, ingen migration), multiplicerar unga årens utveckling i åldraHäst; vetskapen okänd→anad (3 starter)→känd (8 starter/7 år) eller veterinärtest 6 tkr på hästsidan; alltid i ord, aldrig siffror] — hästens sanna tak delvis dolt, avslöjas genom
 starter och veterinärtest. Upptäcktsglädjen. (AI:ns synfel finns —
 detta är spelarens motsvarighet.)
-## 21.5 Raritetshästen — 1 på ~500 föds med unik teckning/vit stjärna.
+## 21.5 Raritetshästen [BYGGD v147: hash-avgjord vit stjärna — 1/64 egna föl (drömmen ska gå att uppleva), 1/400 världens årgångar; press, hagen-scen, journalhändelse, märke ✶ i partyrad/startlista/stambok; noll egenskaper — realismvakten] — 1 på ~500 föds med unik teckning/vit stjärna.
 Ren berättelsekrydda, pressen älskar henne. Billig, stor känsla.
 ## 21.6 Rivaltränaren [ETAPP A BYGGD v118] — Gary-draget: rivalen föds
 ur startervalet (tar den kaxigaste kandidaten du lämnade), eget stall
@@ -659,7 +659,7 @@ läsbara, som Pokémons natures.
 ## 21.11 Typaffiniteter — vinterbanehästen, regnälskaren,
 voltspecialisten: affinitetsbrickor ur verklig statistik (20.3-lagret
 gör dem ärliga — visas först när datat finns).
-## 21.12 Legendaren — en gång per ~decennium föds världens fenomen
+## 21.12 Legendaren [BYGGD v146: hash-gatet fenomen ~var 8:e säsong, press följer segersviten, epilog vid pension, mötet bokförs i loppvyn — att SLÅ fenomenet är en karriärhändelse] — en gång per ~decennium föds världens fenomen
 (en Victory Tilly): pressen följer den i åratal, att möta den är en
 händelse. Hör ihop med världens utveckling (20.8).
 ## 21.14 ENKELHETSPRINCIPEN [PARTYRADEN BYGGD v117] — Game Boy-spelens
@@ -801,7 +801,9 @@ per säsong (hash-vald, bankänslig — open stretch föreslås aldrig där
 den finns), rösten en av sju, bifall med VERKLIG effekt (open stretch
 på hemmabanans alla lopp via justeraFörBanutveckling i alla tre
 loppflöden; breddpriser +10 % på nivå ≤46), jävspressen när egen
-vinning röstas igenom. KVAR: sällskapssida i Kontoret (status/
+vinning röstas igenom. [SÄLLSKAPSSIDAN BYGGD v145: status/krav
+för oinvalda, bordets motion, protokollet med fem senaste utfallen
+och din röst.] KVAR: (
 historik), publik-/ungdomseffekterna, trappan mot ordförande (24.4),
 egna motioner.
 ## 24.1 Invalet: renommé + säsonger på banan + relationer → valberedningen
@@ -1010,9 +1012,11 @@ d) Rykten (20.6) [BYGGDA v139]: pensionsrykten förankrade i
    vidare. "Ryktet"-etikett i Travbladet-appen, facit vid skiftet:
    "Ryktet stämde" eller »Jag kör vidare«-dementi. Hash-avgjort.
    KVAR: fler ryktestyper (stallflytt, sponsorer) och medieröster.
-e) Kontinuitetsminnets rest (20.2): exägarmöten, säsongsfacit,
-   injektion i kusksamtal och Travbladet.
-f) Stamboken (21.3) och legendaren (21.12).
+e) Kontinuitetsminnets rest (20.2) [KUSKSAMTALET KLART v145:
+   kusken MINNS i dialogen — »Förra gången här...« som guldkantad
+   replik ur minnenInförLopp]. Kvar: exägarmöten, säsongsfacit,
+   injektion i Travbladet.
+f) Stamboken (21.3) och legendaren (21.12). [BYGGT v146]
 g) Cliffhanger-passet: varje veckoslut lämnar minst en krok.
 
 ## 26.5 BLOCK D — VÄRLDEN OCH ROLLERNA KOMPLETTA
@@ -1051,7 +1055,7 @@ h) Designsystempass: typografi, avstånd, övergångar — Travbladet
    konsekvent överallt.
 
 ## 26.8 BLOCK G — ROBUSTHETEN
-a) Sparplatser och autobackup (2.5) — karriärer i åratal kräver det.
+a) Sparplatser och autobackup (2.5) — karriärer i åratal kräver det. [BYGGT v149]
 b) Väder-/säsongsdata i resultatraden → statistikens sista tabeller
    (20.3 rest) + open stretch-statistik + rekordår.
 c) Prestandapass: inkorgsbygget och världskörningen på äldre mobiler.
@@ -1105,6 +1109,8 @@ rörig informationsarkitektur — recensenter mäter KLICK TILL
 KÄRNUPPGIFT. Vår inkorgsarkitektur är rätt svar; F-passets regel:
 inga nya menynivåer, varje vy ett huvudsyfte (skissens slutord).
 
+## 27.3b UI-VAKTEN [v145 grundad; PÅ DJUPET v155 — startläges-props (startflik/startApp/startHästId, default = dagens beteende) låter vakten rendera journalens 7 flikar, telefonens 4 appar och hästsidans 5 flikar: 35 renderingar per körning. TDZ-klassens buggar kan inte längre gömma sig i oprovade lägen]
+
 ## 27.4 MARKNADEN — läget är bättre än väntat
 - NAMNET ÄR LEDIGT: inget spel "Travmanager" finns eller har funnits.
   MEN travmanager.se är registrerad och parkerad (Loopia) — ÅTGÄRD
@@ -1146,3 +1152,153 @@ ReferenceError sedan v121; trolig rot till "frysta" upplevelser.
 ringer efter notabla lopp (seger/favoritfall/pall/bortkörning), den
 grå mittendagen ringer ingen om; efteranalysrapporten behåller
 analysen men inte beslutet.] KVAR: fler trådröster med historik.
+
+# 28. KOMPLETTHETEN — FYRA PAR ÖGON (Teds direktiv 2026-10-10)
+
+Direktivet: "kika vilka delar vi saknar och ska utveckla, som gör detta
+komplett. Både som spel och som travrealism. Ur hästägarnas, spelarnas,
+tränarnas och journalisternas ögon — men kanske främst travspelarens,
+största spelargruppen. Tränare och ägare ska också tycka att det är kul."
+Teds exempel: "om en häst är med på V75 (gör comeback på riktigt i
+november) ökar samtal från journalister, ägare angelägna att anmäla,
+större lopp, mer uppmärksamhet."
+
+## 28.1 RAMPLJUSET [ETAPP A BYGGD v158: journalistens förhandssamtal med förhandsord-beslutet (tona upp/lugn/ned → hype ±, press), ägartrycket (kvalad ägarhäst utan anmälan → samtal med beslut, ägarKontakt/ägarSport), comebackdetektorn ärComeback (friskförklarad ≤4 v eller ≥8 v frånvaro) + comeback-förstasidan via bågeSkrivet, SPIKEN-bricka på favoriten i storloppens startlistor, SKRÄLL-rubrik när <6 %-streckad vinner det stora. Kvar B: omgångsnamnet/Storsjuan som begrepp i UI, förhandssida med fältranking, vinnarintervju, publikboost] — storspelsomgången (Teds exempel som system)
+Det som saknas är inte storloppen (bågen finns, 4-veckorsskuggan skrivs)
+utan KASKADEN runt dem — att hela världen vrider sig mot samma helg:
+a) Omgången som begrepp: de tyngsta helgerna (prestige 4–5) är
+   "storspelshelger" — spelomgången alla pratar om. Eget namn, INTE
+   V75 (ATG:s varumärke): förslag "Storsjuan". Uppmärksamhetsnivå
+   härleds ur prestige + bågens horisont.
+b) Journalistsamtalen: din häst anmäld till storspelslopp → samtal i
+   Telefonen FÖRE loppet (förhandsintervju med uttalande-val — hype
+   och förväntan som insats, samma mekanik som pressvalen).
+c) Ägartrycket: ägare med kvalificerade hästar RINGER och vill anmäla
+   ("angeläget"-beslut i Telefonen) — kopplar styrelsemåttet (v151).
+d) COMEBACKVINKELN (Teds kärnexempel): häst borta länge (skada/paus)
+   som anmäls mot ett storspelslopp → comebackberättelse: pressetapper
+   ("comeback i november"), journalistsamtal, publik- och hypeboost,
+   och eget efterspel vare sig det går eller inte. Bygger på
+   skadenyhets-tråden och comeback-milstolpen som redan finns.
+e) Travbladets förhandssida: experterna rankar fältet, SPIKEN utses —
+   att din häst är spiken är en känsla (och en press).
+f) Efterspelet: vinnarintervju, större publik bokförd, skräll-rubrik
+   när lågstreckad vinner.
+
+## 28.2 SPELVÄRLDEN [a+b+e BYGGDA v158–v159: odds ur strecket i startlistan (~75/streck, travspråk '4,2 ggr'), skrällvarning i detaljraden (streck <8 % + form ≥60), tipsfacit bokförs per lopp (spiken = favoriten) och redovisas i säsongsbokslutet med ton efter utfall, SKRÄLL-rubriken i storlopp (v158). c OMGÅNGEN ETAPP A v161 — veckan före storloppet skriver Travbladet förhandstexten: världens tre meritrikaste väntade namn + fenomenet om aktivt (deterministiskt ur världen, fältet lottas på loppdagen som förut). Kvar: c etapp B läsbara världsfält, d tempot i referatet] — travspelarens ögon (största gruppen)
+a) Odds bredvid strecken: härlett ur streck (≈0,8/andel), travspråk
+   ("ca 4 gånger pengarna"). Ingen ny motor — ren presentation.
+b) Travbladets tips på dina lopp: spik/varning/skräll före loppet,
+   FACIT efteråt — tipsets träffsäkerhet över säsonger blir en del av
+   journalistens profil (28.5).
+c) "Omgången" i Travbladet: veckans storloppsfält LÄSBARA även när du
+   inte har häst i loppet (travspelaren läser startlistor för nöjes
+   skull — det är halva hobbyn).
+d) Tempot i referatet: öppningstempo/slutvarv i loppanalysen.
+e) Skrällen: vinnare under ~5 % streck får skrällrubrik + bokförs.
+ANTECKNAT NEJ: spelaren ska inte själv spela pengar på lopp — tränare
+får inte spela på egna hästar (realismvakten 22.6), och betting-sim
+är ett annat spel än Travmanager.
+
+## 28.3 TRÄNARDJUPET
+a) Måla mot loppet: sätt MÅLLOPP per häst (storloppet om sex veckor);
+   förstamannen föreslår träningsväg dit, formtoppning blir mekanik —
+   bågen får en hand på ratten (dock ALDRIG på tärningen).
+b) Rehabvalet vid skada: forcera (tidigare åter, återfallsrisk) eller
+   låta läka (säkert, längre) — ett riktigt tränarbeslut.
+c) Provloppet: inför comeback körs provlopp i verkligheten — knyter
+   till 28.1 d som berättelse och formsignal.
+d) Taktikrepertoaren (21.13) hör hit — byggs med Ted.
+
+## 28.4 ÄGARDJUPET [b+c BYGGDA v160: ANDELSLAGET som ägartyp (tålamod 1,6 / resultatkänsla 0,5 / kommvikt 0,6 — tål allt utom tystnad; sparade profiler behåller sin typ, bara nya ägare mappas om), UPPFÖDARPREMIEN 10 % av prispengar för egenuppfödda — direkt i efterLopp för egna, via veckosynken mot världen för sålda/flyttade (deltat på intjänat, oavsett seger). Kvar: a ägartrycket (byggt i 28.1), d ägarmålet per säsong]
+a) Ägartrycket i rampljuset — se 28.1 c.
+b) ANDELSLAGET som ägartyp: travklubben med många delägare — hög
+   kommunikationsvikt, folkfest i pressen när hästen vinner. Andels-
+   hästar är stora i svensk trav; realism OCH charm.
+c) UPPFÖDARPREMIEN: verklig mekanik — uppfödaren får procent av
+   prispengar när hästen vinner, ÄVEN efter försäljning. Stamboken
+   (v146) + Gamla bekanta (v153) gör den nästan gratis att bygga:
+   dina uppfödda sålda hästar ger kronor och stolthet. Realism som
+   varje hästägare känner igen.
+d) Ägarmålet per säsong: "vi vill se henne i ett storlopp i år" —
+   ger ägarrelationen en båge, inte bara ett saldo.
+
+## 28.5 JOURNALISTDJUPET [a BYGGD v161: journalistvinkel(spel, roll) — entusiasten/granskaren/rubrikmakaren hashad ur NAMNET så generationsskiften byter spaltens karaktär; färgar förhandssamtalets ton och bytespressens presentation av nya pennan. Kvar: vinkeln i fler samtal och i krönikan]
+a) Journalistprofilerna (20.2 punkt 4): de tre signaturerna får
+   vinklar — positiv/skeptisk/sensationslysten — som färgar rubriker,
+   frågor och tips. Generationsskiftena (v152) gör att en ny penna
+   kan ha NY vinkel: redaktionen byter karaktär över åren.
+b) Storspelsbevakningen — se 28.1 b/e/f.
+c) Tipsfacit — se 28.2 b.
+d) Årsgalan: säsongens priser ("Årets häst", "Årets kusk") som
+   presshändelse vid skiftet — troférummet finns redan som hem.
+
+## 28.6 REALISMLUCKORNA (travfolks blick, små men synliga)
+a) Vädereffekten på tider/galopprisk (motorändring — med Ted vaken).
+b) Barfota-tuningen: 0,22 s/km i dag, verkligheten närmare 1 — Teds
+   siffra väntas.
+c) Open stretch-statistik (kräver motordata om användning).
+d) Monté (travets andra gren) — antecknad som framtida krydda, inte
+   nödvändig för komplett.
+
+## 28.7 BYGGORDNING (förslag)
+1) 28.1 Rampljuset — Teds exempel, binder ihop alla fyra perspektiv
+   och ger spelet sin "stora helg"-puls. 2) 28.2 a+b+e — travspelarens
+   snabbaste vinster (odds, tips, skräll). 3) 28.4 c uppfödarpremien —
+   billig realism på färdig infrastruktur. 4) 28.5 a profiler +
+   28.2 c omgångssidan. 5) 28.3 a+b måla mot loppet + rehab.
+   Smakkänsligt (med Ted): 21.13, klockan, designpasset, 28.6 a/b.
+
+# 29. LÅGA TRÖSKELN (Teds direktiv 2026-10-10 kväll)
+
+Direktivet: "titta igenom hela spelet, alla val, tänk enkelhet,
+lättspelat, låg tröskel. Vad kan förstamannen hjälpa till med? Blir
+det för mycket och komplicerat tappar det. En Harry Boy-spelare ska
+uppskatta spelet lika mycket som en travtränare."
+
+## 29.1 PRINCIPEN: DET GRÖNA SPÅRET
+I varje val ska det finnas ett FÖRVALT, MOTIVERAT alternativ — så att
+den som bara trycker på det rekommenderade hela vägen får en bra
+upplevelse (Harry Boy-spåret), medan den som vill styra allt kan det
+(tränarspåret). Ingen mekanik tas bort — tröskeln sänks genom att
+expertisen (förstamannen, kusken) alltid erbjuder en väg.
+
+## 29.2 GRANSKNINGEN — valpunkt för valpunkt
+a) Träningen: råd fanns (hästsidan, veckomötet) men krävde handpåläggning
+   varje vecka × varje häst. [LÖST v162: AUTOTRÄNINGEN — toggle i
+   Stallet, förstamannen sätter träningen inför varje vecka, spelaren
+   kan ändra enskilda hästar.]
+b) Loppval/anmälan: nästaMål-raden, förslagskortet med direktknapp,
+   bedömningen rekommenderad/möjlig/riskfylld — GRÖNT SPÅR FINNS.
+c) Kuskvalet: Mina kuskar (v144) — GRÖNT SPÅR FINNS.
+d) Taktik + slutorder: kuskens förslag var markerat men krävde två
+   val. [LÖST v162: "LITA PÅ KUSKEN — KÖR LOPPET" — en knapp som tar
+   kuskens resa och kuskens tajming. Harry Boy-spelarens hela
+   loppbeslut är ett tryck.]
+e) Balansen: FYND — v138:s väljare föll bort ur UI i en zip-
+   återställning: motorn läste häst.balansVal men inget satte det.
+   Differentieraren var död funktionalitet. [LÖST v162: hopfällt
+   kort i kusksamtalet, förstamannens råd överst (väder- och
+   vinterläst), default = skor = aldrig fel.]
+f) FYND i samma granskning: Kusksamtalets minnen- och kamrater-props
+   skickades aldrig från anropet — guldkantsrepliken (v145) och
+   stallkamratspanelen var döda. [LAGADE v162.]
+g) Pressval/uttalanden/sponsorbeslut/röster: ja/nej med motivtexter —
+   OK som de är.
+h) Marknad/avel: omdömen i ord, scout- och kusktips — OK.
+i) Menystrukturen: 9+ vyer är spelets största kvarvarande tröskel.
+   SMAKKÄNSLIGT — byggs med Ted (hör ihop med 22.4 #5 inkorgen som
+   nav och 19.6 Hem→telefon).
+j) Onboarding: prologen bär starten, men nya moment därefter
+   (sällskapet, balansen, aveln) förklaras inte när de dyker upp
+   första gången. FÖRSLAG etapp B: förstamannens förstagångsrepliker
+   — EN rad första gången ett nytt moment syns, aldrig mer.
+k) Förstamannens samlade roll efter v162: veckogenomgången, träningsråd
+   + autoträning, balansråd, scoutrapporter, kusktips, nästa mål-raden.
+   KVAR att ge honom: helgpaketet (föreslå veckans alla anmälningar
+   med ett godkänn-tryck — etapp B, smakkänslig) och
+   förstagångsreplikerna (j).
+
+## 29.3 BYGGT v162
+Autoträningen (a), Lita på kusken-knappen (d), Balansen med råd (e),
+props-lagningarna (f). Kvar: i (med Ted), j, k-resterna.

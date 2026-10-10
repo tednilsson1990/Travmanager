@@ -29,9 +29,9 @@ const STALLNAMN = [
   "Stall Vidöppet", "Team Storm", "Stall Rosendal", "Kviberga Trav",
   "Stall Havsvind", "Team Lyckan", "Stall Fridhem", "Ödegårds Trav",
 ];
-const TRÄNARFÖR = ["Anders", "Karin", "Petter", "Lena", "Jonas", "Marie", "Stefan",
+export const TRÄNARFÖR = ["Anders", "Karin", "Petter", "Lena", "Jonas", "Marie", "Stefan",
   "Camilla", "Roger", "Ulrika", "Kent", "Annika", "Micke", "Pia", "Lars", "Eva"];
-const TRÄNAREFTER = ["Kilberg", "Sandvall", "Ryhd", "Norrman", "Tollner", "Brandt",
+export const TRÄNAREFTER = ["Kilberg", "Sandvall", "Ryhd", "Norrman", "Tollner", "Brandt",
   "Ekengren", "Sjölin", "Haglund", "Persén", "Vidmark", "Örn", "Lindkvist",
   "Bohlin", "Trygg", "Almén"];
 
