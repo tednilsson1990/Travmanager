@@ -22,6 +22,8 @@ import { skrivPress } from "./engine-vecka.js";
 import { köScen } from "./engine-scener.js";
 import { Dräkt, DräktIllustration, Bild, GårdIRegn, Porträtt } from "./ui-grafik.js";
 import { FÖRSTAMANSNAMN } from "./data-namnpaket.js";
+import { STARTERTEXT } from "./engine-prolog.js";
+import { föddRival } from "./engine-varld.js";
 
 const NAMNFÖRSLAG = [
   "Björkhaga", "Stall Norrsken", "Ekbackens Trav", "Stall Framåt",
@@ -50,6 +52,7 @@ export default function StartVy({ spel, uppdatera }) {
   /* ALLA hooks före första möjliga return — preact kräver samma
      hookordning i varje rendering, annars kraschar den. */
   const [steg, sättSteg] = useState(0);
+  const [arvtagare, sättArvtagare] = useState(null);
   const [tränarnamn, sättTränarnamn] = useState("");
   const [namn, sättNamn] = useState("Björkhaga");
   const [dräkt, sättDräkt] = useState(DRÄKTER[0].id);
@@ -191,7 +194,15 @@ export default function StartVy({ spel, uppdatera }) {
 
   /* STEG 4 — hemmabanan, och dörren öppnas. */
   const små = Object.entries(BANOR).filter(([, b]) => b.storlek === 1);
-  const öppna = () => uppdatera((s) => {
+  const öppna = (valdHäst) => uppdatera((s) => {
+    /* Arvtagaren in i stallet — vald med mentorns välsignelse. */
+    if (valdHäst) {
+      const h = (s.startval ?? []).find((x) => x.id === valdHäst.id) ?? valdHäst;
+      s.stall.push(h);
+      /* Gary-draget: rivalen tar en av dem du lämnade. */
+      föddRival(s, (s.startval ?? []).filter((x) => x.id !== h.id));
+    }
+    s.startval = null;
     s.stallnamn = namn.trim() || "Björkhaga";
     s.tränarnamn = tränarnamn.trim() || "Tränaren";
     s.dräkt = DRÄKTER.find((d) => d.id === dräkt) ?? DRÄKTER[0];
@@ -225,12 +236,42 @@ export default function StartVy({ spel, uppdatera }) {
     });
   });
 
+  if (steg === 5) {
+    /* STEG 5 — ARVTAGAREN (v115, startervalet): mentorns sista gåva.
+       Tre unghästar hos uppfödaren, en följer med gården. Korten talar
+       i ord — nivå 0 vet inga siffror. Äldre uppstarter utan startval
+       hoppar rakt till öppningen. */
+    const val = spel.startval ?? [];
+    return html`<${Steg}
+      etikett="Beslut 5 av 5"
+      rubrik="Arvtagaren"
+      kan=${!!arvtagare}
+      knapp="Öppna stallet"
+      påNästa=${() => öppna(val.find((h) => h.id === arvtagare))}
+      påTillbaka=${() => gå(4)}
+      barn=${html`
+        <div class="helscen-ingress mörk">»En sista sak«, säger mentorn. »Jag har haft
+          ögonen på tre unghästar hos uppfödaren i Björke. En av dem följer med gården —
+          men vilken, det bestämmer du. Jag har valt färdigt i mitt liv.«</div>
+        ${val.map((h) => {
+          const t = STARTERTEXT[h.starterprofil] ?? { namn: h.starterprofil, ord: "" };
+          return html`
+            <button key=${h.id} class=${"val" + (arvtagare === h.id ? " rek" : "")}
+              onClick=${() => sättArvtagare(h.id)}>
+              <div class="val-rubrik">${h.namn} · ${h.ålder} år · ${h.kön}</div>
+              <div class="val-citat">${t.namn}</div>
+              <div class="val-följd">${t.ord}</div>
+            </button>`;
+        })}`}
+    />`;
+  }
+
   return html`<${Steg}
-    etikett="Beslut 4 av 4"
+    etikett="Beslut 4 av 5"
     rubrik="Hemmabanan"
     kan=${!!bana}
-    knapp="Öppna stallet"
-    påNästa=${öppna}
+    knapp="Vidare — en sak återstår"
+    påNästa=${() => (spel.startval?.length ? gå(5) : öppna(null))}
     påTillbaka=${() => gå(4)}
     barn=${html`
       <div class="helscen-ingress mörk">Bara de små banorna har plats för en okänd

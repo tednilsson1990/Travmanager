@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { html } from "htm/preact";
 import { TAKTIKER } from "./data-lopp.js";
 import { veckansLopp, startförbud, kravText, inbjudningslopp, medInbjudningspengar } from "./data-kalender.js";
-import { KUSKAR, aktivaKuskar, villig, svar, uppbokad, uppbokadeI, kuskstatus } from "./data-kuskar.js";
+import { KUSKAR, aktivaKuskar, villig, svar, uppbokad, uppbokadeI, kuskstatus, lärlingsberättigad } from "./data-kuskar.js";
 import { veckansMinneslopp } from "./engine-mentor.js";
 import { Bild } from "./ui-grafik.js";
 import { BANOR } from "./data-namnpaket.js";
@@ -16,6 +16,12 @@ import { loppanalys } from "./engine-analys.js";
 import { pressfråga } from "./engine-travblad.js";
 import { klassEtikett, loppläge, GRUPPNAMN, klassklättring, startpoäng, startpoängText, bedömningsnivå } from "./engine-proposition.js";
 import { uttagning, alternativlopp, kuskbekräftelse } from "./engine-anmalan.js";
+import { klassnivå, klassläge } from "./engine-klass.js";
+import { bokförSeriepoäng, finallopp, registreraFinalresultat } from "./engine-serie.js";
+import { justeraFörBanutveckling } from "./engine-sallskap.js";
+import { arkiveraTelefonen } from "./engine-inkorg.js";
+import { TRÄNARKUSKEN, spelarKusk, bokförKörning } from "./engine-korlicens.js";
+import { UTRUSTNING, sättBalans, släppBalans, vinterbana } from "./engine-utrustning.js";
 import { stoppFör, nästaStopp, hoppaFram } from "./engine-klocka.js";
 import { minnenInförLopp } from "./engine-minnen.js";
 import { kuskEfterNamn } from "./data-kuskar.js";
@@ -57,7 +63,9 @@ function Anmälan({ spel, onStart, inskickade = [], draTillbaka }) {
   const kår = aktivaKuskar(spel);
   const villiga = kår.filter((k) => villig(spel, k));
   const drömmar = kår.filter((k) => !villig(spel, k)).slice(0, 3);
-  const valbara = villiga.slice(0, 28);
+  /* Körlicensen (v137): du själv står först i väljaren — inget
+     arvode, men körförmågan är din egen och den växer långsamt. */
+  const valbara = [spelarKusk(spel), ...villiga.slice(0, 27)];
   const [hästId, sättHäst] = useState(startbara[0]?.id ?? null);
   const [loppIx, sättLopp] = useState(0);
   const [kuskNamn, sättKusk] = useState(villiga[0]?.namn ?? kår[kår.length - 1].namn);
@@ -84,7 +92,14 @@ function Anmälan({ spel, onStart, inskickade = [], draTillbaka }) {
   const lopp = veckans[Math.min(loppIx, veckans.length - 1)];
   const förbud = startförbud(häst, lopp);
   const passning = passningsText(häst, lopp);
-  const kusk = kår.find((k) => k.namn === kuskNamn) || villiga[0] || kår[kår.length - 1];
+  /* Lärlingsregeln (v134): Lärlingsseriens väljare visar bara
+     licensierade — orsaken står vid väljaren (v98-principen). */
+  const lärlingslopp = (lopp.kortnamn || lopp.namn || "").startsWith("Lärlingsserien");
+  const valbaraHär = lärlingslopp ? valbara.filter(lärlingsberättigad) : valbara;
+  const kuskPool = lärlingslopp ? kår.filter(lärlingsberättigad) : kår;
+  const kusk = (valbaraHär.find((k) => k.namn === kuskNamn))
+    || (kuskPool.find((k) => k.namn === kuskNamn) && !lärlingslopp ? kår.find((k) => k.namn === kuskNamn) : null)
+    || valbaraHär[0] || kuskPool[0] || kår[kår.length - 1];
   /* Uppbokad gäller PER LOPP — byter man lopp kan samma kusk vara ledig. */
   const bokad = uppbokad(spel, kusk, lopp);
   /* Hemmaplan: ingen resa och hemmapubliken ger extra. Bortalopp kostar. */
@@ -171,7 +186,8 @@ function Anmälan({ spel, onStart, inskickade = [], draTillbaka }) {
 
       <label class="fält" for="v-kusk">Kusk</label>
       <select id="v-kusk" value=${kusk.namn} onChange=${(e) => sättKusk(e.target.value)}>
-        ${valbara.filter((k) => !uppbokad(spel, k, lopp)).map((k) => html`
+      ${lärlingslopp && html`<div class="hint" style=${{ marginBottom: "4px" }}>Lärlingsserien körs med lärlingslicens — väljaren visar kårens återväxt.</div>`}
+        ${valbaraHär.filter((k) => !uppbokad(spel, k, lopp)).map((k) => html`
           <option key=${k.namn} value=${k.namn}>
             ${k.namn} — ${k.stil} · st ${k.start}/av ${k.avslutning} · ${kuskstatus(spel, k, lopp).status === "preliminär" ? "preliminärt ja" : uppbokad(spel, k, lopp) ? "uppbokad i loppet" : svar(spel, k).t} · ${kr(k.arvode)}
           </option>`)}
@@ -195,6 +211,14 @@ function Anmälan({ spel, onStart, inskickade = [], draTillbaka }) {
           <span>Bedömning</span> ${ord[läge.status]}${läge.status !== "rekommenderad" ? ` — ${läge.not.split(" — ")[0]}` : ""}</div>`;
       })()}
       ${passning.c === "dålig" && html`<div class="dålig"><span>Distansen</span> ${passning.t}</div>`}
+      ${(() => {
+        /* KLASSMÄRKET (v116, 21.8): levelspråket där valet görs. Var i
+           kravspannet hästen ligger avgör hur loppet känns — högt är
+           fördel, lågt är nyuppflyttad mot de meriterade. */
+        const kl = klassläge(häst, lopp);
+        return kl && html`<div class=${kl.läge === "låg" ? "dålig" : ""}>
+          <span>Klassen</span> ${klassnivå(häst).etikett} — ${kl.text.toLowerCase()}</div>`;
+      })()}
       <div><span>Loppet</span> ${lopp.dist} m ${lopp.start === "volt" ? "volt" : "auto"} · ${lopp.banaNamn} · ${kr(lopp.förstapris)} kr i förstapris · insats ${kr(kusk.arvode + resa)} kr</div>
     </div>
 
@@ -314,7 +338,8 @@ function veckansLoppFör(spel, minne = veckansMinneslopp(spel)) {
     ...(minne ? [minne] : []),
     ...(spel.inbjudan?.vecka === spel.vecka
       ? [medInbjudningspengar(inbjudningslopp(spel.vecka))] : []),
-    ...veckansLopp(spel.vecka),
+    ...veckansLopp(spel.vecka).map((l) => justeraFörBanutveckling(spel, l)),
+    ...finallopp(spel),
   ];
 }
 
@@ -873,6 +898,7 @@ function Facit({ körning, facit, onKlart }) {
       </div>
       ${facit.dagstext && html`<div class=${facit.dåligDag ? "skada" : "logg"}>${facit.dagstext}</div>`}
       ${facit.ägartext && html`<div class=${facit.ägartext.ton === "dålig" ? "skada" : "logg"}>${facit.ägartext.text}</div>`}
+      ${facit.genombrott && html`<div class="logg guldram">✦ GENOMBROTTET — ${facit.genombrott}</div>`}
       ${facit.karriärminne && html`<div class="logg guldram">❧ ${facit.karriärminne}</div>`}
       ${(facit.kamratrader ?? []).map((k) => html`
         <div key=${k.namn} class="logg">Stallkamraten ${k.namn} (${k.kusk}): ${k.plats ? `${k.plats}:a` : "bortkörd"}${k.netto > 0 ? ` · ${kr(k.netto)} kr till kassan` : ""}</div>`)}
@@ -963,6 +989,8 @@ export default function LoppVy({ spel, uppdatera }) {
     /* Slutordern ur kusksamtalet följer med in i loppet: motorn lägger
        den på hästen när ~500 meter återstår (engine-simulera). Ingen
        radio finns i trav — allt är sagt innan bilen släpper. */
+    /* Balansen på — kostnaden dras, modifierarna gäller loppet. */
+    const balansläge = sättBalans(häst, spel);
     const sim = simulera(fält, lopp, slutorder ? { vid: 500, order: slutorder } : null);
     sättKörning({ ...körning, taktik, slutorder, favorit, sim });
     sättSteg("lopp");
@@ -991,6 +1019,29 @@ export default function LoppVy({ spel, uppdatera }) {
       h.senasteStartVecka = s.vecka;
       // Motståndarnas meriter och prispengar bokförs i världen
       bokför(s.värld, lopp, sim.resultat, s.vecka);
+      bokförSeriepoäng(s, lopp, sim.resultat);   /* gym-trappan: hela fältet, även dina */
+      if (lopp.final) {
+        /* Finalveckan (v130): vinnaren bär titeln vid korningen. */
+        const v = sim.resultat.find((r) => r.plats === 1);
+        if (v) registreraFinalresultat(s, lopp.serie, v.häst.namn, (s.stall ?? []).includes(v.häst));
+      }
+      if (häst.balans?.kostnad) s.kassa -= häst.balans.kostnad;
+      släppBalans(häst);
+      if (körning.kusk?.namn === TRÄNARKUSKEN || körning.kusk?.tränarkusk) {
+        /* Körlicensen växer med varje körning — pall ger extra. */
+        bokförKörning(s, min);
+      }
+      if (s.rival) {
+        /* Rivalens möte (v132): direktmötet bokförs med inbördes
+           placering — måndagens sms vet exakt hur det gick. */
+        const rivalRad = sim.resultat.find((r) => r.häst?.id === s.rival.hästId);
+        if (rivalRad) {
+          s.rivalmöte = { läge: "avgjort", vecka: s.vecka, säsong: s.säsong ?? 1,
+            lopp: lopp.kortnamn || lopp.namn,
+            minPlats: min.ur ? null : min.plats,
+            rivalPlats: rivalRad.ur ? null : rivalRad.plats };
+        }
+      }
       sammanfattning = efterLopp(s, {
         häst: h, kusk, lopp, min,
         /* Simuleringen följer med: händelsemotorn läser position vid
@@ -1067,6 +1118,12 @@ export default function LoppVy({ spel, uppdatera }) {
             if (besked.gräns) (s.uttagningsgränser ??= {})[besked.lopp.kortnamn] = besked.gräns;
             const mål = (s.anmälningar ?? []).find((x) => x.hästId === obesvarad.hästId);
             if (mål) { mål.status = "med"; mål.kuskNamn = (körandeKusk ?? kusk).namn; }
+            /* RIVALENS MÖTE (v132): står hans häst i samma fält vet
+               telefonen om det — sms:et kommer före helgen. */
+            if (s.rival && (f ?? []).some((x) => x.id === s.rival.hästId)) {
+              s.rivalmöte = { läge: "väntar", vecka: s.vecka, säsong: s.säsong ?? 1,
+                lopp: besked.lopp.kortnamn || besked.lopp.namn };
+            }
           })}
           onAnnat=${(nyttLopp) => uppdatera((s) => {
             const mål = (s.anmälningar ?? []).find((x) => x.hästId === obesvarad.hästId);
@@ -1083,7 +1140,7 @@ export default function LoppVy({ spel, uppdatera }) {
       <div class="kort"><div class="logg">${(spel.anmälningar ?? []).some((a) => a.status === "med")
         ? "Beskeden är klara. Loppen körs i helgen."
         : "Inga starter i helgen."}</div></div>
-      <button class="btn" onClick=${() => uppdatera((s) => hoppaFram(s))}>${nästaStopp(spel).etikett}</button>`;
+      <button class="btn" onClick=${() => uppdatera((s) => { arkiveraTelefonen(s); hoppaFram(s); })}>${nästaStopp(spel).etikett}</button>`;
   }
 
   /* ---- HELG: loppdagarna. Beskedade anmälningar körs i tur och
@@ -1097,7 +1154,7 @@ export default function LoppVy({ spel, uppdatera }) {
       return html`
         <h2>Helgen</h2>
         <div class="kort"><div class="logg">Inga fler lopp i helgen.</div></div>
-        <button class="btn" onClick=${() => uppdatera((s) => hoppaFram(s))}>${nästaStopp(spel).etikett}</button>`;
+        <button class="btn" onClick=${() => uppdatera((s) => { arkiveraTelefonen(s); hoppaFram(s); })}>${nästaStopp(spel).etikett}</button>`;
     }
     /* Grupperat per lopp (v106): flera egna i samma lopp körs i EN
        körning — spelaren styr den först anmälda, stallkamraterna körs

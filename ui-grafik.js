@@ -267,7 +267,7 @@ export function Dräkt({ dräkt, storlek = 34 }) {
  * har, rakbanan läggs bakom stallet, backen reser sig till höger,
  * vattenbandet får sitt eget hus. Framgång ska SYNAS från gårdsplanen.
  */
-export function Gårdskarta({ spel }) {
+export function Gårdskarta({ spel, påMark, påBygg }) {
   const a = spel.anläggning ?? { boxar: 4 };
   const dörrar = Math.min(a.boxar ?? 4, 14);
   const veteran = spel.gårdsveteran;
@@ -281,6 +281,13 @@ export function Gårdskarta({ spel }) {
     + (spel.krönika ?? []).filter((h) => h.typ === "minnesloppsseger").length);
   const skylt = (spel.hallOfFame ?? []).length > 0;
   const minnesträd = !!spel.prolog?.mentor?.borta;
+  /* GÅRDENS LIV (v136, 23 C). Vintern: travsverige ÄR vinterbanor
+     halva året — säsongens första och sista veckor får snö på marken
+     och kallare himmel. Mästarflaggorna: ett flaggspel per EGEN
+     seriemästartitel på gårdsplanen. Skötaren: en silhuett i
+     stallgången — gården har människor. */
+  const vinter = (spel.vecka ?? 1) <= 3 || (spel.vecka ?? 1) >= (spel.veckor ?? 18) - 2;
+  const mästarflaggor = Math.min(6, (spel.seriemästare ?? []).filter((m) => m.egen).length);
   return html`
     <svg class="gardskarta" viewBox="0 0 340 150" role="img"
       aria-label=${`Gården: ${a.boxar} boxar${a.rakbana ? ", rakbana" : ""}${a.backe ? ", backe" : ""}${a.vattenband ? ", vattenband" : ""}`}>
@@ -296,7 +303,24 @@ export function Gårdskarta({ spel }) {
       <rect width="340" height="150" fill="url(#g-himmel)" />
       <rect width="340" height="46" y="0" fill="url(#g-ljus)" />
       <circle cx="296" cy="22" r="9" fill="#E9E6DF" opacity="0.85" />
-      <rect y="112" width="340" height="38" fill="#182230" />
+      <rect y="112" width="340" height="38" fill=${vinter ? "#2A3542" : "#182230"} />
+      ${vinter && html`
+        <rect y="112" width="340" height="5" fill="#AEB8C2" opacity="0.5" />
+        ${Array.from({ length: 14 }, (_, i) => html`
+          <circle key=${"sn" + i} cx=${(i * 53 + 17) % 340} cy=${14 + (i * 31) % 86}
+            r="0.9" fill="#D8DEE4" opacity="0.65" />`)}`}
+      ${mästarflaggor > 0 && html`
+        <g>
+          <line x1="206" y1="112" x2="206" y2="70" stroke="#4A5A6A" stroke-width="1.6" />
+          ${Array.from({ length: mästarflaggor }, (_, i) => html`
+            <path key=${"mf" + i} d=${`M206 ${72 + i * 6} l10 2.6 l-10 2.6 z`}
+              fill=${i % 2 === 0 ? "#F2B134" : "#8E3B46"} opacity="0.92" />`)}
+        </g>`}
+      ${spel.skötare && html`
+        <g opacity="0.8">
+          <circle cx="60" cy="122" r="2.6" fill="#AEB8C2" />
+          <rect x="57.6" y="124.5" width="4.8" height="9" rx="2" fill="#AEB8C2" />
+        </g>`}
       ${a.backe && html`
         <path d="M250 112 L340 62 L340 112 Z" fill="#20303F" />
         <path d="M258 108 L332 68" stroke="#2C3A48" stroke-width="2" stroke-dasharray="4 5" fill="none" />
@@ -326,6 +350,29 @@ export function Gårdskarta({ spel }) {
           <circle cx="326" cy="99" r="2.6" fill="#4A3220" />
           <title>${veteran} vid staketet</title>
         </g>`}
+      ${(() => {
+        /* THEME PARK-LAGRET (v122, kap 23): marken och byggrätterna
+           SYNS och går att trycka på. Lediga byggrätter står som
+           streckade tomter med +, och bortom staketet hänger TILL
+           SALU-skylten så länge det finns mark att köpa. */
+        const g = spel.gård ?? { tomter: 2 };
+        const byggda = ["rakbana", "backe", "vattenband"].filter((id) => a[id]).length;
+        const lediga = Math.max(0, (g.tomter ?? 2) - byggda);
+        const tillSalu = (g.tomter ?? 2) < 8;
+        return html`
+          ${Array.from({ length: Math.min(lediga, 2) }, (_, i) => html`
+            <g key=${"tomt" + i} class="gk-tomt" onClick=${påBygg} role="button">
+              <rect x=${218 + i * 42} y="120" width="36" height="22" rx="2"
+                fill="none" stroke="#4A5A6A" stroke-width="1.2" stroke-dasharray="4 3" />
+              <text x=${236 + i * 42} y="135" class="gk-plus">+</text>
+            </g>`)}
+          ${tillSalu && html`
+            <g class="gk-salu" onClick=${påMark} role="button">
+              <rect x="306" y="118" width="30" height="16" rx="2" fill="#20303F" stroke="#F2B134" stroke-width="0.8" />
+              <line x1="321" y1="134" x2="321" y2="144" stroke="#4A5A6A" stroke-width="2" />
+              <text x="321" y="128.5" class="gk-salu-text">SALU</text>
+            </g>`}`;
+      })()}
       ${vimplar > 0 && html`
         <g>
           ${Array.from({ length: vimplar }, (_, i) => html`

@@ -1,5 +1,5 @@
 import { nyAnläggning } from "./engine-gard.js";
-import { nyMentor, nyGårdshistoria, prologhästar } from "./engine-prolog.js";
+import { nyMentor, nyGårdshistoria, prologhästar, startervalskandidater } from "./engine-prolog.js";
 import { useEffect, useRef, useState, useCallback } from "preact/hooks";
 import { nyHäst, sättIdRäknare, idRäknare } from "./engine-hast.js";
 import { byggVärld } from "./engine-varld.js";
@@ -32,6 +32,7 @@ export function nyttSpel() {
     värld: byggVärld(),
     startadeLopp: [],
     stall: prologhästar(),
+    startval: startervalskandidater(),
     kuskrelation: {},
     dräkt: null, hemmabana: null, uppstartKlar: false,
     förstaman: null, banerbjudande: null, inbjudan: null, segrarTotalt: 0,

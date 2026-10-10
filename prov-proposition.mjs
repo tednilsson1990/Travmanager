@@ -111,8 +111,8 @@ const siffra = (text, tal) => text.replace(/\s/g, "").includes(String(tal));
 
 /* ---------- Nivåetiketten ---------- */
 {
-  ok(klassEtikett(häst({ intjänat: 82500 })).etikett === "låg klass", "82 500 kr → låg klass");
-  ok(klassEtikett(häst({ intjänat: 900000 })).etikett === "elitnivå", "900 000 kr → elitnivå");
+  ok(klassEtikett(häst({ intjänat: 82500 })).etikett === "Brons III", "82 500 kr → Brons III (trappans ord, v130-föreningen)");
+  ok(klassEtikett(häst({ intjänat: 900000 })).etikett === "Guld III", "900 000 kr → Guld III (trappans ord, v130-föreningen)");
   ok(klassEtikett(häst()).text.includes("passar oftast"),
     "etiketten är vägledning med pengafönster — aldrig en spärr");
 }

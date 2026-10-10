@@ -9,7 +9,9 @@
 import { html } from "htm/preact";
 import { exporteraSparfil, importeraSparfil } from "./state-spel.js";
 import { kr } from "./engine-util.js";
-import { BYGGEN, ANSTÄLLDA, bygg, anställ, sägUpp, gåraugifter, boxplats } from "./engine-gard.js";
+import { BYGGEN, ANSTÄLLDA, anställ, sägUpp, gåraugifter, boxplats,
+  säkraGård, köpMark, byggPåGården, byggrätter, markpris, FACILITETER,
+  TOMTER_MAX } from "./engine-gard.js";
 import { Tom } from "./ui-delar.js";
 import { Gårdskarta } from "./ui-grafik.js";
 
@@ -21,7 +23,9 @@ export default function GårdVy({ spel, uppdatera }) {
 
   return html`
     <h2>Gården</h2>
-    <${Gårdskarta} spel=${spel} />
+    <${Gårdskarta} spel=${spel}
+      påMark=${() => document.getElementById("markpanel")?.scrollIntoView({ behavior: "smooth" })}
+      påBygg=${() => document.getElementById("byggpanel")?.scrollIntoView({ behavior: "smooth" })} />
     ${((spel.troférum ?? []).length > 0 || (spel.hallOfFame ?? []).length > 0 || spel.prolog?.mentor?.borta) && html`
       <div class="meta" style=${{ margin: "4px 2px 10px" }}>
         ${(spel.troférum ?? []).length > 0 ? `${spel.troférum.length} troféer` : ""}
@@ -72,19 +76,41 @@ export default function GårdVy({ spel, uppdatera }) {
       ${drift > 0 && html`<div class="logg">Anläggning och personal kostar <b>${kr(drift)} kr/vecka</b>.</div>`}
     </div>
 
-    <h2>Bygga</h2>
+    <h2 id="markpanel">Marken</h2>
+    ${(() => {
+      /* THEME PARK-LOOPEN (v122, kap 23): mark → byggrätt → bygg.
+         Kartan ovanför är samma sanning — skylten och tomterna där
+         leder hit. */
+      const g = säkraGård(spel);
+      const rätter = byggrätter(spel);
+      return html`
+        <div class="kort">
+          <div class="meta">${g.tomter} av ${TOMTER_MAX} tomter · ${rätter} ${rätter === 1 ? "ledig byggrätt" : "lediga byggrätter"}</div>
+          <div class="logg">Varje facilitet kräver en tomt. Mer mark köps i block om två —
+            och varje köp öster om staketet kostar mer än det förra.</div>
+          ${g.tomter < TOMTER_MAX
+            ? html`<button class="btn liten" disabled=${spel.kassa < markpris(spel)}
+                onClick=${() => uppdatera((s) => köpMark(s))}>Köp mark (${kr(markpris(spel))} kr)</button>`
+            : html`<div class="hint">Gården har nått ägogränsen — det här är en gård, inte ett industriområde.</div>`}
+        </div>`;
+    })()}
+
+    <h2 id="byggpanel">Bygga</h2>
     ${Object.entries(BYGGEN).map(([id, b]) => {
       const byggd = id !== "boxar2" && a[id];
+      const kräverMark = FACILITETER.includes(id) && !byggd && byggrätter(spel) <= 0;
       return html`
         <div class="kort" key=${id}>
           <div class="meta">${byggd ? "Byggt" : kr(b.pris) + " kr" + (b.drift ? ` · ${kr(b.drift)} kr/v` : "")}</div>
           <div class="namn">${b.namn}</div>
           <div class="logg">${b.text}</div>
-          ${!byggd && html`
-            <button class="btn liten" disabled=${spel.kassa < b.pris}
-              onClick=${() => uppdatera((s) => bygg(s, id))}>
-              ${id === "boxar2" ? `Bygg (${kr(b.pris)} kr)` : `Bygg`}
-            </button>`}
+          ${!byggd && (kräverMark
+            ? html`<div class="hint">Kräver en ledig tomt — köp mark ovanför.</div>`
+            : html`
+              <button class="btn liten" disabled=${spel.kassa < b.pris}
+                onClick=${() => uppdatera((s) => byggPåGården(s, id))}>
+                ${id === "boxar2" ? `Bygg (${kr(b.pris)} kr)` : `Bygg`}
+              </button>`)}
         </div>`;
     })}
 

@@ -10,7 +10,9 @@ import { träningsråd, loppmatchning } from "./engine-forstaman.js";
 import { veckansLopp } from "./data-kalender.js";
 import { veckoslots, slotsAnvända, ärKrävande, läggPlanMedSlots } from "./engine-stallmote.js";
 import { rivalerFör } from "./engine-handelser.js";
-import { klassEtikett, startpoäng, startpoängText } from "./engine-proposition.js";
+import { startpoäng, startpoängText } from "./engine-proposition.js";
+import { arkiveraTelefonen } from "./engine-inkorg.js";
+import { klassnivå } from "./engine-klass.js";
 import { Mentorkort } from "./ui-prolog.js";
 import { säsongsHändelser } from "./engine-handelser.js";
 import { pälsnamnFör, Bild, HästEllerFoto, Häst } from "./ui-grafik.js";
@@ -141,7 +143,7 @@ function Erbjudande({ spel, uppdatera }) {
   return html`
     <div class="kort">
       <div class="meta">Förfrågan från ägare</div>
-      <div class="namn">${h.namn}</div>
+      <div class="namn">${h.namn}<span class="klasstagg">${klassnivå(h).etikett}</span>${h.genombrott ? html` <span class="genombrott-marke" title=${"Genombrottet: " + h.genombrott.lopp + ", säsong " + h.genombrott.säsong}>✦</span>` : ""}</div>
       <div class="meta">${h.ägare} · ${h.ålder} år</div>
       <div class="bars">
         <${Stapel} etikett="Startsnabbhet" värde=${h.start} />
@@ -246,7 +248,17 @@ function HästSida({ häst, spel, uppdatera, tillbaka }) {
           : html`<${Träningschips} häst=${häst} spel=${spel} uppdatera=${uppdatera} />`}`}
 
       ${flik === "karriär" && html`
-        <div class="prisrad"><span>Klassläge</span><span class="pris">${klassEtikett(häst).etikett} · ${kr(häst.intjänat)} kr</span></div>
+        ${(() => {
+          /* KLASSBRICKAN (v116, 21.8): hästens level med XP-mätaren —
+             insprungna pengar ÄR erfarenhetspoängen i travet. */
+          const kn = klassnivå(häst);
+          return html`
+            <div class="prisrad"><span>Klassen</span>
+              <span class="pris">${kn.etikett} · ${kr(häst.intjänat)} kr</span></div>
+            ${kn.nästa && html`
+              <div class="klassmätare"><div class="klassmätare-fyllnad" style=${`width:${Math.round(kn.andel * 100)}%`}></div></div>
+              <div class="meta klassmätare-text">${kr(kn.kvar)} kr till ${kn.nästa}</div>`}`;
+        })()}
         ${(() => { const sp = startpoäng(häst);
           return html`<div class="prisrad"><span>Startpoäng</span><span class="pris">${sp.poäng} — ${startpoängText(sp)}</span></div>`; })()}
         <div class="prisrad"><span>Starter</span><span class="pris">${häst.starter}</span></div>
@@ -368,8 +380,24 @@ function Hästkort({ häst, spel, uppdatera, dräkt, öppna }) {
         onClick=${öppna}>
         <${HästEllerFoto} namn=${häst.namn} dräkt=${dräkt} storlek=${76} />
         <div style=${{ flex: 1 }}>
-          <div class="namn">${häst.namn}</div>
-          <div class="meta">Öppna hästsidan ›</div>
+          <div class="namn">${häst.namn}<span class="klasstagg">${klassnivå(häst).etikett}</span>${häst.genombrott ? html` <span class="genombrott-marke" title=${"Genombrottet: " + häst.genombrott.lopp + ", säsong " + häst.genombrott.säsong}>✦</span>` : ""}</div>
+          ${(() => {
+            /* PARTYRADEN (v117, Game Boy-enkelheten): orken är HP-stapeln —
+               grön, gul, röd. Statusen är brickor, inte meningar. Hela
+               stallet ska gå att läsa på en blick, som partymenyn. */
+            const e = häst.energi ?? 0;
+            const hp = e >= 55 ? "hp-grön" : e >= 30 ? "hp-gul" : "hp-röd";
+            return html`
+              <div class="hp-rad">
+                <span class="hp-etikett">ORK</span>
+                <div class="hp-bana"><div class=${"hp-fyllnad " + hp} style=${`width:${Math.round(e)}%`}></div></div>
+              </div>
+              <div class="statusbrickor">
+                ${häst.skada > 0 && html`<span class="bricka bricka-skd">SKD ${häst.skada}V</span>`}
+                ${häst.skada === 0 && (häst.form ?? 0) >= 70 && html`<span class="bricka bricka-topp">TOPPFORM</span>`}
+                ${häst.skada === 0 && (häst.form ?? 0) < 35 && html`<span class="bricka bricka-svag">UR FORM</span>`}
+              </div>`;
+          })()}
         </div>
       </button>
       <div class="meta">
@@ -502,7 +530,7 @@ export default function StallVy({ spel, uppdatera, nystart, efterVecka }) {
          onsdag (besked), helgen (loppdag) eller ny vecka. Veckoskiftet
          landar i inkorgen, mellanstoppen i loppfliken. */
       let mål;
-      uppdatera((s) => { mål = hoppaFram(s); });
+      uppdatera((s) => { arkiveraTelefonen(s); mål = hoppaFram(s); });
       if (efterVecka) efterVecka(mål);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }}>${slut ? "Säsongen är slut" : nästaStopp(spel).etikett}</button>

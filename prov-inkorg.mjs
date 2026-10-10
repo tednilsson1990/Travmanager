@@ -11,6 +11,7 @@
  */
 import { sättRng, seedad } from "./engine-util.js";
 import { följUppÄgarlöften } from "./engine-agare.js";
+import { arkiveraTelefonen } from "./engine-inkorg.js";
 import { byggInkorg, inkorgsläge, synligInkorg, verkställBeslut, berättelsetrådar } from "./engine-inkorg.js";
 import { nyHäst } from "./engine-hast.js";
 
@@ -112,6 +113,56 @@ console.log("PROV: inkorgen\n");
   const utanFm = { ...byggSpel(), förstaman: null };
   ok(!byggInkorg(utanFm).some((h) => h.fäst),
     "utan förstaman: inget möte — ingen låtsasröst");
+}
+
+/* ---------- Uttalandet i luren (v135) ---------- */
+{
+  const spel = byggSpel();
+  spel.senasteAnalyser = [{ hästId: spel.stall[0].id, hästNamn: spel.stall[0].namn,
+    kuskNamn: "A", lopp: "Bronsserien", vecka: spel.vecka - 1, säsong: spel.säsong,
+    plats: 1, ur: false, varFavorit: false, streck: 20, läge: "ledningen",
+    nivå: 40, avgörande: "Spets hela vägen.", läxa: null, uttalad: false }];
+  const alla = byggInkorg(spel);
+  const samtal = alla.find((h) => h.roll === "Tidningen" && h.typ === "samtal" && h.beslut);
+  ok(!!samtal && samtal.beslut.typ === "uttalande",
+    "segern: Travbladet ringer och uttalandet bor i luren");
+  ok(!alla.some((h) => h.rubrik?.startsWith("Efteranalysen") && h.beslut),
+    "efteranalysrapporten bär inte längre beslutet");
+
+  spel.senasteAnalyser[0].plats = 5; spel.senasteAnalyser[0].varFavorit = false;
+  ok(!byggInkorg(spel).some((h) => h.roll === "Tidningen" && h.typ === "samtal" && h.beslut),
+    "den grå mittendagen ringer ingen om — realistisk presslogik");
+}
+
+/* ---------- Telefonen (v131): mediet bär brådskan ---------- */
+{
+  const spel = byggSpel();
+  spel.stall[1].skada = 3; spel.stall[1].skadadVecka = spel.vecka - 1;
+  const alla = byggInkorg(spel);
+  const vetsamtal = alla.find((h) => h.roll === "Stallveterinär" && h.typ === "samtal");
+  ok(!!vetsamtal && vetsamtal.lång.includes("står i stallet"),
+    "nyskadad häst: veterinären RINGER — mediet bär brådskan");
+  ok(!alla.some((h) => h.roll === "Stallveterinär" && h.typ === "rapport"
+    && h.rubrik.includes(spel.stall[1].namn)),
+    "samtalet ersätter rapporten den första veckan");
+
+  spel.stall[0].genombrott = { säsong: spel.säsong, vecka: spel.vecka - 1, lopp: "P" };
+  ok(byggInkorg(spel).some((h) => h.roll === "Tidningen" && h.typ === "samtal"),
+    "genombrottet: journalisten ringer");
+
+  /* Telefonloggen: idempotent arkivering och svarsbubblan. */
+  arkiveraTelefonen(spel);
+  const n1 = spel.telefonlogg.length;
+  arkiveraTelefonen(spel);
+  ok(n1 > 0 && spel.telefonlogg.length === n1,
+    `arkiveringen är idempotent (${n1} rader, oförändrat vid andra anropet)`);
+  const beslut = byggInkorg(spel).find((h) => h.beslut);
+  if (beslut) {
+    verkställBeslut(spel, beslut, beslut.beslut.alternativ[0].id);
+    const svar = spel.telefonlogg.find((r) => r.typ === "svar");
+    ok(!!svar && svar.avsändare === beslut.avsändare,
+      "svaret bokförs i tråden — chatten minns vad du sa");
+  }
 }
 
 /* ---------- Ägarna och kuskarna (v110) ---------- */

@@ -613,3 +613,536 @@ hela systemets nav.
   HemVy i dag? Inventera före rivning).
 - RISK att bevaka: inkorgen får inte bli ett skyltfönster för allt —
   prioritetssektionerna och Post/Nyheter-segmenten är skyddet.
+
+
+# 21. POKÉMON-INSPIRATIONEN (Teds idé, juli 2026)
+Pokémon är ett spel om anknytning till individer och deras utveckling
+— travmanagerns själ. Mappningen, med travets verklighet som domare:
+## 21.1 Startervalet [BYGGT v115] — tre startprofiler vid karriärstart
+(spetsaren/stayern/talangen), tydligt olika, valet färgar resan.
+Nivå 0-ärligt: karaktär i ord, inga siffror.
+## 21.2 Genombrottet [BYGGT v115] — utvecklingen finns men firas inte.
+Första stora klivet för en ung häst får ceremoni: press, guldrad i
+efteranalysen, märke på hästkortet. Transformationen ska KÄNNAS.
+## 21.3 Stamboken — karriärvy över varje häst du ägt och mött:
+blodslinjer, öden efter försäljning. Knyter till aveln och dagboken
+(19 D). Samlarglädjen.
+## 21.4 Dolda anlag — hästens sanna tak delvis dolt, avslöjas genom
+starter och veterinärtest. Upptäcktsglädjen. (AI:ns synfel finns —
+detta är spelarens motsvarighet.)
+## 21.5 Raritetshästen — 1 på ~500 föds med unik teckning/vit stjärna.
+Ren berättelsekrydda, pressen älskar henne. Billig, stor känsla.
+## 21.6 Rivaltränaren [ETAPP A BYGGD v118] — Gary-draget: rivalen föds
+ur startervalet (tar den kaxigaste kandidaten du lämnade), eget stall
+i världen, hästen tävlar där på riktigt med nollmeriter. Rösterna:
+hälsnings-sms, måndagsrösten efter hans starter, byggda på världens
+verkliga siffror. KVAR (etapp B): mötesdetektionen (sms när ni står i
+samma lopp — kräver anmälningskartan i inkorgen, väg prestandan),
+rivalreaktionen efter direktmöten, pressens rivalitetsberättelse,
+rivalens karriärbåge över säsonger (stallstyrkan växer med facit).
+## 21.15 Hjälpen (Pokémons NPC-tips): en röst = ETT konkret tips i
+rätt ögonblick, aldrig en manual. Vägvisaren och förstamannens
+förslag finns; pröva mot principen: varje ny spelare-hjälp ska vara
+en MÄNNISKA som säger en sak, inte en informationsruta.
+## 21.7 Passar INTE: fångsten, striderna, EXPLICIT levelgrind —
+travets verklighet vinner varje konflikt.
+## 21.8 Klasstrappan [BYGGD v116] — levels gjorda travärliga: insprungna
+pengar ÄR XP, Brons→Silver→Guld är levelkurvan. Brickan med steg
+(III/II/I), XP-mätaren till nästa steg, och KLASSMÄRKET i loppvalet
+(högt/mitt/lågt i kravspannet — det travtränare faktiskt tittar på).
+## 21.9 Utrustningen (held items) — barfota/skor, jänkarvagn,
+huvudlappar: verklig travbalansering med verkliga avvägningar
+(barfota = snabbare men känsligare). Störst spelmekanisk kandidat.
+## 21.10 Naturerna — hästens lynne/personlighet som NAMNGIVEN natur
+("ettrig", "trygg", "lat") på hästkortet: gör befintliga dolda drag
+läsbara, som Pokémons natures.
+## 21.11 Typaffiniteter — vinterbanehästen, regnälskaren,
+voltspecialisten: affinitetsbrickor ur verklig statistik (20.3-lagret
+gör dem ärliga — visas först när datat finns).
+## 21.12 Legendaren — en gång per ~decennium föds världens fenomen
+(en Victory Tilly): pressen följer den i åratal, att möta den är en
+händelse. Hör ihop med världens utveckling (20.8).
+## 21.14 ENKELHETSPRINCIPEN [PARTYRADEN BYGGD v117] — Game Boy-spelens
+egentliga lärdom är inte fler system utan KOMPRIMERING: partymenyns
+rad (namn + level + HP-stapel + statusbricka) läser hela laget på en
+blick utan siffror. Varje ny travvy ska klara partymenyprovet: går
+läget att se på en blick? Byggt: stallistans partyrad (orken som
+HP-stapel grön/gul/röd, brickorna SKD/TOPPFORM/UR FORM, klasstaggen).
+Kvar att pröva mot principen: loppväljaren, inkorgens rader, Sfären.
+## 21.13 Taktikrepertoaren (movesets) — alla hästar kan inte alla
+taktiker: spets-/ryggspecialister med repertoar som kan TRÄNAS bredare.
+Kräver motorkoppling — varsamhet.
+
+
+# 22. MIXEN — FM × POKÉMON (genomlysningen, aug 2026)
+Teds riktning: spelet ska vara Football Manager och Pokémon i en
+härlig mix — det bästa av allt. Genomlysningen av v84–v118 gav
+principerna och prioriteringen nedan. De är RIBBAN för allt nytt.
+
+## 22.1 Rollfördelningen (mixens grundlag)
+FM ÄGER VÄRLDEN: sanningen, siffrorna, motståndet, kalendern,
+inkorgen som arbetsplats. POKÉMON ÄGER RELATIONEN: individerna,
+ceremonierna, läsbarheten, riktningen. Varje siffra ska vara
+FM-ärlig; varje presentation ska vara Pokémon-läsbar. När de två
+krockar i samma vy har presentationen misslyckats — inte världen.
+
+## 22.2 Vad som redan sitter
+FM-sidan: inkorgen med röster och beslut (v99–v110), klockan
+(v101), veckomötet (v105), AI-tränarna med övertygelser och synfel,
+verklighetens delning (v107), statistiklagret (v109), världens
+generationer (v111), sponsorkraven som styrelsens förväntningar.
+Pokémon-sidan: startervalet (v115), genombrottet (v115),
+klasstrappan som levels (v116), partyraden med HP-stapeln (v117),
+rivalen ur ditt val och mentorn som stannar (v118).
+
+## 22.3 Mixens luckor (ärligt)
+a) RIKTNINGEN: Pokémon visar alltid nästa gym — spelaren här kan
+   inte alltid svara på "vad är mitt nästa märke?". Vägvisaren är
+   reaktiv, inte målbild.
+b) MÖTET: rivalen finns men MÖTS inte än (21.6 etapp B) — Garys
+   loop kräver konfrontationsslaget.
+c) DUBBELT SPRÅK i loppväljaren: Bedömningen (FM-ord) och Klassen
+   (levelord) står som två domar sida vid sida — ska komprimeras
+   till EN lägesrad (partymenyprovet, 21.14).
+d) TVÅ KLASSLÄSNINGAR i koden: klassEtikett (proposition) och
+   klassnivå (v116) lever parallellt — förenas till en källa.
+e) SERIETRAPPAN OBYGGD: 18.10 är mixens kärnbygge — FM:s
+   säsongsdrama OCH Pokémons gym-trappa i samma system.
+
+## 22.4 Prioriteringen ("bästa av allt", i ordning)
+1. SERIERNA SOM GYM-TRAPPA (18.10 + 20.5) [ETAPP A BYGGD v120:
+   placeringspoäng per deltävling, serietabellen för hela världen i
+   Sfären med egna hästar guldade, mästarkorningen i säsongsskiftet,
+   märket i troférummet, mästarväggen. ETAPP B-FINALEN BYGGD v130: finallopp sista veckan med topp 8 (inbjudet fält, spår efter poängordning, 2,5× pris ur seriens egen proposition), uttagningens finalgren, kvalbeskedet i inkorgen, världens finaler i veckomotorn, korningen föredrar finalvinnaren med poäng som reserv. Kvar: seedad delning, mörk anmälan]
+2. RIVALENS MÖTE (21.6 B): sms:et när ni står i samma lopp,
+   reaktionen efteråt, pressens rivalitetsberättelse.
+3. "NÄSTA MÅL"-RADEN: en (1) rad, alltid synlig — nästa klasskliv
+   eller seriemål ur klasstrappan och kalendern. Pokémons riktning
+   på FM:s data.
+4. LOPPVÄLJARENS PARTYMENYPROV: Bedömning + Klass + distans
+   komprimeras till en färgad lägesrad.
+5. INKORGEN SOM NAV (19.6): FM:s hjärta som förstasida — med
+   plottrighetsvakten som prologen lärde oss.
+Därefter: utrustningen som held items (21.9) när mekanikutrymme
+finns, och Teds tidsidé (timmar/dag/vecka) som rytmbygge.
+
+## 22.6 REALISMVAKTEN (Teds direktiv, aug 2026): "ska fortfarande
+vara ett travspel som både travspelare, tränare och travjournalister
+ska känna handlar om trav och vara realistiskt."
+GRUNDREGELN: Pokémon och Theme Park får synas i MEKANIK och KÄNSLA —
+ALDRIG i vokabulären. Spelet säger ork, form, klass, proposition,
+insprunget, byggrätt — aldrig XP, level, HP, held item.
+GENOMLYSNINGEN (v122): språket håller ✓ (klasstrappan heter Brons/
+Silver/Guld ur kalenderns verkliga krav; HP-stapeln heter ORK;
+loppvalets märke talar om kravspannet som en tränare). Mekanikerna
+mot verkligheten: delning enligt ST ✓, startpoäng ✓, lärlingslicenser
+✓, kuskpension ✓, ägarlöften/träningsavgifter ✓, tränarcitat efter
+lopp = travmedias vardag ✓, seriepoäng mot final = STL-divisionernas
+kultur ✓ (etapp B-finalen gör det komplett).
+BEVAKADE PUNKTER: (a) klasstegen "Brons II" är spelifiering — orden
+i vyn är travord och gränserna verkliga, men om travspelare reagerar:
+byt stegvisning mot ren kronräkning. (b) Rivalens ton var för
+amerikanskt kaxig — JUSTERAD v123 till torr svensk travpik (kärv men
+aldrig teatralisk). (c) Genombrottsmärket ✦ är estetik, inte påstådd
+travterm — behåll diskret. (d) Kommande byggen realismprövas MOT
+källa (ST:s regelverk, travsällskapens ordningar) som delningen
+gjordes i v107.
+
+## 22.5 Lärdomar ur bygghistorien (självkritiken)
+Egen-flaggan bet två gånger (v106 avslutningen, v113 analysen) —
+identitet före flaggor, alltid. Versionskedjan gick ut röd en gång
+(v111) — nu grindad på alla sviter. Klasstaggen satt på fel kort
+(v116) — UI-ändringar verifieras på RÄTT renderställe. Två
+parallella klassläsningar (d ovan) — en sanning per begrepp.
+
+
+# 23. GÅRDEN SOM LEVANDE VÄRLD (Teds idé, aug 2026 — förtydligad:
+"en blandning av Pokémon och Theme Park": gå runt och VÄLJA saker
+att addera — mer mark, ny träningsbana, nytt stall)
+"Ska man göra det till en liten värld man kan gå runt i? Bygger man
+en ny bana eller facilitet ändras gården visuellt."
+ÄRLIG BEDÖMNING: en gångbar värld (styra en figur) är fel verktyg —
+managerspelets natur och mobil-PWA:n talar emot, och gångtiden blir
+friktion utan beslut. Men KÄNSLAN Ted pekar på är rätt och byggbar:
+Pokémon-stadens "min plats som växer" utan gångsimulering.
+## 23.0 THEME PARK-LOOPEN [BYGGD v122]: mark → byggrätt → bygg.
+Tomter (2 från start, köps i block om två, stigande pris, tak 8),
+byggrätter som faciliteterna kräver, TILL SALU-skylten och de
+streckade tomterna PÅ kartan (tappbara → mark-/byggpanelen), och
+migrering som ger äldre sparfiler marken de redan bebyggt. Kartan
+fanns (stallängan växer med boxar, faciliteter ritas när de byggs,
+vimplar/skylt/minnesträd) — nu är den handlingsplats, inte spegel.
+## 23.1 Etapp A — Gårdsbilden som spegel: en ritad gårdsvy (SVG i
+bankartans stil) i GårdVy där ANLÄGGNINGSNIVÅERNA styr det som syns:
+stallbyggnadens längd följer boxplatserna, rakbanan/träningsbanan
+ritas när den är byggd, hagarna, gårdsplanen. Bygger man — ändras
+bilden. Det är kravet i Teds mening, uppfyllt bokstavligt.
+## 23.2 Etapp B — Tappbar gård: byggnaderna är knappar (stallet →
+stallvyn, kontorsflygeln → kontoret, banan → träningen, flaggstången
+→ troférummet). "Gå runt" blir "peka dit du vill" — stadens känsla,
+noll gångfriktion.
+## 23.3 Etapp C — Livet i bilden: mästarflaggor på flaggstången per
+seriemärke, genombrottshästens hage markerad, säsongens ljus (vinter/
+sommar ur veckonumret), skötaren som figur vid stallgången.
+## 23.4 Etapp D (om längtan består) — panorerbar scen: bilden bredare
+än skärmen, dra i sidled. Fortfarande ingen gångsimulering.
+
+
+# 24. TRAVSÄLLSKAPET — STYRELSEN PÅ HEMMABANAN (Teds idé, aug 2026)
+"Möjlighet att växa fram — komma med i styrelsen på sin hemmabana
+och vara med och påverka hur hemmabanan ska utvecklas."
+DJUPT TRAVREALISTISKT: svenska banor ägs av travsällskap, och en
+framgångsrik tränare som väljs in i sällskapets styrelse är exakt
+så inflytande fungerar på riktigt. FM:s styrelserum — fast du sitter
+I det, inte under det.
+## 24.0 [ETAPP A BYGGD v124]: invalet (renommé ≥42 + två säsonger,
+valberedningens samtal i inkorgen, avböjande gäller året), en motion
+per säsong (hash-vald, bankänslig — open stretch föreslås aldrig där
+den finns), rösten en av sju, bifall med VERKLIG effekt (open stretch
+på hemmabanans alla lopp via justeraFörBanutveckling i alla tre
+loppflöden; breddpriser +10 % på nivå ≤46), jävspressen när egen
+vinning röstas igenom. KVAR: sällskapssida i Kontoret (status/
+historik), publik-/ungdomseffekterna, trappan mot ordförande (24.4),
+egna motioner.
+## 24.1 Invalet: renommé + säsonger på banan + relationer → valberedningen
+hör av sig (inkorgssamtal, ett riktigt val: tacka ja tar TID — en
+veckoslot? — men ger rösten). Aldrig köpbart, alltid förtjänat.
+## 24.2 Motionerna: 1–2 per säsong, styrelsen röstar och DU har en
+röst av flera (påverka, inte bestämma — realismen): open stretch-
+bygge, nytt banunderlag, publikinvesteringar, ansökan om V75-datum,
+höjda/sänkta banpriser, ungdomssatsning. Utfallen ändrar HEMMABANANS
+data (openStretch-flaggan, prisnivåer, publiksnitt) — världen ändras
+på riktigt av besluten.
+## 24.3 Intressekonflikten (bästa dramat): det som gynnar banan
+gynnar inte alltid ditt stall — och pressen frågar. Rösta för höjda
+förstapris = bra för dig = Travbladet skriver om jäv. Trovärdigheten
+som valuta.
+## 24.4 Trappan: ledamot → vice ordförande → ordförande över
+säsonger. Ordföranden får lägga EGNA motioner. Knyter till 20.8
+(banorna utvecklas) och gym-trappans hemmabanekänsla.
+
+
+# 25. BETALMODELLEN (Teds riktning, okt 2026 — ANTECKNAD, byggs ej ännu)
+Utgångspunkt: gratis första säsongen, engångsköp runt 99 kr, plus
+säsongspass eller liten månadsavgift för återkommande intäkt.
+Betalning via Stripe eller Lemon Squeezy. Första målet: testa om 20
+personer i en travgrupp faktiskt betalar.
+
+## 25.1 Principerna (betalmodellens realismvakt)
+- TID begränsas, aldrig FUNKTIONER: gratissäsongen är hela spelet.
+  Spelet ska dömas på sin riktiga form, inte en stympad.
+- Köpet ÄGER man: engångsköpet dras aldrig tillbaka bakom en senare
+  prenumeration. Förtroendet i en liten travcommunity är allt.
+- ALDRIG pay-to-win: inga köpta hästar, ingen köpt form, inga
+  genvägar i sporten. Kosmetik (stallfärger, dräkter) är okej.
+- Betalningen står UTANFÖR fiktionen: ren produktskärm vid
+  säsongsskiftet. Travbladet säljer ingenting, mentorn tigger aldrig.
+- Ärlig grind, inte DRM: en byggfri statisk app kan aldrig bli
+  piratsäker — och för en travgrupp är det fel problem. Grinden ska
+  vara värdig, inte vattentät.
+
+## 25.2 Trappan
+GRATIS — "Säsong ett":
+  Hela spelet, hela första säsongen: prologen, startervalet, inkorgen,
+  loppen, serierna, rivalen, säsongsskiftets korning och generations-
+  skifte. Slutar på spelets bästa cliffhanger: världen har just
+  förändrats och DIN karriär vill vidare.
+KARRIÄREN — 99 kr, engångsköp:
+  Obegränsade säsonger, för alltid. Alla nuvarande och kommande
+  GRUNDFUNKTIONER ingår (buggfixar och kapitel som fördjupar det som
+  finns). Marknadsraden: en V75-rad kostar mer.
+STALLKLUBBEN — 19 kr/mån eller 149 kr/år (frivilligt lager ovanpå
+  Karriären, för återkommande intäkt och de som vill stödja):
+  - nya innehållskapitel FÖRST (travsällskapet etapp B, utrustningen,
+    STL-finalerna — når alla senare, klubben får dem tidigt)
+  - flera samtidiga karriärplatser (gratis/Karriären: en)
+  - kosmetiken: egna stallfärger och dräktval
+  - namnet på Stallklubbens medlemssida i Travbladet
+  Säsongspass-varianten (om månadsavgift känns fel i testet): 79 kr
+  per verklig säsong (halvår). Testet avgör vilken som känns rätt.
+
+## 25.3 Betalväggens plats — och vad den säljer
+Vid "Ny säsong"-knappen efter säsong 1: en (1) värdig skärm.
+KÄRNKRAVET (Teds fråga "vem köper 99 kr engångs?" gav svaret): väggen
+säljer ALDRIG en funktionslista — den säljer SPELARENS EGEN KARRIÄR.
+Skärmen visar hans säsong: hästarna med namn, seriemästartiteln,
+genombrottet, rivalens ställning — och raden "Din karriär fortsätter."
+Köparen är inte någon som köper ett webbspel för 99 kr (den personen
+finns inte); köparen är den som spelat klart säsong 1 och vill
+vidare. Gratissäsongen är säljaren. Därtill: priset, köpknappen, och
+"fortsätt titta runt gratis" (statistiken, troférummet, inkorgs-
+historiken: karriären låses aldrig in, bara fortsättningen).
+Sparfilen rörs aldrig av betalstatus.
+
+## 25.4 Tekniken
+- REKOMMENDATION FÖR TESTET: Lemon Squeezy (numera Stripe-ägt) som
+  Merchant of Record — de hanterar momsen (25 % svensk moms på
+  digitala tjänster, EU-regler vid försäljning utanför Sverige),
+  vilket annars landar på Ted själv med Stripe direkt. Avgiften
+  (~5 % + fast del) är priset för att slippa momsadministrationen —
+  rätt byte vid 20 kunder. Stripe direkt är rätt först vid volym.
+- Licensflödet (byggfritt, ingen egen server): köp i Lemon Squeezys
+  checkout-overlay → licensnyckel → aktiveras i appen mot deras
+  licens-API → status i sparfilen + localStorage. Offlinekontroll
+  mot sparad aktivering; omvalidering i bakgrunden ibland.
+- HOSTINGFLYTTEN (ärlig hake): GitHub Pages är inte avsett för
+  kommersiell försäljning enligt villkoren. Vid betalstart flyttas
+  appen till Cloudflare Pages eller Netlify (gratis, samma byggfria
+  upplägg, egen domän — travmanager.se?). Flytten är trivial:
+  samma filer, ny pekare.
+- Prenumerationsstatus utan server är svagare än engångslicens
+  (uppsägningar måste omvalideras) — även det talar för att testet
+  börjar med engångsköpet och lägger klubben efteråt.
+
+## 25.5 Testet: 20 personer i travgruppen
+- UPPLÄGG: släpp länken i gruppen. Gratis säsong 1, betalvägg vid
+  säsongsskiftet, pris 99 kr — INGEN kompisrabatt: testet mäter
+  betalvilja, rabatt förstör mätningen.
+- MÄT (manuellt räcker på 20): hur många startar en karriär, hur
+  många NÅR säsongsskiftet (spelet själv är tratten), hur många
+  köper, dagar från start till köp.
+- MÅLBILD: minst 6 av 20 köper inom 30 dagar (30 % av de som fått
+  hela säsong 1 gratis är ett starkt signal i en nischgrupp; under
+  3 är signalen att priset eller väggens plats är fel — eller att
+  säsong 1 inte bygger tillräcklig längtan, vilket är viktigare
+  kunskap än intäkten).
+- FRÅGA EFTERÅT: de som INTE köpte får en fråga — för dyrt, fel
+  ställe, eller tappade intresset i vecka X? Tre svar räcker.
+- REALISTISK RAM: kall gratis-till-betalt-konvertering ligger på
+  1–5 % — en varm nischgrupp med hel säsong gratis spelar i en annan
+  liga, men även 3–4 köp av 20 är DATA, inte fiasko: fyra köpare
+  plus djupintervjuer är guld inför nästa grupp.
+- OM 99 INTE BÄR (fallback-trappan, en variabel i taget): nästa
+  grupp testar 49 kr; därefter "betala vad du vill, 99 föreslaget".
+  Priset sänks aldrig för SAMMA grupp i efterhand — det straffar
+  dem som betalade först.
+- KONTEXTEN ÄR HALVA KÖPET: en länk i en gruppchatt signalerar inte
+  "produkt". Egen domän, värdig betalskärm och riktigt kvitto (Lemon
+  Squeezy) hör till testet, inte till senare.
+
+## 25.6 Vad som aldrig säljs
+Hästar, form, energi, kuskrelationer, seriepoäng, renommé,
+sällskapsplatsen — ingenting som rör sporten. Travspelare känner
+igen köpt framgång på lukten, och realismvakten (22.6) gäller
+även kassan.
+
+
+# 26. VÄGEN TILL DET KOMPLETTA SPELET (Teds direktiv, okt 2026 — STYRANDE)
+Teds korrigering av första utkastet: "Vi ska bygga färdigt och ett
+komplett spel först. Sen tänka lansering, premiär och betalvägg.
+Bygga med tanke på betalväggen redan nu — men inte bygga in själva
+betallösningen." Kvalitetsdirektivet står kvar: jobba snabbt, mer
+premiumkänsla, ett riktigt spel — design, spelkänsla, äkthet,
+trollbindande.
+
+## 26.1 ARBETSSÄTTET (gäller från v128)
+- MÅLET ÄR SPELET, inte släppet: hela planen byggs. Lansering,
+  hosting och betalvägg (kapitel 25) byggs SIST, när spelet är klart.
+- BETALVÄGGSMEDVETET, inte betalbyggt: (a) säsongsskiftet förblir
+  den enda naturliga porten — inga funktioner får sudda den gränsen;
+  (b) sparfilen hålls oberoende av all framtida betalstatus;
+  (c) upplägget förblir byggfritt och flyttbart (hostingbytet ska
+  vara trivialt den dagen); (d) ingen betalkod, inga licensfält,
+  inga döda krokar i förväg.
+- STÖRRE SLÄPP: ett arbetsblock (eller en sammanhållen del av ett)
+  per version — färre cykler, mer per paket.
+- SPELTESTGRINDEN: varje block slutar med Teds genomspelning på
+  riktig enhet; fynd lagas innan nästa block.
+- NYA IDÉER antecknas alltid i planen och får plats i rätt block —
+  frysta är de inte, men de bryter inte pågående block.
+
+## 26.2 BLOCK A — GRUNDEN HÅLLER (först, alltid)
+a) Beskedsknappen säsong 2 (olöst) — BLOCKERAT PÅ TEDS DATA:
+   bannerraden vid tryck i v114+ och sparfilen från Kontoret.
+b) Galopphängningen (olöst) — BLOCKERAT PÅ TEDS DATA: nödfacit-raden.
+c) Klassläsningarna förenas (klassEtikett + klassnivå → en källa).
+d) Full mobilgenomspelning säsong 1→2, varje knapp.
+
+## 26.3 BLOCK B — SPORTEN KOMPLETT (äktheten)
+a) FINALVECKAN (18.10 B): seriernas topp 8 i riktiga finallopp —
+   säsongens klimax. Största kvarvarande sportbygget.
+b) Seedad delning med tränarspridning [BYGGD v140]: serielopp delas
+   med snake-seedning (ettan i A, tvåan–trean i B) och stallkamrater
+   byts till olika avdelningar — uttagningsloppens verkliga metod;
+   i serielopp sprids även spelarens egna (vanliga lopp behåller
+   v106-sammanhållningen och hash-lottningen). KVAR: mörk anmälan
+   (anmäla utan kusk, val vid beskedet) — flödesändring som väntar
+   på Teds riktning.
+c) Lärlingsreglerna (18.6) [BYGGDA v134 — och verklighetsrättade:
+   trav har ingen viktlättnad (det är galoppens regel) — lärlingslopp
+   är lopp FÖRBEHÅLLNA lärlingslicens. lärlingsberättigad = v111:s
+   lärlingar + kårens återväxt (ryktbarhet ≤ 25, ~20 av 90):
+   spelarens väljare filtrerar med orsaken nära, världens rustning
+   följer regeln, övriga serier orörda].
+d) KLOCKANS TIDSRYTM (Teds tidsidé) [MEDVETET INTE nattbyggd:
+   rytmen är spelets puls och smakkänslig — byggs med Ted vaken].
+e) "Nästa mål"-raden [BYGGD v133]: engine-nastamal med åtta
+   prioritetssteg (finalen > obesvarade besked > klasskliv >
+   serietopp > valberedningen > tom tomt > måndagsanmälan > vilan),
+   en klickbar guldrad under headern på alla flikar. Kap 16:s
+   princip: intelligenta rekommendationer, aldrig uppdrag.
+f) Tränaren som kusk (18.11) [BYGGD v137]: "Tränaren själv" först i
+   kuskväljaren — arvode 0, kuskandel 0, alltid bekräftad; egna
+   körattribut (start 38 → tak 62, +0,35/körning, pall ger extra);
+   lärlingsberättigad de första 30 körningarna (18.6-koppling);
+   statistiken får raden gratis via kusknamnet; var tredje AI-tränare
+   kör sina egna (hash-avgjort, attribut 40–58). KVAR etapp B:
+   tränarkuskarna i SPELARENS lopp (världshästarna där får poolkuskar
+   än), renommé-/relationseffekter av att rata proffsen.
+
+## 26.4 BLOCK C — BERÄTTELSEN KOMPLETT (trollbindningen)
+a) Rivalens möte (21.6 B) [BYGGT v132]: onsdagsbeskedet upptäcker
+   rivalhästen i fältet (sms före helgen), avslutningen bokför
+   inbördes placering, måndagsreaktionen (fyra toner — tystar
+   ordinarie måndagsrösten), pressen skriver om direktmötet. Kvar:
+   rivalitetsberättelsen över flera säsonger (räkningen i siffror).
+b) Karriärdagboken (19 D) [GRANSKAD v139: redan byggd i allt
+   väsentligt — Stalljournalen har krönika, album, säsonger, rekord,
+   troférum och rivaler. Kvar som finputs i F-blocket: per-säsongs-
+   uppslag som väver rad + krönika + årets troféer/titlar].
+c) Hall of Fame (20.5) [GRANSKAD v140: väggen finns — invald vid
+   pension, visas i Stalljournalens rekordflik. Kvar: ikon-/legend-
+   GRADERINGEN (⭐/⭐⭐) och att gamla profiler refereras i press].
+d) Rykten (20.6) [BYGGDA v139]: pensionsrykten förankrade i
+   generationsmaskinens VERKLIGA kö — sant rykte pekar på någon som
+   faktiskt pensioneras nästa skifte (äldst först, högst två; säsong
+   1 kan därför aldrig ha sanna — realism), falskt på någon som kör
+   vidare. "Ryktet"-etikett i Travbladet-appen, facit vid skiftet:
+   "Ryktet stämde" eller »Jag kör vidare«-dementi. Hash-avgjort.
+   KVAR: fler ryktestyper (stallflytt, sponsorer) och medieröster.
+e) Kontinuitetsminnets rest (20.2): exägarmöten, säsongsfacit,
+   injektion i kusksamtal och Travbladet.
+f) Stamboken (21.3) och legendaren (21.12).
+g) Cliffhanger-passet: varje veckoslut lämnar minst en krok.
+
+## 26.5 BLOCK D — VÄRLDEN OCH ROLLERNA KOMPLETTA
+a) Världens etapp B (20.8): tränarstall som läggs ner/tas över,
+   journalistgenerationer, banrenoveringar.
+b) Scouting och hästägargruppen som styrelse (20.7).
+c) Travsällskapets fortsättning (24): sällskapssidan i Kontoret,
+   publik-/ungdomseffekterna, trappan mot ordförande, egna motioner.
+
+## 26.6 BLOCK E — POKÉMON-LAGRET KOMPLETT (mekanik, aldrig vokabulär)
+a) Utrustningen (21.9) [BYGGD v138 — Balansen]: barfota runt om
+   (fart +, galopprisk +, FÖRBJUDEN på vinterbana med orsak),
+   jänkarvagn (fart +, hyra 900 kr på loppdagen), huvudlappar
+   (travsäkerhet +, start +). Opt-in i simulatorn med garanterad
+   återställning (finally): utan val identiskt lopp, provat.
+   Balanskortet i samtalssteget, valet klistrigt per häst, effekten
+   per start. VÄRDENA KONSERVATIVA (uppmätt 0,22 s/km barfota —
+   verkligheten ~1 s): Teds tuningpass väntar. KVAR: världens
+   hästar balanserar inte än; kusksamtalet kan kommentera valet.
+b) Dolda anlag (21.4): taket som avslöjas genom starter och test.
+c) Naturerna (21.10) och typaffiniteterna (21.11, ur statistiklagret).
+d) Raritetshästen (21.5).
+e) Taktikrepertoaren (21.13) — motorvarsamhet, full omkalibrering.
+
+## 26.7 BLOCK F — PREMIUMKÄNSLAN (Teds designskiss är facit)
+Genomförs när innehållet står, så passet polerar det färdiga spelet
+— men varje NY vy i block B–E byggs i skissens anda direkt.
+a) Startsidan = inkorgen som nav (19.6): Hem avvecklas.
+b) Hästsidan med flikar (Översikt/Karriär/Form/Mål/Relationer).
+c) Loppvyn: TV-läge och analysläge, varierade händelsetexter.
+d) Ekonomivyn med prognos ("kassan räcker 12 veckor").
+e) Prologen filmisk.
+f) Loppväljarens partymenyprov (22.4 #4).
+g) Gårdens liv (23 C): mästarflaggor, säsongsljus, skötaren i bild.
+h) Designsystempass: typografi, avstånd, övergångar — Travbladet
+   konsekvent överallt.
+
+## 26.8 BLOCK G — ROBUSTHETEN
+a) Sparplatser och autobackup (2.5) — karriärer i åratal kräver det.
+b) Väder-/säsongsdata i resultatraden → statistikens sista tabeller
+   (20.3 rest) + open stretch-statistik + rekordår.
+c) Prestandapass: inkorgsbygget och världskörningen på äldre mobiler.
+
+## 26.9 SEDAN — OCH FÖRST DÅ: LANSERINGEN
+När block A–G är klara och genomspelade: kapitel 25 i sin helhet —
+hostingflytt, domän, betalväggen (karriären som säljare, 25.3),
+Lemon Squeezy, 20-personerstestet. Ingenting av det byggs före dess.
+
+
+# 27. GRANSKNINGEN (okt 2026 — omstarten: "titta igenom allt")
+Två fronter: maratonkörning av hela spelet huvudlöst, och
+marknadsresearch mot andra spel. Fynden i korthet; åtgärderna är
+inarbetade i kapitel 26-blocken.
+
+## 27.1 KODHÄLSAN — motorn är frisk
+Maratonkörningen: tre frön × tre fulla säsonger, ~80 egna starter
+per karriär genom HELA kedjan (inkorg varje vecka, autobesvarade
+beslut, anmälan→uttagning→bekräftelse→lopp→efterlopp→veckoskifte→
+säsongsskifte): NOLL fel, NOLL invariantvarningar. Världen fungerar:
+12 seriemästare korade, lärlingar debuterade, troféer lagda, sparfil
+~370 kB (långt under localStorage-taket), kassan ändlig.
+TRE SJÄLVLÄKNINGSHÅL hittade och LAGADE v129 (felklassen som knäcker
+äldre sparfiler): spel.föl utan fält kraschade veckoskiftet,
+ägarhäst utan krav kraschade efterloppet, min.streck utan värde
+kraschade skrällpressen. Motorn antar inte längre — den självläker.
+KVARSTÅENDE OLÖSTA (block A, fortsatt blockerade på Teds data):
+beskedsknappen s2 och galopphängningen — maratonet stärker diagnosen
+att BÅDA bor i UI-/sparfilsskiktet, inte motorn: motorkedjan kördes
+~240 gånger över säsongsgränser utan fel. Teknisk skuld bekräftad:
+klassEtikett/klassnivå dubbla (A-c).
+
+## 27.2 ÄKTHETSDOMEN — vad travfolk får och saknar
+HÅLLER: delning enligt ST, startpoäng, klasser ur insprunget,
+kuskbokning med arvoden, lärlingar, voltstartens tillägg,
+travsällskapet, pressetiken. SAKNAS (bekräftat i koden): VÄDER OCH
+BANFÖRHÅLLANDEN (vinterbana!) — noll spår i motorn (G-blocket, höjd
+prioritet: travsverige ÄR vinterbanor halva året); BARFOTA/SKONING —
+finns inte (21.9, se 27.4: ingen konkurrent har det heller — bygget
+är en differentierare, flyttas upp); MONTÉ — nämns bara i
+regeldata, körs aldrig (parkerad medvetet, nischgren); LOPPFEEDENS VARIATION [ÅTGÄRDAD v135: hash-vald frasvariation i positionsbesluten och open stretch — skissens taktiska fraser inne ("tappar ryggen", "lämnar andra utvändigt"), 125 unika mallar uppmätta över 40 lopp, HELT slumpfritt: samma frö ger identiskt lopp]. BANORNA ÄR FIKTIVA
+(Nordstad, Kvarnbacken...) — juridiskt tryggt och eget; riktiga
+banor (Solvalla, Åby) vore säljande men kräver rättighetskoll —
+medvetet val, står fast tills annat beslutas.
+
+## 27.3 PREMIUMGAPET — mot designskissen och FM-lärdomen
+Olevererat ur skissen = kapitel 26 F (bekräftat rätt lista):
+TV-/analysläge, hästsidans flikar, ekonomiprognosen, filmisk prolog,
+Hem→inkorg. FM26-LÄRDOMEN ur recensionerna: snygg motor räddar inte
+rörig informationsarkitektur — recensenter mäter KLICK TILL
+KÄRNUPPGIFT. Vår inkorgsarkitektur är rätt svar; F-passets regel:
+inga nya menynivåer, varje vy ett huvudsyfte (skissens slutord).
+
+## 27.4 MARKNADEN — läget är bättre än väntat
+- NAMNET ÄR LEDIGT: inget spel "Travmanager" finns eller har funnits.
+  MEN travmanager.se är registrerad och parkerad (Loopia) — ÅTGÄRD
+  FÖRE LANSERING: WHOIS-koll och försök köpa loss tidigt + PRV-
+  sökning på varumärket. (Hör till 26.9, men kolla domänen NU —
+  den blir inte billigare av att spelet blir känt.)
+- INGEN svensk/nordisk travmanager existerar — marknadslucka.
+  Närmaste konkurrent globalt: Off and Pacing (enda aktiva harness-
+  managerspelet; dragplåster: riktiga banor, live-multiplayer).
+- FÖRVÄNTNINGSLISTAN ur konkurrenternas recensioner, mappad:
+  avelsdjup/dynastier ✓(avel finns; stamboken 21.3 fullbordar),
+  loppkommentar ✓(feedens variation höjs, 27.2), statistik ✓,
+  utrustning/skoning — UNIK LUCKA HOS ALLA, vår 21.9 flyttas TIDIGT
+  i block E, banvariation ✓(fiktiva), väder ✗(27.2), regelverk/
+  domare ✓(bortkörningar finns).
+- NYA KANDIDATER granskningen väcker (antecknade, bryter inget
+  block): SPELA PÅ LOPPEN SJÄLV — spelaren som V85-spelare med
+  låtsaskassa (strecken och spelförtroendet finns redan; travspelare
+  VILL spela — stor trollbindare, läggs som 27.4-kandidat i block C);
+  multiplayer/ligor — konkurrenternas främsta dragplåster, men fel
+  för arkitekturen nu (statisk PWA): PARKERAD tills efter lansering.
+
+
+## 19.7 TELEFONEN [BYGGD v131 — Teds riktning: "travtränarens smartphone"]
+Inkorgen ÄR tränarens mobil. MEDIET BÄR BRÅDSKAN: samtal = viktigt
+(nyskadad häst → veterinären ringer; genombrott → journalisten
+ringer), sms = personligt och snabbt, mejl = formellt (arrangören,
+avtalen, veckans genomgång fäst), tidningen = omvärlden. Fyra appar
+med olästmärken och statusrad (TRAVNET · v X · stopp). MEDDELANDEN
+är TRÅDAR per person med historia (telefonloggen, tak 140, idempotent
+arkivering vid varje klockhopp) — beslut besvaras som svarschips och
+svaret står kvar som din utgående bubbla: chatten minns vad du sa.
+SAMTAL är samtalsloggen ("Missat samtal — ring upp" i tegel för
+obesvarade beslut). Läsvyn (FM-anatomin v108) behålls för samtal/
+mejl/nyheter. BUGGFIX på köpet: rollklass-hjälparen låg efter läsvyn
+(temporal dead zone) — att öppna ett meddelande har kastat
+ReferenceError sedan v121; trolig rot till "frysta" upplevelser.
+[v135: uttalandet FLYTTAT till journalistens samtal — Travbladet
+ringer efter notabla lopp (seger/favoritfall/pall/bortkörning), den
+grå mittendagen ringer ingen om; efteranalysrapporten behåller
+analysen men inte beslutet.] KVAR: fler trådröster med historik.

@@ -986,3 +986,155 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 }
 .stat-rad span:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
 .stat-huvud { font-size: 10px; opacity: 0.55; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* v115: genombrottsmärket — guld, diskret, för alltid */
+.genombrott-marke { color: var(--guld, #F2B134); font-size: 0.85em; }
+
+
+/* ==================== Klasstrappan (v116) ==================== */
+.klasstagg {
+  margin-left: 7px; font-size: 9px; letter-spacing: 0.1em;
+  color: var(--marin, #1d2f4e); border: 1px solid currentColor;
+  border-radius: 3px; padding: 1px 4px; vertical-align: 2px; opacity: 0.75;
+}
+.klassmätare {
+  height: 5px; border-radius: 3px; margin: 6px 0 3px;
+  background: rgba(29,47,78,0.14); overflow: hidden;
+}
+.klassmätare-fyllnad { height: 100%; background: var(--guld, #F2B134); border-radius: 3px; }
+.klassmätare-text { font-size: 11px; opacity: 0.7; }
+
+
+/* ==================== Partyraden (v117, Game Boy-enkelheten) ==================== */
+.hp-rad { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.hp-etikett { font-size: 8px; letter-spacing: 0.14em; opacity: 0.55;
+  font-family: 'Roboto Mono', monospace; }
+.hp-bana { flex: 1; height: 7px; border-radius: 4px; max-width: 150px;
+  background: rgba(29,47,78,0.15); border: 1px solid rgba(29,47,78,0.25); overflow: hidden; }
+.hp-fyllnad { height: 100%; border-radius: 3px; transition: width 0.4s; }
+.hp-grön { background: #3E8E5A; }
+.hp-gul { background: #D9A421; }
+.hp-röd { background: #B3402E; }
+.statusbrickor { display: flex; gap: 4px; margin-top: 4px; }
+.bricka { font-size: 8px; letter-spacing: 0.1em; padding: 1px 5px; border-radius: 3px;
+  font-family: 'Roboto Mono', monospace; color: #fff; }
+.bricka-skd { background: #B3402E; }
+.bricka-topp { background: #3E8E5A; }
+.bricka-svag { background: #8C8C84; }
+
+/* v120: gym-trappans egna rader — dina hästar i guldton */
+.serie-egen { background: rgba(242,177,52,0.13); font-weight: 600; }
+
+
+/* ==================== Rollfärgerna (v121) — storyn syns ==================== */
+.roll-forstaman { --rollfärg: #1d2f4e; }
+.roll-skotare   { --rollfärg: #3E8E5A; }
+.roll-kusk      { --rollfärg: #2E6FB3; }
+.roll-agare     { --rollfärg: #8E3B46; }
+.roll-vet       { --rollfärg: #2E8E86; }
+.roll-mentor    { --rollfärg: #B3831D; }
+.roll-rival     { --rollfärg: #3A3A38; }
+.roll-sponsor   { --rollfärg: #6B4FA0; }
+.roll-tidning   { --rollfärg: #1c1c1a; }
+.roll-arrangor  { --rollfärg: #7A5C3E; }
+.roll-ovrig     { --rollfärg: #6b6b64; }
+.sms-initial { background: var(--rollfärg, #6b6b64); color: #faf7ef; }
+.tel-ikon { color: var(--rollfärg, inherit); }
+.trådchip {
+  display: inline-block; margin-left: 5px; padding: 0 5px;
+  font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase;
+  font-family: 'Roboto Mono', monospace; border-radius: 3px;
+  color: var(--rollfärg); border: 1px solid var(--rollfärg); opacity: 0.8;
+  vertical-align: 1px;
+}
+.trådtext { color: var(--rollfärg); font-weight: 600; }
+
+/* v122: Theme Park-lagret på gårdskartan */
+.gk-tomt, .gk-salu { cursor: pointer; }
+.gk-plus { fill: #6b7b8a; font-size: 13px; text-anchor: middle; font-family: 'Roboto Mono', monospace; }
+.gk-salu-text { fill: #F2B134; font-size: 6.5px; letter-spacing: 0.1em; text-anchor: middle; font-family: 'Roboto Mono', monospace; }
+
+
+/* ==================== Telefonen (v131) ==================== */
+.telefon-status {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: 'Roboto Mono', monospace; font-size: 9px; letter-spacing: 0.12em;
+  color: var(--marin, #1d2f4e); opacity: 0.75; text-transform: uppercase;
+  border-bottom: 2px solid var(--marin, #1d2f4e); padding: 2px 2px 5px; margin-bottom: 10px;
+}
+.telefon-status span:nth-child(2) { font-weight: 700; letter-spacing: 0.2em; }
+.app-rad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; }
+.app-knapp {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 7px 2px 6px; font-size: 9.5px; letter-spacing: 0.04em;
+  background: rgba(29,47,78,0.06); border: 1px solid rgba(29,47,78,0.2);
+  border-radius: 8px; color: var(--marin, #1d2f4e); font-family: inherit;
+}
+.app-knapp.aktiv { background: var(--marin, #1d2f4e); color: #faf7ef; }
+.app-glyf { font-size: 15px; line-height: 1; }
+.app-badge {
+  position: absolute; top: -5px; right: -3px; min-width: 16px; height: 16px;
+  border-radius: 8px; background: var(--tegel, #B3402E); color: #fff;
+  font-size: 9px; font-weight: 700; display: flex; align-items: center;
+  justify-content: center; padding: 0 4px; font-family: 'Roboto Mono', monospace;
+}
+.tråd-rad { display: flex; gap: 9px; align-items: center; }
+.tråd-mitt { flex: 1; min-width: 0; }
+.tråd-badge {
+  min-width: 18px; height: 18px; border-radius: 9px; background: var(--tegel, #B3402E);
+  color: #fff; font-size: 10px; display: flex; align-items: center; justify-content: center;
+  padding: 0 5px; font-family: 'Roboto Mono', monospace; font-weight: 700;
+}
+.liten-märke { font-size: 8px; padding: 0 4px; margin-left: 5px; vertical-align: 1px; }
+.samtalsrad { display: flex; gap: 9px; align-items: center; }
+.samtalsrad .tel-ikon { font-size: 17px; }
+.samtalsrad.missat .samtals-etikett, .samtalsrad.missat .tel-ikon { color: var(--tegel, #B3402E); }
+.samtals-etikett { font-size: 11px; opacity: 0.8; }
+.samtals-puls { font-size: 19px; color: #3E8E5A; margin-left: auto; }
+.samtals-puls.tegel { color: var(--tegel, #B3402E); }
+.samtalsvy .förhand-text p { font-size: 14.5px; }
+.chatt { padding: 4px 0 10px; }
+.bubbelrad { display: flex; margin: 5px 0; }
+.bubbelrad.ut { justify-content: flex-end; }
+.bubbla {
+  max-width: 82%; padding: 8px 11px; border-radius: 13px;
+  background: rgba(29,47,78,0.08); border: 1px solid rgba(29,47,78,0.12);
+}
+.bubbla-in { border-bottom-left-radius: 4px; border-left: 3px solid var(--rollfärg, #6b6b64); }
+.bubbla-ut {
+  background: var(--marin, #1d2f4e); color: #faf7ef;
+  border-bottom-right-radius: 4px; border-color: var(--marin, #1d2f4e);
+}
+.bubbla-text { font-size: 13.5px; line-height: 1.45; white-space: pre-line; }
+.bubbla-tid {
+  font-size: 8.5px; opacity: 0.55; margin-top: 3px; text-align: right;
+  font-family: 'Roboto Mono', monospace;
+}
+.svarschip {
+  padding: 8px 13px; border-radius: 16px; font-size: 13px; font-family: inherit;
+  background: var(--marin, #1d2f4e); color: #faf7ef; border: 1px solid var(--marin, #1d2f4e);
+}
+.svarschip.sekundär { background: transparent; color: var(--marin, #1d2f4e); }
+
+/* v133: Nästa mål-raden — en rad, alltid synlig */
+.nästamål {
+  display: flex; align-items: center; gap: 7px; width: 100%;
+  padding: 7px 12px; margin: 0 0 2px; font-family: inherit; font-size: 12.5px;
+  background: rgba(242,177,52,0.12); border: none;
+  border-bottom: 1px solid rgba(29,47,78,0.18);
+  color: var(--marin, #1d2f4e); text-align: left; cursor: pointer;
+}
+.nästamål-etikett {
+  font-family: 'Roboto Mono', monospace; font-size: 8.5px; letter-spacing: 0.16em;
+  text-transform: uppercase; background: var(--marin, #1d2f4e); color: #faf7ef;
+  padding: 2px 6px; border-radius: 3px; flex-shrink: 0;
+}
+.nästamål-pil { margin-left: auto; opacity: 0.55; }
+
+/* v138: Balansen — utrustningsvalen inför starten */
+.balans-kort { margin-bottom: 10px; }
+.balans-rad { display: flex; align-items: baseline; gap: 8px; padding: 5px 0;
+  border-bottom: 1px solid rgba(29,47,78,0.1); cursor: pointer; }
+.balans-rad.spärrad { opacity: 0.55; cursor: default; }
+.balans-namn { font-weight: 600; font-size: 13px; white-space: nowrap; }
+.balans-text { font-size: 11px; opacity: 0.75; }

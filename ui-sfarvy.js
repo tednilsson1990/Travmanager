@@ -6,6 +6,39 @@ import { klamp, kr } from "./engine-util.js";
 import { tränarliga } from "./engine-varld.js";
 import { Tom } from "./ui-delar.js";
 import { förstasidan, statistikern, krönikan } from "./engine-travblad.js";
+import { SERIENAMN, serietabell } from "./engine-serie.js";
+import { useState } from "preact/hooks";
+
+function Serietrappan({ spel }) {
+  const [serie, sättSerie] = useState(SERIENAMN[1]);
+  const rader = serietabell(spel, serie).slice(0, 8);
+  const mästare = (spel.seriemästare ?? []).slice(0, 6);
+  return html`
+    <div class="kort">
+      <select class="valfält" value=${serie} onChange=${(e) => sättSerie(e.target.value)}>
+        ${SERIENAMN.map((n) => html`<option key=${n} value=${n}>${n}</option>`)}
+      </select>
+      ${rader.length === 0
+        ? html`<div class="hint">Inga deltävlingar körda i ${serie} ännu den här säsongen.</div>`
+        : html`
+          <div class="stat-tabell">
+            <div class="stat-rad stat-huvud"><span>Häst</span><span>St</span><span></span><span>Poäng</span><span></span></div>
+            ${rader.map((r, i) => html`
+              <div key=${r.namn} class=${"stat-rad" + (r.egen ? " serie-egen" : "")}>
+                <span>${i + 1}. ${r.namn}${r.egen ? " ★" : ""}</span>
+                <span>${r.starter}</span><span></span><span>${r.poäng}</span><span></span>
+              </div>`)}
+          </div>
+          <div class="hint">Placeringspoäng 15-12-10-8-6-4-2-1 per deltävling. Bäst vid säsongsslutet koras till seriemästare.</div>`}
+      ${mästare.length > 0 && html`
+        <div class="stat-rubrik" style=${{ marginTop: "12px" }}>Mästarväggen</div>
+        ${mästare.map((m) => html`
+          <div key=${m.serie + m.säsong} class=${"prisrad" + (m.egen ? " serie-egen" : "")}>
+            <span>${m.serie} · säsong ${m.säsong}</span>
+            <span class="pris">${m.häst}${m.egen ? " ★" : ""}</span>
+          </div>`)}`}
+    </div>`;
+}
 
 export default function SfarVy({ spel }) {
   const externa = spel.stall.filter((h) => h.ägare);
@@ -39,6 +72,8 @@ export default function SfarVy({ spel }) {
         </table>
       </div>`}
 
+    <h2>Serierna — trappan</h2>
+    <${Serietrappan} spel=${spel} />
     <h2>Tränarligan</h2>
     <div class="kort">
       <div class="meta" style="margin-bottom:8px">

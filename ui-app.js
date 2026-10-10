@@ -15,6 +15,7 @@ import { Dräkt } from "./ui-grafik.js";
 import HemVy from "./ui-hemvy.js";
 import InkorgVy from "./ui-inkorgvy.js";
 import StatistikVy from "./ui-statistikvy.js";
+import { nästaMål } from "./engine-nastamal.js";
 import { inkorgsläge } from "./engine-inkorg.js";
 import JournalVy from "./ui-journalvy.js";
 import ScenVy from "./ui-scenvy.js";
@@ -88,6 +89,14 @@ export default function App() {
         <div>Hästar<b>${spel.stall.length}</b></div>
       </div>
     </header>
+    ${(() => {
+      /* NÄSTA MÅL (v133): en rad, alltid synlig, alltid klickbar —
+         spelaren ska aldrig undra vad nästa naturliga steg är. */
+      const mål = nästaMål(spel);
+      return html`<button class="nästamål" onClick=${() => sättFlik(mål.flik)}>
+        <span class="nästamål-etikett">Nästa</span> ${mål.text} <span class="nästamål-pil">›</span>
+      </button>`;
+    })()}
 
     <div class="wrap">
       ${flik === "hem" && html`<${HemVy} spel=${spel} gåTill=${(f) => sättFlik(f)} />`}
