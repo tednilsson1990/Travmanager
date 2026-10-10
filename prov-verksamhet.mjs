@@ -69,7 +69,7 @@ console.log("PROV: verksamheten\n");
 {
   ok(ägartyp("Stall Vinterfrid") === ägartyp("Stall Vinterfrid"),
     "ägartypen är deterministisk — samma ägare är samma person");
-  ok(Object.keys(ÄGARTYPER).length === 5, "fem ägartyper (kap 7.1)");
+  ok(Object.keys(ÄGARTYPER).length === 6, "sex ägartyper (kap 7.1 + andelslaget v160)");
 
   const spel = nyttSpel();
   /* Migrering: gammal sparfil har bara relation + hästerbjudet. */

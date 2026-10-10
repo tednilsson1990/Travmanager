@@ -68,5 +68,25 @@ const häst = (extra = {}) => ({ id: 1, namn: "Provhästen", starter: 6, intjän
   ok(först && först.includes("FÖRSTA"), "första segern får sin egen rad");
 }
 
+
+/* ---------------- Exägarmötet (v156, 20.2-resten) ---------------- */
+{
+  const h = { id: 1, namn: "Min Häst", egen: true, resultat: [] };
+  const motst = { id: 77, namn: "Sålda Stjärnan", egen: false };
+  const spel = { säsong: 3, karriär: { starter: 10, segrar: 3, prispengar: 100000, storloppssegrar: 0 },
+    rivaliteter: {}, loppfacit: {},
+    stambok: [{ id: 77, namn: "Sålda Stjärnan", öde: "såld", uppfödd: true, segrar: 2 }] };
+  const rader = minnenInförLopp(spel, h, { kortnamn: "Provlöpning" }, [h, motst]);
+  ok(rader.some((r) => r.includes("Sålda Stjärnan") && r.includes("sålde")),
+    "kusken får veta att en gammal bekant står i fältet");
+  spel.stambok[0].öde = "flyttad";
+  const rader2 = minnenInförLopp(spel, h, { kortnamn: "Provlöpning" }, [h, motst]);
+  ok(rader2.some((r) => r.includes("ägaren hämtade")),
+    "den ägarflyttade hästen får sin egen formulering");
+  const rader3 = minnenInförLopp(spel, h, { kortnamn: "Provlöpning" }, [h, { id: 9, namn: "Okänd", egen: false }]);
+  ok(!rader3.some((r) => r.includes("fältet —")),
+    "okända motståndare väcker inga falska minnen");
+}
+
 console.log(fel === 0 ? "\nALLA PROV OK\n" : `\n${fel} PROV FÖLL\n`);
 process.exit(fel === 0 ? 0 : 1);
