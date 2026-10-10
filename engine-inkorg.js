@@ -42,7 +42,10 @@ import { skrivPress } from "./engine-vecka.js";
 import { klamp } from "./engine-util.js";
 import { veckansGenomgång } from "./engine-veckomote.js";
 import { ägartyp, ägarKontakt } from "./engine-agare.js";
+const STARTERPROFILNAMN = { spetsaren: "Spetsaren", stayern: "Stayern", talangen: "Talangen" };
 import { KUSKAR, relation as kuskrelation } from "./data-kuskar.js";
+import { invalsläge, säkraSällskap, säsongsmotion, rösta, MOTIONER } from "./engine-sallskap.js";
+import { SERIENAMN, finalkandidater } from "./engine-serie.js";
 
 /** Stabil innehållshash — lästmarkeringens ankare. */
 function hash(text) {
@@ -148,7 +151,22 @@ export function byggInkorg(spel) {
   }
 
   /* ---- Veterinären → skaderapport per skadad häst. ---- */
-  (spel.stall ?? []).filter((h) => h.skada > 0).forEach((h) => {
+  /* TELEFONEN (v131, Teds regel: mediet bär brådskan — "kommer det
+     samtal är det bråttom, typ skada"). En NYSKADAD häst ger ett
+     SAMTAL från veterinären direkt från stallet; den vanliga
+     rapporten tar vid från veckan därpå. */
+  (spel.stall ?? []).filter((h) => h.skada > 0 && h.skadadVecka === spel.vecka - 1).forEach((h) => {
+    lägg({
+      avsändare: "Veterinären", roll: "Stallveterinär", typ: "samtal", prioritet: "rekommendation",
+      rubrik: `${h.namn} är skadad`,
+      text: `»Jag står i stallet nu. Det är inte dramatiskt — men ${h.namn} står still ${h.skada} ${h.skada === 1 ? "vecka" : "veckor"}.«`,
+      lång: `— Hej, det är veterinären. Jag står i stallet nu.\n— ${h.namn} kändes inte bra efter helgen, så jag tittade direkt. Det är inte dramatiskt, men det är en skada.\n— Min bedömning: ${h.skada} ${h.skada === 1 ? "vecka" : "veckor"} still, sedan tar vi det därifrån. Skriftlig rapport kommer.\n— Ring om något ändras. Annars hörs vi nästa vecka.`,
+      detaljer: [{ namn: "Vila", värde: `${h.skada} ${h.skada === 1 ? "vecka" : "veckor"}` }],
+      flik: "stall",
+    });
+  });
+
+  (spel.stall ?? []).filter((h) => h.skada > 0 && h.skadadVecka !== spel.vecka - 1).forEach((h) => {
     lägg({
       avsändare: "Veterinären", roll: "Stallveterinär", typ: "rapport",
       prioritet: h.skada === 1 ? "beslut" : "info",
@@ -233,6 +251,174 @@ export function byggInkorg(spel) {
     }
   }
 
+  /* ---- FINALVECKAN (v130): kvalbeskedet. Sista veckan får varje
+     kvalad häst arrangörens inbjudan — seriens åtta främsta möts. ---- */
+  if ((spel.vecka ?? 0) === (spel.veckor ?? 18)) {
+    SERIENAMN.forEach((serie) => {
+      const kand = finalkandidater(spel, serie);
+      if (kand.length < 6) return;
+      const egna = (spel.stall ?? []).filter((h) => kand.includes(h.namn));
+      egna.forEach((h) => {
+        lägg({
+          avsändare: "Arrangörerna", roll: "Tävlingsledningen", typ: "mejl",
+          prioritet: "rekommendation",
+          rubrik: `${h.namn} uttagen till finalen i ${serie}`,
+          text: `Seriens åtta främsta möts i helgen — och ${h.namn} är en av dem.`,
+          lång: `Hej ${spel.stallnamn ?? "tränaren"},\n\nSäsongens poängräkning i ${serie} är avslutad, och ${h.namn} hör till de åtta främsta. Hästen är därmed UTTAGEN TILL FINALEN som körs nu i helgen — förhöjda prispengar, och seriemästartiteln till vinnaren.\n\nAnmäl kusk som vanligt under måndagen. Spåren fördelas efter poängordningen: de främsta startar innerst.\n\nVälkomna till finaldagen.\n\nMed vänlig hälsning,\nTävlingsledningen`,
+          flik: "lopp",
+        });
+      });
+    });
+  }
+
+  /* ---- TRAVSÄLLSKAPET (v124, kap 24): valberedningen ringer när
+     invalet är förtjänat, och som ledamot får du säsongens motion på
+     bordet — en röst av sju. ---- */
+  {
+    const läge = invalsläge(spel);
+    if (läge.kvalar) {
+      lägg({
+        avsändare: "Valberedningen", roll: "Travsällskapet", typ: "samtal", prioritet: "beslut",
+        rubrik: "Travsällskapet söker en ledamot",
+        text: `»Vi har följt er verksamhet. Styrelsen behöver någon som kan den aktiva sidan.«`,
+        lång: `— God kväll. Jag ringer från travsällskapets valberedning.\n— Vi har följt er verksamhet några säsonger nu. Styrelsen behöver någon som kan den aktiva sidan — som vet vad en proposition betyder i stallgången.\n— Det är inget betalt uppdrag, och det tar tid från gården. Men den som sitter vid bordet är med och avgör hur banan utvecklas.\n— Får jag lämna ert namn till årsmötet?`,
+        beslut: { typ: "sällskapsinval", ref: null, alternativ: [
+          { id: "ja", etikett: "Ja — lämna mitt namn" },
+          { id: "nej", etikett: "Inte i år", sekundär: true },
+        ] },
+        flik: "kontor",
+      });
+    }
+    if (läge.ledamot) {
+      const motion = säsongsmotion(spel);
+      if (motion && !motion.utfall) {
+        const m = MOTIONER[motion.id];
+        lägg({
+          avsändare: "Travsällskapet", roll: "Travsällskapet", typ: "mejl", prioritet: "beslut",
+          rubrik: `Motion: ${m.rubrik}`,
+          text: `Styrelsen sammanträder. Din röst är en av sju.`,
+          lång: `Till styrelsens ledamöter,\n\nFöljande motion behandlas vid nästa sammanträde:\n\n${m.rubrik.toUpperCase()}\n${m.text}\n\nOmröstning sker vid sittande bord. Ordföranden påminner om att ledamot med egen vinning i frågan förväntas redovisa den.\n\nSällskapets sekreterare`,
+          beslut: { typ: "sällskapsröst", ref: motion.id, alternativ: [
+            { id: "ja", etikett: "Rösta ja" },
+            { id: "nej", etikett: "Rösta nej", sekundär: true },
+          ] },
+          flik: "kontor",
+        });
+      }
+    }
+  }
+
+  /* ---- RIVALEN OCH MENTORN (v118, storyarkitekturen från Pokémon:
+     antagonisten som föds ur ditt val, mentorn som stannar hela
+     spelet). Rivalens röster läses rent ur världens verkliga data —
+     hans häst tävlar där på riktigt. ---- */
+  if (spel.rival) {
+    const rh = (spel.värld?.hästar ?? []).find((x) => x.id === spel.rival.hästId);
+
+    /* Hälsningen: en gång, tidigt. Gary lämnar labbet med sin starter. */
+    if ((spel.karriär?.starter ?? 0) < 3 && (spel.säsong ?? 1) <= 1) {
+      const min = (spel.stall ?? []).find((x) => x.starterprofil);
+      lägg({
+        avsändare: spel.rival.tränare.split(" ")[0], roll: "Rivaltränare", typ: "sms",
+        prioritet: "info", rubrik: "Nytt nummer — spara det",
+        text: `Hörde att du var hos uppfödaren före mig. ${spel.rival.hästNamn} blev kvar — jag tog ${min ? "henne" : "henne"} i går. Bra häst, tror jag. Vi ses väl på banan framöver.`,
+        flik: "sfar",
+      });
+    }
+
+    /* MÖTET (v132, 21.6 B — Garys konfrontationsslag). Före helgen:
+       sms:et när startlistan är satt. Efter: reaktionen på inbördes
+       placering — och pressen skriver när ni faktiskt mättes. */
+    const möte = spel.rivalmöte;
+    if (möte?.läge === "väntar" && möte.vecka === spel.vecka && möte.säsong === (spel.säsong ?? 1)) {
+      lägg({
+        avsändare: spel.rival.tränare.split(" ")[0], roll: "Rivaltränare", typ: "sms",
+        prioritet: "info", rubrik: `Samma lopp i helgen`,
+        text: `Jag ser startlistan till ${möte.lopp}. ${spel.rival.hästNamn} mot er — på riktigt den här gången. Vi ses på banan.`,
+        flik: "lopp",
+      });
+    }
+    if (möte?.läge === "avgjort" && möte.vecka === spel.vecka - 1 && möte.säsong === (spel.säsong ?? 1)) {
+      const jagVann = (möte.minPlats ?? 99) < (möte.rivalPlats ?? 99);
+      lägg({
+        avsändare: spel.rival.tränare.split(" ")[0], roll: "Rivaltränare", typ: "sms",
+        prioritet: "info",
+        rubrik: jagVann ? "Om helgen" : "Som jag sa",
+        text: jagVann
+          ? (möte.minPlats === 1
+            ? `Grattis till segern. Jag menar det — nästan. ${spel.rival.hästNamn} var inte sig själv. Nästa gång blir det annorlunda.`
+            : `Ni var före oss i mål. Noterat. Det händer inte igen.`)
+          : (möte.rivalPlats === 1
+            ? `${spel.rival.hästNamn} vann. Jag tänker inte låtsas att det inte känns bra. Tack för motståndet — sånt det nu var.`
+            : `Före er i mål, i alla fall. Små steg. Vi räknar vidare.`),
+        flik: "lopp",
+      });
+    }
+
+    /* Måndagsrösten: rivalens häst startade i helgen — skryt eller bett. */
+    if (rh && rh.senasteStartVecka === spel.vecka - 1 && (spel.vecka ?? 1) > 1
+      && !(möte?.läge === "avgjort" && möte.vecka === spel.vecka - 1)) {
+      lägg({
+        avsändare: spel.rival.tränare.split(" ")[0], roll: "Rivaltränare", typ: "sms",
+        prioritet: "info",
+        rubrik: rh.segrar > 0 ? `${spel.rival.hästNamn} vann — igen?` : `Vi jobbar på det`,
+        text: rh.segrar > 0
+          ? `${spel.rival.hästNamn} tog ${rh.segrar === 1 ? "sin första" : "seger nummer " + rh.segrar} i helgen. Det rullar på för oss. Hur har ni det?`
+          : (rh.form ?? 50) >= 58
+            ? `Ingen seger än för ${spel.rival.hästNamn} — men formen kommer. Njut av försprånget så länge det varar.`
+            : `Trögt för oss ett tag nu. Men säsongen är lång — det vet du också.`,
+        flik: "sfar",
+      });
+    }
+  }
+
+  /* Journalisten ringer (v131): genombrottet ger Travbladet luren i
+     handen — medium-variationen Ted bad om. */
+  {
+    const gh = (spel.stall ?? []).find((x) =>
+      x.genombrott?.vecka === spel.vecka - 1 && x.genombrott?.säsong === (spel.säsong ?? 1));
+    if (gh) {
+      lägg({
+        avsändare: "Travbladet", roll: "Tidningen", typ: "samtal", prioritet: "info",
+        rubrik: `Vill prata om ${gh.namn}`,
+        text: `»Hela pressläktaren pratade om loppet. Har du två minuter?«`,
+        lång: `— Hej, Travbladet här. Stör jag?\n— Jag ringer om ${gh.namn}. Hela pressläktaren pratade om loppet — det där var inte en vanlig seger.\n— Jag skriver till helgbilagan. Säg som det är: visste ni att klivet var på väg?\n— Tack. Och grattis — sånt här är därför vi håller på.`,
+        flik: "stall",
+      });
+    }
+  }
+
+  /* Mentorbrevet: Oak stannar hela spelet. Rösten återvänder vid det
+     som betyder något — genombrottet och den första segern. */
+  {
+    const mentor = spel.prolog?.mentor;
+    if (mentor && !mentor.borta) {
+      const genombrottshäst = (spel.stall ?? []).find((x) =>
+        x.genombrott?.vecka === spel.vecka - 1 && x.genombrott?.säsong === (spel.säsong ?? 1));
+      if (genombrottshäst) {
+        lägg({
+          avsändare: mentor.namn, roll: "Mentor", typ: "mejl", prioritet: "info",
+          rubrik: `Om ${genombrottshäst.namn}`,
+          text: `»Jag såg loppet. Det där var klivet — jag har sett det förr och det går inte att ta miste på.«`,
+          lång: `Hej,\n\nJag såg loppet i går. Jag har följt varenda start ni gjort — pensionärer har gott om tid — men det här var något annat. ${genombrottshäst.namn} tog klivet. Jag har sett det hända några gånger under mina år, och det går inte att ta miste på: hästen VET något efteråt som den inte visste innan.\n\nVårda det nu. ${mentor.motto}\n\n${mentor.namn}`,
+          flik: "stall",
+        });
+      }
+      const förstaSegern = (spel.karriär?.segrar ?? 0) === 1
+        && (spel.stall ?? []).some((x) => x.resultat?.[0]?.plats === 1
+          && x.resultat[0].vecka === spel.vecka - 1 && x.resultat[0].säsong === (spel.säsong ?? 1));
+      if (förstaSegern) {
+        lägg({
+          avsändare: mentor.namn, roll: "Mentor", typ: "mejl", prioritet: "info",
+          rubrik: "Den första",
+          text: `»Den första segern glömmer man aldrig. Jag minns min — och nu har du din.«`,
+          lång: `Hej,\n\nDen första segern glömmer man aldrig. Min kom en regnig tisdag för över trettio år sedan och jag kan fortfarande höra upploppet.\n\nNu har du din. Det kommer fler — men ingen känns som den första.\n\n${mentor.namn}`,
+          flik: "stall",
+        });
+      }
+    }
+  }
+
   /* ---- EFTERANALYSEN I INKORGEN (v113, Teds önskan: "saknar analys
      efter loppet i inkorgen, samt chans att uttala sig"). En rapport
      per start förra veckan, med förstamannens avgörande och läxa —
@@ -280,16 +466,29 @@ export function byggInkorg(spel) {
           `UTFALLET\n${a.ur ? "Bortkörd." : `Plats ${a.plats}.`}${a.varFavorit ? " Loppets mest spelade häst." : ""}${a.läge ? ` Resan: ${a.läge}.` : ""}`,
           a.avgörande ? `AVGÖRANDET\n${a.avgörande}` : null,
           a.läxa ? `LÄXAN\n${a.läxa}` : null,
-          !a.uttalad ? `PRESSEN VÄNTAR\nTravbladet vill ha en kommentar. Välj ton nedan — den hamnar i tidningen med ditt namn under.` : null,
         ].filter(Boolean).join("\n\n"),
         detaljer: [
           { namn: "Placering", värde: a.ur ? "bortkörd" : `${a.plats}` },
           { namn: "Spelprocent", värde: `${(a.streck ?? 0).toFixed?.(0) ?? a.streck} %` },
         ],
-        ...(a.uttalad ? {} : { beslut: { typ: "uttalande",
-          ref: { hästId: a.hästId, vecka: a.vecka, utfall }, alternativ } }),
         flik: "lopp",
       });
+
+      /* UTTALANDET BOR I LUREN (v135, 19.7): pressen RINGER efter de
+         notabla loppen — segern, favoritfallet, pallen, bortkörningen.
+         Den grå mittendagen ringer ingen om. Rättare medium än ett
+         stycke i förstamannens rapport. */
+      if (!a.uttalad && utfall !== "mitt") {
+        lägg({
+          avsändare: "Travbladet", roll: "Tidningen", typ: "samtal", prioritet: "rekommendation",
+          rubrik: `Vill ha en kommentar om ${a.hästNamn}`,
+          text: `»${utfall === "seger" ? "Grattis till segern" : utfall === "favoritfall" ? "Favoriten föll" : utfall === "bortkörd" ? "Det blev galopp" : "Stark placering"} — vad säger tränaren?«`,
+          lång: `— Hej, Travbladet. Jag skriver om ${a.lopp}.\n— ${utfall === "seger" ? `${a.hästNamn} vann — läsarna vill höra er.` : utfall === "favoritfall" ? `${a.hästNamn} var mest spelad och kom ${a.plats ?? "utanför"}. Spelarna undrar.` : utfall === "bortkörd" ? `Galoppen — vad hände där ute?` : `${a.plats}:a — godkänt eller mer att hämta?`}\n— Välj era ord. Citatet går i tryck med ert namn under.`,
+          beslut: { typ: "uttalande",
+            ref: { hästId: a.hästId, vecka: a.vecka, utfall }, alternativ },
+          flik: "lopp",
+        });
+      }
     });
 
   /* ---- ÄGARNAS RÖSTER (v110, Teds punkt 3–4: relationer och
@@ -422,6 +621,18 @@ export function byggInkorg(spel) {
   }
 
   /* ---- Travbladet → veckans nyheter (senaste tre pressnotiserna). ---- */
+  /* RYKTENA (v139, 20.6): viskningarna står i tidningen med egen
+     etikett — och spelaren kan aldrig se vilka som är sanna. */
+  (spel.rykten ?? []).filter((r) => !r.avgjort).slice(-2).forEach((r) => {
+    lägg({
+      avsändare: "Travbladet", roll: "Tidningen", typ: "nyhet", prioritet: "info",
+      etikett: "Ryktet", rubrik: `Kör ${r.namn} sin sista säsong?`,
+      text: r.text,
+      lång: `${r.text}\n\nTravbladet har sökt ${r.namn} utan att få en kommentar. Säkert är bara en sak: sporten viskar — och facit kommer vid säsongsskiftet.`,
+      flik: "sfar",
+    });
+  });
+
   (spel.press ?? []).slice(0, 3).forEach((n) => {
     lägg({
       avsändare: "Travbladet", roll: "Tidningen", typ: "nyhet", prioritet: "info",
@@ -456,6 +667,22 @@ export function byggInkorg(spel) {
     });
   });
 
+  /* STORYTRÅDEN (v121, Teds fråga: "så man förstår storyn och vad det
+     är"). Varje händelse får sin tråd — namnet på berättelsen den hör
+     till — härlett på ETT ställe så etiketten aldrig glöms i en
+     adapter. Trådarna färgas i listan och står i läsvyn. */
+  const TRÅD_AV_ROLL = {
+    "Rivaltränare": "Rivalen", "Mentor": "Mentorn", "Hästägare": "Ägarna",
+    "Stallveterinär": "Hästhälsan", "Sponsor": "Sponsorn",
+    "Hästskötare": "Stallgången", "Kusk": "Kuskarna",
+    "Tävlingsledningen": "Loppen", "Tidningen": "Travbladet",
+  };
+  händelser.forEach((h) => {
+    h.tråd = h.tråd
+      ?? (h.rubrik?.startsWith("Efteranalysen") ? "Efter loppet" : null)
+      ?? TRÅD_AV_ROLL[h.roll]
+      ?? (h.typ === "nyhet" ? "Travbladet" : null);
+  });
   return händelser.sort((a, b) =>
     (b.fäst ? 1 : 0) - (a.fäst ? 1 : 0)
     || PRIORITETSORDNING[a.prioritet] - PRIORITETSORDNING[b.prioritet]);
@@ -486,6 +713,28 @@ export function berättelsetrådar(spel) {
 }
 
 /**
+ * TELEFONLOGGEN (v131): trådarna i Meddelanden-appen behöver minne —
+ * annars är chatten med förstamannen bara veckans lösa lappar.
+ * Arkiveras av UI:t innan klockan hoppar; nyckeln gör anropet
+ * idempotent så måndag/onsdag/helg aldrig dubblerar.
+ */
+export function arkiveraTelefonen(spel) {
+  const logg = (spel.telefonlogg ??= []);
+  const nycklar = new Set(logg.map((r) => r.nyckel));
+  byggInkorg(spel)
+    .filter((h) => ["sms", "samtal", "mejl", "rapport"].includes(h.typ))
+    .forEach((h) => {
+      const nyckel = `${spel.säsong ?? 1}:${spel.vecka}:${h.id}`;
+      if (nycklar.has(nyckel)) return;
+      nycklar.add(nyckel);
+      logg.push({ nyckel, avsändare: h.avsändare, roll: h.roll, typ: h.typ,
+        rubrik: h.rubrik, text: (h.lång ?? h.text ?? "").slice(0, 600),
+        vecka: spel.vecka, säsong: spel.säsong ?? 1 });
+    });
+  spel.telefonlogg = logg.slice(-140);
+}
+
+/**
  * VERKSTÄLL ETT BESLUT (v100): muterar spelet med SAMMA funktioner som
  * vyerna använder — inkorgen är en dörr till motorerna, aldrig en egen
  * regeluppsättning. Besvarade händelser antecknas i spel.inkorgBeslutade
@@ -495,10 +744,43 @@ export function berättelsetrådar(spel) {
 export function verkställBeslut(spel, händelse, valId) {
   const b = händelse.beslut;
   if (!b) return;
+  /* Telefonen (v131): svaret bokförs i tråden — chatten minns vad du sa. */
+  const valt = b.alternativ?.find((a) => a.id === valId);
+  if (valt) {
+    (spel.telefonlogg ??= []).push({
+      nyckel: `svar:${spel.säsong ?? 1}:${spel.vecka}:${händelse.id}:${valId}`,
+      avsändare: händelse.avsändare, roll: händelse.roll, typ: "svar",
+      rubrik: null, text: valt.etikett.replace(/[»«]/g, ""),
+      vecka: spel.vecka, säsong: spel.säsong ?? 1 });
+    spel.telefonlogg = spel.telefonlogg.slice(-140);
+  }
   if (b.typ === "sponsorerbjudande") {
     const mål = (spel.sponsorerbjudanden ?? []).find((e) =>
       e.namn === b.ref.namn && e.typId === b.ref.typId);
     if (mål) (valId === "ja" ? teckna : tackaNej)(spel, mål);
+  }
+  if (b.typ === "sällskapsinval") {
+    const s2 = säkraSällskap(spel);
+    if (valId === "ja") {
+      s2.ledamot = true; s2.invaldSäsong = spel.säsong ?? 1;
+      skrivPress(spel, `${spel.stallnamn} tar plats i travsällskapets styrelse`,
+        `Aktiv tränare vid bordet — banans utveckling får en röst från stallgången.`, "positiv");
+    } else {
+      s2.avböjtSäsong = spel.säsong ?? 1;
+    }
+  }
+  if (b.typ === "sällskapsröst") {
+    const resultat = rösta(spel, b.ref, valId);
+    if (resultat) {
+      const m = MOTIONER[b.ref];
+      skrivPress(spel, `Sällskapet: ${resultat.motion.utfall === "bifall" ? "ja" : "nej"} till ${m.rubrik.toLowerCase()}`,
+        `Styrelsen röstade ${resultat.motion.röster.ja}–${resultat.motion.röster.nej}.${resultat.motion.utfall === "bifall" && b.ref === "openStretch" ? " Upploppet byggs om — öppet innerspår från och med nu." : ""}`,
+        resultat.motion.utfall === "bifall" ? "positiv" : "neutral");
+      if (resultat.jäv) {
+        skrivPress(spel, `Jävsfrågan: gynnade ${spel.stallnamn} sig självt?`,
+          `Ledamoten röstade ja till en motion som gynnar den egna verksamheten. »Jag redovisade min vinning öppet«, säger tränaren.`, "negativ");
+      }
+    }
   }
   if (b.typ === "uttalande") {
     const post = (spel.senasteAnalyser ?? []).find((x) =>

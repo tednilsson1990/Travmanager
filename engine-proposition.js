@@ -38,6 +38,7 @@
 import { kr } from "./engine-util.js";
 import { KLASSER, startförbud } from "./data-kalender.js";
 import { distanspassning } from "./engine-hast.js";
+import { klassnivå } from "./engine-klass.js";
 
 /* ------------------------------------------------------------------ */
 /* Nivåetiketten (manualen 2.1, 3)                                     */
@@ -52,7 +53,10 @@ const ETIKETTER = [
 
 /** Etikett + pengafönstret hästen oftast passar i. Vägledning, aldrig spärr. */
 export function klassEtikett(häst) {
-  const etikett = ETIKETTER.find((e) => häst.intjänat < e.tak).namn;
+  /* v130 (kap 26 A-c): EN sanning om klassen — etiketten kommer ur
+     klasstrappan (engine-klass, kalenderförankrad med divergensvakt).
+     Härifrån bidrar bara pengafönstret. */
+  const etikett = klassnivå(häst).etikett;
   /* Fönstret: klasser vars pengavillkor hästen uppfyller i dag. */
   const öppna = KLASSER.filter((k) => {
     const kk = k.krav ?? {};

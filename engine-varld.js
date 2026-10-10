@@ -1,7 +1,10 @@
 import { rnd, int, plock, klamp, blanda, slump } from "./engine-util.js";
 import { nyHäst, TRÄNING } from "./engine-hast.js";
 import { nyttNamn } from "./data-namn.js";
-import { KUSKAR, aktivaKuskar } from "./data-kuskar.js";
+import { KUSKAR, aktivaKuskar, lärlingsberättigad } from "./data-kuskar.js";
+import { TRÄNARKUSKEN } from "./engine-korlicens.js";
+import { bokförSeriepoäng, finallopp, finalfält, registreraFinalresultat, serienyckel } from "./engine-serie.js";
+import { justeraFörBanutveckling } from "./engine-sallskap.js";
 import { veckansLopp, startförbud } from "./data-kalender.js";
 import { beräknaStreck } from "./engine-streck.js";
 
@@ -112,6 +115,41 @@ export function byggVärld(antalStall = 20) {
   return { stall, hästar, vecka: 1 };
 }
 
+/**
+ * RIVALEN (v118, Pokémon-inspirationen 21.6 etapp A — Gary-draget):
+ * antagonisten föds ur DITT starterval. Rivalen tar den kaxigaste av
+ * kandidaterna du lämnade (talangen före spetsaren före stayern),
+ * får ett eget stall i världen — och hästen TÄVLAR där på riktigt:
+ * AI-tränarna anmäler den, statistiken växer parallellt med din.
+ * Jämbördig start: nollmeriter och ett stall utan historia, som ditt.
+ */
+export function föddRival(spel, kandidater) {
+  if (!spel.värld || !kandidater?.length || spel.rival) return null;
+  const ordning = { talangen: 0, spetsaren: 1, stayern: 2 };
+  const häst = [...kandidater].sort((a, b) =>
+    (ordning[a.starterprofil] ?? 9) - (ordning[b.starterprofil] ?? 9))[0];
+  let h = 0; const frö = `${spel.stallnamn ?? ""}:rival`;
+  for (let i = 0; i < frö.length; i++) h = (h * 31 + frö.charCodeAt(i)) >>> 0;
+  const upptagna = new Set(spel.värld.stall.map((s2) => s2.tränare));
+  let tränare = null;
+  for (let steg = 0; steg < 24 && !tränare; steg++) {
+    const namn = `${TRÄNARFÖR[(h + steg) % TRÄNARFÖR.length]} ${TRÄNAREFTER[(h * 7 + steg) % TRÄNAREFTER.length]}`;
+    if (!upptagna.has(namn)) tränare = namn;
+  }
+  const id = Math.max(...spel.värld.stall.map((s2) => s2.id)) + 1;
+  const stall = { id, namn: `Stall ${tränare.split(" ")[1]}`, tränare,
+    filosofi: { id: "hunger", namn: "allt att bevisa" },
+    styrka: 0.5, insprunget: 0, starter: 0, segrar: 0, rival: true };
+  spel.värld.stall.push(stall);
+  häst.egen = false; häst.stallId = id;
+  häst.starter = 0; häst.segrar = 0; häst.intjänat = 0; häst.pallplatser = 0;
+  häst.senasteStartVecka = 0; häst.träning = "lugnt";
+  spel.värld.hästar.push(häst);
+  spel.rival = { tränare, stallnamn: stall.namn, hästNamn: häst.namn,
+    hästId: häst.id, profil: häst.starterprofil };
+  return spel.rival;
+}
+
 /** Hästar som får starta i loppet och inte redan är anmälda den här veckan. */
 export function tillgängliga(värld, lopp, vecka, upptagna) {
   return värld.hästar.filter((h) => {
@@ -184,6 +222,13 @@ export function välTaktik(häst, lopp, kusk) {
  * beskedet till ett hot i stället för en notis. Resten lottas som förut.
  */
 export function rustaFält(fält, lopp, egenKusk = null, egenTaktik = null, bokade = [], kår = KUSKAR) {
+  /* Lärlingsregeln (v134): Lärlingsseriens sulkys är lärlingarnas.
+     Tom berättigad pool faller tillbaka på hela kåren — ett lopp
+     blir aldrig kusklöst av en licensregel. */
+  if (serienyckel(lopp) === "Lärlingsserien") {
+    const berättigade = kår.filter(lärlingsberättigad);
+    if (berättigade.length >= 8) kår = berättigade;
+  }
   const antal = fält.length;
   const spårnr = blanda(Array.from({ length: antal }, (_, i) => i + 1));
   const upptagna = new Set([...bokade.map((k) => k.namn), egenKusk?.namn].filter(Boolean));
@@ -301,7 +346,7 @@ export function körVärldensVecka(spel, anmälningar = null, taUt = null, arran
   const värld = spel.värld;
   if (!värld) return [];
   const vecka = spel.vecka;
-  const lopp = veckansLopp(vecka);
+  const lopp = veckansLopp(vecka).map((l) => justeraFörBanutveckling(spel, l));
   const körda = spel.startadeLopp || [];
   const upptagna = new Set();
   const nyheter = [];
@@ -334,9 +379,11 @@ export function körVärldensVecka(spel, anmälningar = null, taUt = null, arran
     fältSamling.forEach((f) => f.forEach((h) => { if (h.id) upptagna.add(h.id); }));
     fältSamling.forEach((fält) => {
       rustaFält(fält, l, undefined, undefined, [], kår);
+      tränarkuskarna(spel, fält);   /* 18.11: var tredje tränare kör egna */
       beräknaStreck(fält, { spelförtroende: 40, stallform: 50, marknadsbild: 0 }, l);
       const resultat = snabbresultat(fält, l);
       bokför(värld, l, resultat, vecka);
+      bokförSeriepoäng(spel, l, resultat);   /* gym-trappan (v120) */
 
       if (l.storlopp || l.v85) {
         const v = resultat[0];
@@ -432,4 +479,58 @@ export function tränarliga(spel) {
     du: true,
   });
   return rader.sort((a, b) => b.insprunget - a.insprunget);
+}
+
+
+/**
+ * VÄRLDENS FINALER (v130): sista veckans seriefinaler som spelaren
+ * inte själv körde. Spelarhästar som kvalat men inte startats stryks
+ * (verklighetens regel: utebliven start är utebliven start). Pressen
+ * returneras till veckomotorn som skriver den.
+ */
+export function körVärldsfinaler(spel) {
+  const press = [];
+  finallopp(spel).forEach((l) => {
+    if ((spel.startadeLopp ?? []).includes(l.id)) return;
+    let fält = finalfält(spel, l).filter((h) => !(spel.stall ?? []).includes(h));
+    if (fält.length < 4) return;
+    fält.forEach((h, i) => { h.spår = i + 1; });
+    rustaFält(fält, l, null, null, [], aktivaKuskar(spel));
+    tränarkuskarna(spel, fält);
+    const resultat = snabbresultat(fält, l);
+    bokför(spel.värld, l, resultat, spel.vecka);
+    const v = resultat[0];
+    registreraFinalresultat(spel, l.serie, v.häst.namn, false);
+    press.push({ rubrik: `${v.häst.namn} vann ${l.kortnamn}`,
+      byline: `Seriefinalen avgjord inför fullsatta läktare — mästartiteln bekräftas vid säsongsskiftet.`,
+      ton: "neutral" });
+  });
+  return press;
+}
+
+
+/**
+ * AI-TRÄNARNA SOM KUSKAR (v137, 18.11): ungefär var tredje tränare i
+ * världen har körlicens — hash-avgjort per tränarnamn, samma karriär
+ * samma licenser. De kör sina EGNA hästar när ingen kusk är bokad:
+ * attributen hashas ur namnet (40–58: hyggliga, aldrig eliten).
+ * Spelarkuskens namn är fredat.
+ */
+export function tränarkuskarna(spel, fält) {
+  const värld = spel.värld;
+  if (!värld) return;
+  const h32 = (t) => { let h = 2166136261;
+    for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0; };
+  fält.forEach((h) => {
+    if (h.egen || !h.stallId) return;
+    const stall = värld.stall.find((s2) => s2.id === h.stallId);
+    if (!stall?.tränare || stall.tränare === TRÄNARKUSKEN) return;
+    if (h32(`körlicens:${stall.tränare}`) % 100 >= 32) return;
+    const a = 40 + (h32(`köra:${stall.tränare}`) % 19);
+    h.kusk = { namn: stall.tränare, start: a, avslutning: a,
+      omdöme: 44 + (h32(`omd:${stall.tränare}`) % 15),
+      arvode: 0, krav: 0, andel: 0, startrelation: 100,
+      ryktbarhet: 30, stil: "egen häst", tränarkusk: true };
+  });
 }

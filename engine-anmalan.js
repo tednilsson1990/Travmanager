@@ -33,6 +33,8 @@ import { tillgängliga } from "./engine-varld.js";
 import { startpoäng } from "./engine-proposition.js";
 import { veckansAnmälningar } from "./engine-aitranare.js";
 import { ärEftertraktad, relation } from "./data-kuskar.js";
+import { finalfält, serienyckel } from "./engine-serie.js";
+import { TRÄNARKUSKEN } from "./engine-korlicens.js";
 
 /** Arrangörens beslut vid 4–7 anmälda — deterministiskt och viktat
     (4: 25 %, 5: 43 %, 6: 61 %, 7: 79 %). Samma funktion för spelarens
@@ -105,6 +107,18 @@ export function anmälningsläge(spel, lopp, egenHäst, medEgna = []) {
  * besked och helgens körning aldrig ser olika fält.
  */
 export function uttagning(spel, lopp, egenHäst, medEgna = []) {
+  /* FINALEN (v130): fältet är inbjudet — seriens åtta främsta. Ingen
+     anmälningskarta, ingen delning: antingen är hästen kvalificerad
+     eller inte, och beskedet säger vilket. */
+  if (lopp.final) {
+    if (!(lopp.finalnamn ?? []).includes(egenHäst.namn)) {
+      return { utfall: "ej med", antal: (lopp.finalnamn ?? []).length, platser: 8,
+        text: `Finalen är endast öppen för seriens åtta främsta.` };
+    }
+    return { utfall: "med", antal: (lopp.finalnamn ?? []).length, platser: 8, final: true,
+      fält: finalfält(spel, lopp),
+      text: `Uttagen till finalen — seriens åtta främsta möts.` };
+  }
   const { anmälda, platser } = anmälningsläge(spel, lopp, egenHäst, medEgna);
   const antal = anmälda.length;
 
@@ -205,6 +219,8 @@ export function uttagning(spel, lopp, egenHäst, medEgna = []) {
  * ord. Deterministiskt ur kusk + lopp + vecka — samma besked varje gång.
  */
 export function kuskbekräftelse(spel, kusk, egenHäst, fält, lopp) {
+  /* Körlicensen (v137): kör du själv finns inget att bekräfta. */
+  if (kusk?.namn === TRÄNARKUSKEN || kusk?.tränarkusk) return { bekräftad: true };
   if (!ärEftertraktad(kusk) || relation(spel, kusk) >= 70) return { bekräftad: true };
   const mått = (h) => (h.start + h.fart + h.styrka) / 3 * 0.55 + h.form * 0.45;
   const ordnade = [...fält].sort((a, b) => mått(b) - mått(a));
@@ -263,6 +279,45 @@ export function delaFält(anmälda, lopp, vecka = 0) {
       (a.intjänat ?? 0) - (b.intjänat ?? 0) || startpoäng(a).poäng - startpoäng(b).poäng);
     const avdelningar = Array.from({ length: antalAvd }, () => []);
     efterPris.forEach((h, i) => avdelningar[Math.min(Math.floor(i / platser), antalAvd - 1)].push(h));
+    return avdelningar;
+  }
+
+  if (serienyckel(lopp)) {
+    /* SEEDAD DELNING (v140, 18.10 — uttagningsloppens verkliga metod,
+       v107-anteckningens "seedad metod väntar på 18.10" infriad).
+       Fältet seedas efter meriter och slingras jämnt över
+       avdelningarna (1:an i A, 2:an–3:an i B...), och TRÄNAR-
+       SPRIDNINGEN byter stallkamrater till olika avdelningar — i
+       serielopp sprids även spelarens egna, som i verkligheten. */
+    const seedade = [...anmälda].sort((a, b) =>
+      startpoäng(b).poäng - startpoäng(a).poäng || (b.intjänat ?? 0) - (a.intjänat ?? 0));
+    const avdelningar = Array.from({ length: antalAvd }, () => []);
+    seedade.forEach((h, i) => {
+      const varv = Math.floor(i / antalAvd);
+      const ix = varv % 2 === 0 ? i % antalAvd : antalAvd - 1 - (i % antalAvd);
+      avdelningar[ix].push(h);
+    });
+    const nyckelAv = (h) => h?.stallId ?? (h?.egen ? "egen" : null);
+    for (let a = 0; a < antalAvd; a++) {
+      const sedda = new Set();
+      for (let i = 0; i < avdelningar[a].length; i++) {
+        const h = avdelningar[a][i];
+        const nyckel = nyckelAv(h);
+        if (nyckel == null || !sedda.has(nyckel)) { if (nyckel != null) sedda.add(nyckel); continue; }
+        for (let b = 0; b < antalAvd && avdelningar[a][i] === h; b++) {
+          if (b === a) continue;
+          const j = Math.min(i, avdelningar[b].length - 1);
+          const g = avdelningar[b][j];
+          if (!g) continue;
+          const gN = nyckelAv(g);
+          if (gN === nyckel) continue;
+          const krockB = gN != null && avdelningar[b].some((x, k) => k !== j && nyckelAv(x) === nyckel);
+          const krockA = gN != null && avdelningar[a].some((x, k) => k !== i && nyckelAv(x) === gN);
+          if (krockB || krockA) continue;
+          avdelningar[b][j] = h; avdelningar[a][i] = g;
+        }
+      }
+    }
     return avdelningar;
   }
 

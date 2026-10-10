@@ -2,7 +2,7 @@ import { klamp, kr, int, plock, rnd, slump } from "./engine-util.js";
 import { nyHäst, TRÄNING } from "./engine-hast.js";
 import { KUSKAR } from "./data-kuskar.js";
 import { ÄGARNAMN, ÄGARKRAV, ARVODE_PER_VECKA } from "./data-agare.js";
-import { körVärldensVecka, skötVärlden, handelIVärlden } from "./engine-varld.js";
+import { körVärldensVecka, körVärldsfinaler, skötVärlden, handelIVärlden } from "./engine-varld.js";
 import { avslutaSäsong, säsongstext } from "./engine-sasong.js";
 import { säkraFörstaman } from "./engine-forstaman.js";
 import { säkraAnläggning, gårdseffekt, gåraugifter, läkning, boxplats } from "./engine-gard.js";
@@ -17,6 +17,8 @@ import { verkställVeckoslots } from "./engine-stallmote.js";
 import { veckansAnmälningar, taUtVärldsfält } from "./engine-aitranare.js";
 import { bokförKarriär } from "./engine-minnen.js";
 import { följUppÄgarlöften } from "./engine-agare.js";
+import { säkraKörlicens } from "./engine-korlicens.js";
+import { väckRykten } from "./engine-rykten.js";
 import { FÖRSTAMANSNAMN } from "./data-namnpaket.js";
 import { arrangörenKör, delaFält } from "./engine-anmalan.js";
 import { ägarVecka, ägarSport, ägarEfterStart } from "./engine-agare.js";
@@ -67,7 +69,19 @@ function media(spel) {
 export function körVecka(spel) {
   /* Äldre karriärer saknar förstaman — en dyker upp med en pressnotis. */
   säkraAnläggning(spel);
+  säkraKörlicens(spel);
   följUppÄgarlöften(spel);
+  /* Rivalmötet i pressen (v132): ett avgjort direktmöte är en nyhet —
+     skrivs en gång, veckan efter loppet. */
+  if (spel.rival && spel.rivalmöte?.läge === "avgjort" && !spel.rivalmöte.skrivet) {
+    const m = spel.rivalmöte;
+    const jagVann = (m.minPlats ?? 99) < (m.rivalPlats ?? 99);
+    skrivPress(spel,
+      jagVann ? `${spel.stallnamn} vann rivalmötet` : `${spel.rival.stallnamn} tog rivalmötet`,
+      `${m.lopp}: stallen som startade samma år möttes öga mot öga — ${jagVann ? spel.stallnamn : spel.rival.stallnamn} var före i mål. Räkningen fortsätter.`,
+      jagVann ? "positiv" : "negativ");
+    m.skrivet = true;
+  }
   /* Skötaren (v108): stallets tredje röst — namnet ur namnpaketet,
      deterministiskt på stallnamnet så varje karriär får sin egen. */
   if (!spel.skötare) {
@@ -160,7 +174,7 @@ export function körVecka(spel) {
     }, ...(h.dagbok || [])].slice(0, 40);
     const risk = t.risk * g.riskfaktor * (h.energi < 30 ? 2.2 : 1) * (h.ålder > 8 ? 1.4 : 1);
     if (slump() < risk) {
-      h.skada = läkning(spel, int(1, 3));
+      h.skada = läkning(spel, int(1, 3)); h.skadadVecka = spel.vecka;
       h.form = klamp(h.form - 12);
       spel.logg.push(`<b>${h.namn}</b> kom ur jobbet ömmande. Borta ${h.skada} v.`);
       /* En vardagshäst stannar i loggen; en stjärna blir en nyhet. */
@@ -234,6 +248,11 @@ export function körVecka(spel) {
 
   /* Världen lever vidare oavsett vad du gör. AI-stallen kör sina lopp,
      deras hästar tjänar pengar och flyttas mellan klasserna. */
+  /* Finalveckan (v130): seriernas finaler körs innan världens vecka
+     bokförs — de spelaren själv körde är redan i startadeLopp. */
+  if (spel.vecka === (spel.veckor ?? 18)) {
+    körVärldsfinaler(spel).forEach((p) => skrivPress(spel, p.rubrik, p.byline, p.ton));
+  }
   const världensNyheter = körVärldensVecka(spel, veckansAnmälningar(spel), taUtVärldsfält, arrangörenKör, delaFält);
   skötVärlden(spel.värld);
   handelIVärlden(spel.värld).forEach((a) => {
@@ -282,7 +301,9 @@ export function körVecka(spel) {
     spel.erbjudande = h;
   }
 
-  spel.föl = spel.föl.filter((f) => {
+  /* v129 (granskningen): äldre/ofullständiga sparfiler saknar fältet —
+     motorn självläker i stället för att krascha veckoskiftet. */
+  spel.föl = (spel.föl ?? []).filter((f) => {
     f.veckorKvar--;
     if (f.veckorKvar > 0) return true;
     const h = nyHäst({ namn: f.namn, ålder: 3, kön: f.kön, start: f.start, fart: f.fart, styrka: f.styrka });
@@ -318,6 +339,12 @@ export function körVecka(spel) {
     });
     return false;
   });
+
+  väckRykten(spel);   /* 20.6: ibland viskar sporten — inte alltid sant */
+
+  /* Pressvakten (v136): oavsett vem som skrev sist — tidningen har
+     tjugo platser. Punkt. */
+  spel.press = (spel.press ?? []).slice(0, 20);
 
   spel.vecka++;
 
@@ -438,6 +465,20 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   if (pall) häst.pallplatser++;
   häst.energi = klamp(häst.energi - int(14, 24));
   häst.form = klamp(häst.form + (pall ? 4 : -2));
+
+  /* GENOMBROTTET (v115, Pokémon-inspirationen 21.2): utvecklingen har
+     alltid funnits — nu FIRAS den. En ung hästs första seger i ett
+     lopp som betyder något blir en ceremoni: pressen skriver, facit
+     får guldraden, hästkortet bär märket för alltid. En gång per häst. */
+  let genombrott = null;
+  if (!häst.genombrott && vann && häst.ålder <= 4
+    && ((lopp.nivå ?? 50) >= 44 || (lopp.pris?.[0] ?? 0) >= 20000)) {
+    häst.genombrott = { säsong: spel.säsong || 1, vecka: spel.vecka, lopp: lopp.kortnamn || lopp.namn };
+    genombrott = `${häst.namn}, ${häst.ålder} år, tog klivet i dag — det här var genombrottet.`;
+    skrivPress(spel, `GENOMBROTTET: ${häst.namn} klev fram`,
+      `${häst.ålder}-åringen vann ${lopp.kortnamn || lopp.namn} — och plötsligt pratar alla om ${spel.stallnamn ?? "stallet"}.`,
+      "positiv", häst, 5);
+  }
   spel.kassa += netto;
   spel.intjänat += netto;
   if (vann) spel.segrarTotalt = (spel.segrarTotalt ?? 0) + 1;
@@ -487,8 +528,8 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
       `Segern i ${lopp.kortnamn || lopp.namn} öppnade dörren`, "positiv");
   }
   const skadaFöre = häst.skada;
-  if (slump() < (häst.energi < 25 ? 0.18 : 0.05)) häst.skada = läkning(spel, int(1, 2));
-  if (dåligDag && slump() < 0.35) häst.skada = Math.max(häst.skada, läkning(spel, int(1, 2)));
+  if (slump() < (häst.energi < 25 ? 0.18 : 0.05)) { häst.skada = läkning(spel, int(1, 2)); häst.skadadVecka = spel.vecka; }
+  if (dåligDag && slump() < 0.35) { häst.skada = Math.max(häst.skada, läkning(spel, int(1, 2))); häst.skadadVecka = spel.vecka; }
   if (häst.skada > 0 && skadaFöre === 0) vidSkada(spel, häst, häst.skada);
 
   /* Sponsorernas bokföring: kraven räknas och segerbonusen betalas ut. */
@@ -570,8 +611,8 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
           ? `Spiken sprack — ${häst.namn} ${min.ur ? "bortkörd" : `bara ${min.plats}:a`} i V85`
           : `Storfavoriten föll — ${häst.namn} ${min.ur ? "bortkörd" : `bara ${min.plats}:a`}`,
         spikad
-          ? `${min.streck.toFixed(0)} % hade spikat ekipaget. Systemen sprack över hela landet.`
-          : `${min.streck.toFixed(0)} % av spelarna hade satsat.`, "dålig");
+          ? `${(min.streck ?? 0).toFixed(0)} % hade spikat ekipaget. Systemen sprack över hela landet.`
+          : `${(min.streck ?? 0).toFixed(0)} % av spelarna hade satsat.`, "dålig");
     } else if (min.ur) {
       renΔ = -1; troΔ = -2;
       skrivPress(spel, `Galopp för ${häst.namn}`, `Ingen lugn resa för ${kusk.namn}.`, "dålig");
@@ -612,8 +653,9 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
   häst.hype = klamp(häst.hype + hypeΔ);
 
   let ägartext = null;
-  if (häst.ägare) {
-    häst.kravStarter++;
+  if (häst.ägare && häst.krav) {
+    /* v129: ägarhäst utan krav (migrerad sparfil) får inte fälla loppet. */
+    häst.kravStarter = (häst.kravStarter ?? 0) + 1;
     const k = häst.krav;
     const uppfyllt =
       (k.typ === "topp3" && pall) ||
@@ -677,5 +719,5 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
     spel.marknadsbild = klamp(snittÖver * 2.2, -1.2, 1.2);
   }
 
-  return { brutto, kuskandel, netto, publik, renΔ, relΔ, hypeΔ, troΔ, ägartext, dagstext, dåligDag, karriärminne };
+  return { brutto, kuskandel, netto, publik, renΔ, relΔ, hypeΔ, troΔ, ägartext, dagstext, dåligDag, karriärminne, genombrott };
 }

@@ -24,6 +24,7 @@
  * är orörd.
  */
 import { klamp } from "./engine-util.js";
+import { justeraFörBanutveckling } from "./engine-sallskap.js";
 import { veckansLopp, startförbud } from "./data-kalender.js";
 import { FILOSOFIER } from "./engine-varld.js";
 import { klassklättring, startpoäng } from "./engine-proposition.js";
@@ -81,7 +82,7 @@ export function veckansAnmälningar(spel) {
   const vecka = spel.vecka;
   const karta = new Map();
   if (!värld) return karta;
-  const lopp = veckansLopp(vecka);
+  const lopp = veckansLopp(vecka).map((l) => justeraFörBanutveckling(spel, l));
   lopp.forEach((l) => karta.set(l.id, []));
   värld.hästar.forEach((h) => {
     /* v107: ingen filtrering på senasteStartVecka === vecka — anmälan

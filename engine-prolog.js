@@ -70,10 +70,40 @@ export function prologhästar() {
       form: Math.min(h.form, 45) })),
     sätt(nyHäst({ ålder: 6 }), "vardagshästen", (h) => ({
       fart: 50 + int(-3, 3), travsäkerhet: Math.max(h.travsäkerhet, 0.88) })),
-    sätt(nyHäst({ ålder: 4 }), "arvtagaren", (h) => ({
-      fart: Math.max(h.fart, 54 + int(0, 6)), styrka: Math.max(h.styrka, 56) })),
   ];
 }
+
+/**
+ * STARTERVALET (v115, Pokémon-inspirationen 21.1): arvtagaren väljs.
+ * Mentorns sista gåva — tre unghästar hos uppfödaren, EN följer med
+ * gården. Tydligt olika profiler där ÅLDERN är taket: spetsaren är
+ * färdig nu (få växtår kvar), talangen har åren framför sig.
+ * Nivå 0-ärligt: korten talar i ord, aldrig siffror.
+ */
+export function startervalskandidater() {
+  const sätt = (h, profil, just) => { h.roll = "arvtagaren"; h.starterprofil = profil;
+    Object.assign(h, just(h)); return h; };
+  return [
+    sätt(nyHäst({ ålder: 5 }), "spetsaren", (h) => ({
+      start: Math.max(h.start, 66 + int(0, 6)), fart: Math.max(h.fart, 60 + int(0, 5)),
+      styrka: Math.min(h.styrka, 52), travsäkerhet: Math.max(h.travsäkerhet ?? 0.85, 0.9),
+      form: 55 })),
+    sätt(nyHäst({ ålder: 6 }), "stayern", (h) => ({
+      styrka: Math.max(h.styrka, 66 + int(0, 6)), fart: Math.min(Math.max(h.fart, 52), 58),
+      start: Math.min(h.start, 50), distans: "lång",
+      travsäkerhet: Math.max(h.travsäkerhet ?? 0.85, 0.88), lynne: Math.max(h.lynne, 60) })),
+    sätt(nyHäst({ ålder: 3 }), "talangen", (h) => ({
+      start: Math.min(h.start, 48), fart: Math.min(Math.max(h.fart, 44), 52),
+      styrka: Math.min(h.styrka, 50), travsäkerhet: Math.min(h.travsäkerhet ?? 0.85, 0.8),
+      hype: 24, form: 42 })),
+  ];
+}
+
+export const STARTERTEXT = {
+  spetsaren: { namn: "Spetsaren", ord: "Snabb ut, säker i benen och redo att vinna nu. Uppfödaren säger det rakt ut: det här är den färdigaste femåring han haft — men fråga inte var taket sitter, för det är inte långt bort." },
+  stayern: { namn: "Stayern", ord: "Maler ner fält på styrka och vill ha långt. Ingen raket från bilen, ingen rubrikhäst — men den sortens häst som står och håller när de andra viker sig." },
+  talangen: { namn: "Talangen", ord: "Tre år, gänglig och grön — galopperar när det stressar. Men uppfödaren sänker rösten när han pratar om henne: »Jag har fött upp hästar i fyrtio år. Sånt här steg har jag sett två gånger.«" },
+};
 
 export const ROLLTEXT = {
   trotjänaren: "stallets gamla trotjänare",

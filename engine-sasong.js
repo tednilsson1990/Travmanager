@@ -6,6 +6,8 @@ import { registreraHändelse } from "./engine-handelser.js";
 import { invalIHallOfFame } from "./engine-rekord.js";
 import { prövaMentornsBortgång } from "./engine-mentor.js";
 import { utvecklaVärlden } from "./engine-varldsutveckling.js";
+import { koraSeriemästare } from "./engine-serie.js";
+import { avgörRykten } from "./engine-rykten.js";
 
 /**
  * SÄSONGEN
@@ -110,7 +112,21 @@ export function nySäsong(spel) {
   /* VÄRLDENS UTVECKLING (v111, 20.8): generationsfasen — kuskar
      pensioneras, lärlingar debuterar, sponsorsfären omsätts. Pressen
      skrivs här med säsongens egen penna. */
+  /* Gym-trappans korning (v120): mästarna utses på fjolårets poäng. */
+  const korning = koraSeriemästare(spel, (spel.säsong ?? 2) - 1);
+  korning.press.forEach((p) => {
+    spel.press.unshift({ rubrik: p.rubrik, byline: p.byline, ton: p.ton, vecka: 1, signatur: null });
+  });
+  korning.troféer.forEach((t) => {
+    spel.troférum = spel.troférum ?? [];
+    spel.troférum.unshift({ säsong: (spel.säsong ?? 1) - 1, vecka: spel.veckor ?? 18, ...t });
+    spel.troférum = spel.troférum.slice(0, 60);
+  });
   utvecklaVärlden(spel).forEach((p) => {
+    spel.press.unshift({ rubrik: p.rubrik, byline: p.byline, ton: p.ton, vecka: 1, signatur: null });
+  });
+  /* Ryktenas facit (v139): generationsmaskinen har talat. */
+  avgörRykten(spel).forEach((p) => {
     spel.press.unshift({ rubrik: p.rubrik, byline: p.byline, ton: p.ton, vecka: 1, signatur: null });
   });
   spel.press = spel.press.slice(0, 20);

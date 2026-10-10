@@ -110,3 +110,66 @@ export function sägUpp(spel, id) {
   spel.anläggning[id] = false;
   return true;
 }
+
+
+/* ==================== GÅRDSKARTAN (v122, kapitel 23 A+B) ====================
+ * Teds riktning: "gå runt i spelet och välja saker att addera till sin
+ * gård — mer mark, ny träningsbana, nytt stall. En blandning av
+ * Pokémon och Theme Park." Theme Park-delen är detta lager: MARKEN
+ * och PLACERINGEN. Kartan är presentation och placering ovanpå SAMMA
+ * anläggningsdata som förut — bygg() äger fortfarande kassan och
+ * effekterna, så det aldrig finns två sanningar om vad som är byggt.
+ *
+ * Gården har TOMTER (byggplatser). Två från start; mer mark köps i
+ * block om två (priset stiger per köp, max åtta tomter — en gård, inte
+ * ett industriområde). Varje facilitet placeras på en ledig tomt och
+ * ritas där av gårdsbilden. Äldre sparfiler migreras: det som redan är
+ * byggt får platser i ordning.
+ */
+
+export const MARKPRIS_BAS = 120000;
+export const TOMTER_START = 2;
+export const TOMTER_MAX = 8;
+
+export const FACILITETER = ["rakbana", "backe", "vattenband"];
+
+export function säkraGård(spel) {
+  säkraAnläggning(spel);
+  if (!spel.gård) spel.gård = { tomter: TOMTER_START, markköp: 0 };
+  const g = spel.gård;
+  /* Migreringen: den som redan byggt mer än tomterna rymmer (äldre
+     sparfil) får marken på köpet — historien skrivs inte om. */
+  const byggda = FACILITETER.filter((id) => spel.anläggning[id]).length;
+  if (byggda > g.tomter) g.tomter = Math.min(TOMTER_MAX, byggda);
+  return g;
+}
+
+/** Lediga byggrätter: tomterna minus det som redan står där. */
+export function byggrätter(spel) {
+  const g = säkraGård(spel);
+  return g.tomter - FACILITETER.filter((id) => spel.anläggning[id]).length;
+}
+
+export const markpris = (spel) =>
+  MARKPRIS_BAS + (spel.gård?.markköp ?? 0) * 60000;
+
+/** Mer mark: två tomter till, stigande pris, hårt tak. */
+export function köpMark(spel) {
+  const g = säkraGård(spel);
+  if (g.tomter >= TOMTER_MAX) return false;
+  const pris = markpris(spel);
+  if (spel.kassa < pris) return false;
+  spel.kassa -= pris;
+  g.tomter = Math.min(TOMTER_MAX, g.tomter + 2);
+  g.markköp += 1;
+  skrivPress(spel, `${spel.stallnamn} köper mark`,
+    "Gården växer österut — nya tomter att bygga på.", "positiv");
+  return true;
+}
+
+/** Bygget kräver en ledig byggrätt — Theme Park-loopen: mark först. */
+export function byggPåGården(spel, id) {
+  if (id === "boxar2") return bygg(spel, id);   /* stallängan växer på sin plats */
+  if (FACILITETER.includes(id) && byggrätter(spel) <= 0) return false;
+  return bygg(spel, id);
+}

@@ -58,6 +58,17 @@ const KOSTNAD = {
  * världens hästar och kalibreringen berörs aldrig.
  */
 export function simulera(fält, lopp, ingripande = null) {
+  /* BALANSEN (v138, 21.9): utrustningens modifierare läggs på FÖRE
+     all beredning och återställs garanterat efteråt. Utan balans är
+     varje värde orört — inga nya slumpkällor, identiska lopp. */
+  const balansering = fält.filter((h) => h.balans);
+  balansering.forEach((h) => {
+    h.__ub = { fart: h.fart, start: h.start, travsäkerhet: h.travsäkerhet };
+    h.fart += h.balans.fart ?? 0;
+    h.start += h.balans.start ?? 0;
+    h.travsäkerhet = Math.min(0.99, Math.max(0.05, (h.travsäkerhet ?? 0.85) + (h.balans.travsäkerhet ?? 0)));
+  });
+  try {
   const dist = lopp.dist;
   let ingripandeKvar = !!(ingripande && ingripande.order);
   /* Efterloppsanalysen ska inte strängmatcha referatet: kuskens beslut
@@ -67,6 +78,14 @@ export function simulera(fält, lopp, ingripande = null) {
   const kommentar = [];
   let t = 0;                       // loppets klocka, behövs redan i starten
   const säg = (txt, k = "") => kommentar.push({ t: txt, k });
+  /* FRASVARIATIONEN (v135, designskissens krav: händelseloggen ska
+     inte upprepa samma formulering). Hash-vald variant per häst och
+     position — HELT SLUMPFRITT: ingen rng-konsumtion, loppet
+     identiskt ner till sista rutan. */
+  const vHash = (t) => { let h = 2166136261;
+    for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0; };
+  const fras = (s2, alternativ) => alternativ[vHash(`${s2.h.namn}:${Math.round(s2.d / 40)}`) % alternativ.length];
 
   /* ---------- Galopp ----------
      En galopp betyder inte automatiskt att hästen är borta. Kusken tar upp
@@ -688,7 +707,7 @@ export function simulera(fält, lopp, ingripande = null) {
         if (lopp.openStretch && kvar < 210 && s.kol === 0 && harSkydd &&
             !upptaget(-1, s.d0) && slump() < 0.34) {
           s.kol = -1;
-          säg(`<b>${s.h.namn}</b> går in i det öppna innerspåret.`, "hot");
+          säg(`<b>${s.h.namn}</b> ${fras(s, ["går in i det öppna innerspåret.", "dyker in i open stretch!", "tar chansen innerst när spåret öppnar."])}`, "hot");
         }
         const rakt = !upptaget(s.kol + 1, s.d0);
         const bakom = blockerad && !upptaget(s.kol + 1, s.d0 - 5.5, 0.8, 4.2);
@@ -717,15 +736,15 @@ export function simulera(fält, lopp, ingripande = null) {
              samma lopp OCH samma referat, och kalibreringen rörs inte.
              Formuleringarna är sportens egna: tredjespår, hakar på,
              söker sig ut, dödens. */
-          if (s.kol === 1 && nyPlats === 1) säg(`<b>${s.h.namn}</b> går ut i dödens.`, "hot");
-          else if (s.kol === 1 && hakarPå) säg(`<b>${s.h.namn}</b> hakar på utvändigt.`, "");
-          else if (s.kol === 1 && upplopp) säg(`<b>${s.h.namn}</b> söker sig ut på upploppet.`, "");
-          else if (s.kol === 1 && nyPlats === 2) säg(`<b>${s.h.namn}</b> når fram till andra utvändigt.`, "");
-          else if (s.kol === 1) säg(`<b>${s.h.namn}</b> lämnar innerspåret och söker fri väg.`, "");
-          else if (s.kol === 2 && nyPlats === 1) säg(`<b>${s.h.namn}</b> går först i tredjespår!`, "hot");
-          else if (s.kol === 2 && hakarPå) säg(`<b>${s.h.namn}</b> följer med i tredjespår.`, "");
-          else if (s.kol === 2) säg(`<b>${s.h.namn}</b> provar i tredjespår.`, "");
-          else if (s.kol >= 3) säg(`<b>${s.h.namn}</b> tvingas ända ut i fjärdespår.`, "");
+          if (s.kol === 1 && nyPlats === 1) säg(`<b>${s.h.namn}</b> ${fras(s, ["går ut i dödens.", "tar upp kampen utvändigt om ledaren.", "lägger sig i dödens — vågat."])}`, "hot");
+          else if (s.kol === 1 && hakarPå) säg(`<b>${s.h.namn}</b> ${fras(s, ["hakar på utvändigt.", "följer med utvändigt.", "svarar direkt och hakar på."])}`, "");
+          else if (s.kol === 1 && upplopp) säg(`<b>${s.h.namn}</b> ${fras(s, ["söker sig ut på upploppet.", "kommer ut i fritt läge på upploppet.", "växlar spår för fri väg."])}`, "");
+          else if (s.kol === 1 && nyPlats === 2) säg(`<b>${s.h.namn}</b> ${fras(s, ["når fram till andra utvändigt.", "avancerar till andra utvändigt.", "kliver fram utvändigt om ledarryggen."])}`, "");
+          else if (s.kol === 1) säg(`<b>${s.h.namn}</b> ${fras(s, ["lämnar innerspåret och söker fri väg.", "tappar ryggen och går ut.", "vill ut — och hittar luckan utåt."])}`, "");
+          else if (s.kol === 2 && nyPlats === 1) säg(`<b>${s.h.namn}</b> ${fras(s, ["går först i tredjespår!", "attackerar brett i tredjespår!", "svingar ut i tredjespår och leder anfallet!"])}`, "hot");
+          else if (s.kol === 2 && hakarPå) säg(`<b>${s.h.namn}</b> ${fras(s, ["följer med i tredjespår.", "lämnar andra utvändigt för tredjespår.", "hänger med i tredjespårståget."])}`, "");
+          else if (s.kol === 2) säg(`<b>${s.h.namn}</b> ${fras(s, ["provar i tredjespår.", "chansar i tredjespår.", "söker fart i tredjespår."])}`, "");
+          else if (s.kol >= 3) säg(`<b>${s.h.namn}</b> ${fras(s, ["tvingas ända ut i fjärdespår.", "får gå ända ut i fjärdespår.", "pressas ut i fjärdespår — lång väg hem."])}`, "");
           const trångt = H.filter((o) => !o.ur && Math.abs(o.d0 - s.d0) < 6).length;
           const bytfaktorer = [0.15];                       // positionsbyte
           if (trångt >= 4) bytfaktorer.push(0.25);          // trängsel
@@ -970,4 +989,11 @@ export function simulera(fält, lopp, ingripande = null) {
     });
   }
   return { bild, resultat, ingripandeUtfall };
+  } finally {
+    /* Balansen släpper: originalvärdena tillbaka, vad som än hänt. */
+    balansering.forEach((h) => {
+      if (h.__ub) { h.fart = h.__ub.fart; h.start = h.__ub.start;
+        h.travsäkerhet = h.__ub.travsäkerhet; delete h.__ub; }
+    });
+  }
 }

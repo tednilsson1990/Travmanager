@@ -1,4 +1,5 @@
 import { byggKuskkår } from "./data-namnpaket.js";
+import { TRÄNARKUSKEN, spelarKusk } from "./engine-korlicens.js";
 
 /**
  * Kuskkåren är statisk data och byggs ur namnlagret, så att ett licensierat
@@ -23,7 +24,8 @@ export const aktivaKuskar = (spel) => {
 };
 
 export const kuskEfterNamn = (namn, spel) =>
-  KUSKAR.find((k) => k.namn === namn)
+  (namn === TRÄNARKUSKEN && spel ? spelarKusk(spel) : null)
+    ?? KUSKAR.find((k) => k.namn === namn)
     ?? (spel?.kuskvärld?.lärlingar ?? []).find((k) => k.namn === namn);
 export const relation = (spel, kusk) => spel.kuskrelation[kusk.namn] ?? kusk.startrelation;
 export const villig = (spel, kusk) => spel.renommé + relation(spel, kusk) * 0.5 >= kusk.krav;
@@ -95,3 +97,13 @@ export function kuskstatus(spel, kusk, lopp) {
     return { status: "preliminär", not: "preliminärt ja — kör helst loppets bästa häst" };
   return { status: "bekräftar", not: "tackar ja och står vid sitt ord" };
 }
+
+
+/**
+ * LÄRLINGSREGELN (v134, 18.6 — verklighetens regel: Lärlingsserien är
+ * förbehållen kuskar med lärlingslicens). I spelet: v111:s lärlingar
+ * — och kuskar som ännu inte gjort sig ett namn (ryktbarhet ≤ 25).
+ * De är kårens egen återväxt, ungefär tjugo av nittio.
+ */
+export const lärlingsberättigad = (kusk) =>
+  !!kusk?.lärling || (kusk?.ryktbarhet ?? 99) <= 25;
