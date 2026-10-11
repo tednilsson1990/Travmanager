@@ -22,7 +22,7 @@ import { bokförSeriepoäng, finallopp, registreraFinalresultat } from "./engine
 import { justeraFörBanutveckling } from "./engine-sallskap.js";
 import { arkiveraTelefonen } from "./engine-inkorg.js";
 import { TRÄNARKUSKEN, spelarKusk, bokförKörning } from "./engine-korlicens.js";
-import { UTRUSTNING, sättBalans, släppBalans, vinterbana } from "./engine-utrustning.js";
+import { UTRUSTNING, sättBalans, släppBalans, vinterbana, hovläge, tusseffekt, utrustningssvar, utrustningKänd, svarstext } from "./engine-utrustning.js";
 import { väderläge } from "./engine-vader.js";
 import { stoppFör, nästaStopp, hoppaFram } from "./engine-klocka.js";
 import { minnenInförLopp } from "./engine-minnen.js";
@@ -554,7 +554,7 @@ function Pressen({ spel, häst, lopp, fält, onVal }) {
     <h2>Pressen ringer</h2>
     <div class="samtal">
       <div class="samtal-vem">Travronden${fråga.typ !== "vanlig" ? " · med udd i rösten" : ""}</div>
-      <div class="samtal-text">${fråga.text}</div>
+      <div class="samtal-text">${fråga.text}${(fält ?? []).filter((h) => h.egen).length > 1 ? " Och ni har två i loppet — svaret får gälla båda." : ""}</div>
     </div>
     ${PRESSVAL.map((v) => html`
       <button key=${v.id} class="val" onClick=${() => onVal(v)}>
@@ -617,8 +617,20 @@ function kuskensRåd(häst, lopp, kusk) {
    inget UI satte det). Hopfälld som standard — skor är aldrig fel, och
    den som vill ha travets unika val hittar det här, med förstamannens
    råd överst så även en Harry Boy-spelare vågar. */
-function Balansen({ häst, spel }) {
-  const [, rita] = useState(0);
+function Balansen({ häst, spel, lopp = null }) {
+  /* Utrustningsplanen (v168): lades den på stallmötet och DAGENS lopp
+     är målloppet förifylls valen — planen står klar, som utlovat. */
+  const [, rita] = useState(() => {
+    const plan = spel.utrustningsplan?.[häst.id];
+    if (plan && !plan.avböjd && lopp && plan.loppId === lopp.id && !häst.balansVal) {
+      häst.balansVal = { ...plan.val };
+    }
+    return 0;
+  });
+  const planIdag = (() => {
+    const p = spel.utrustningsplan?.[häst.id];
+    return p && !p.avböjd && lopp && p.loppId === lopp.id ? p : null;
+  })();
   const vinter = vinterbana(spel);
   const väder = väderläge(spel);
   const fm = spel.förstaman?.namn?.split(" ")[0] ?? "Förstamannen";
@@ -631,7 +643,11 @@ function Balansen({ häst, spel }) {
       <summary class="meta">Balansen — skor och vagn${häst.balansVal && Object.values(häst.balansVal).some(Boolean) ? " · vald" : ""}</summary>
       <div class="samtal" style=${{ marginTop: "8px" }}>
         <div class="samtal-vem">${fm} om balansen</div>
-        <div class="samtal-text">${råd}</div>
+        <div class="samtal-text">${planIdag ? `I dag gäller planen från stallmötet: barfota och tussarna på. Det är det här vi sparat för.` : råd}</div>
+      </div>
+      <div class="relmini" style=${{ margin: "6px 0 2px" }}>
+        Hovarna: ${hovläge(häst)} av 100${hovläge(häst) < 60 ? " — behöver växa innan barfota" : ""}
+        ${(häst.tussVana ?? 0) >= 1 ? ` · tussarna nyss visade — effekten mattad` : ""}
       </div>
       ${Object.entries(UTRUSTNING).map(([id, u]) => html`
         <label key=${id} class="autorad" style=${{ marginTop: "8px" }}>
@@ -639,7 +655,9 @@ function Balansen({ häst, spel }) {
             checked=${!!häst.balansVal?.[id]}
             onChange=${(e) => { (häst.balansVal ??= {})[id] = e.target.checked; rita((x) => x + 1); }} />
           <span><b>${u.namn}</b>${u.kostnad ? ` · ${kr(u.kostnad)} kr` : ""}${id === "barfota" && vinter ? " · förbjudet på vinterbana" : ""}
-            <div class="relmini">${u.text}</div></span>
+            <div class="relmini">${u.text}</div>
+            <div class=${"relmini " + (utrustningKänd(häst, id) ? (utrustningssvar(häst, id) === "fel" ? "dålig" : utrustningssvar(häst, id) === "stark" ? "bra" : "") : "")}>
+              ${häst.namn}: ${svarstext(häst, id)}</div></span>
         </label>`)}
       <div class="hint">Gäller den här starten. Utan val: skor och vanlig vagn — aldrig fel.</div>
     </details>`;
@@ -708,7 +726,7 @@ function Kusksamtal({ häst, lopp, kusk, fält, kamrater = [], onVal, minnen = [
           </div>
           <div class="val-citat">”${r.text}”</div>
         </button>`)}
-      ${spel && html`<${Balansen} häst=${häst} spel=${spel} />`}`;
+      ${spel && html`<${Balansen} häst=${häst} spel=${spel} lopp=${lopp} />`}`;
   }
 
   return html`
@@ -728,7 +746,7 @@ function Kusksamtal({ häst, lopp, kusk, fält, kamrater = [], onVal, minnen = [
     ${minnen.length > 0 && html`
       <div class="samtal minnes-replik">
         <div class="meta">✆ ${kusk.namn} minns</div>
-        <div class="samtal-text">»${minnen[0].text}${minnen.length > 1 ? ` Och en sak till: ${minnen[1].text.charAt(0).toLowerCase()}${minnen[1].text.slice(1)}` : ""}«</div>
+        <div class="samtal-text">»${minnen[0]}${minnen.length > 1 ? ` Och en sak till: ${minnen[1].charAt(0).toLowerCase()}${minnen[1].slice(1)}` : ""}«</div>
       </div>`}
     ${kamrater.length > 0 && html`
       <h2>Stallkamraterna</h2>
@@ -1009,6 +1027,7 @@ export default function LoppVy({ spel, uppdatera }) {
      visar hela fältet med positioner, fart och kraft. */
   const [visning, sättVisning] = useState("tv");
   const [facit, sättFacit] = useState(null);
+  const [startfas, sättStartfas] = useState(false);
   const timer = useRef(null);
 
   /* KLOCKAN (v101, 20.1): anmälan skickas på MÅNDAGEN och kostar
@@ -1083,6 +1102,10 @@ export default function LoppVy({ spel, uppdatera }) {
     const balansläge = sättBalans(häst, spel);
     const sim = simulera(fält, lopp, slutorder ? { vid: 500, order: slutorder } : null);
     sättKörning({ ...körning, taktik, slutorder, favorit, sim });
+    /* STARTEN (v166, 30.7): loppet börjar inte mitt i — det börjar
+       bakom bilen. Startsekvensen visar uppställningen och laddarna,
+       sedan släpper bilen fältet. */
+    sättStartfas(true);
     sättSteg("lopp");
   };
 
@@ -1218,11 +1241,17 @@ export default function LoppVy({ spel, uppdatera }) {
   };
 
   useEffect(() => {
-    if (steg !== "lopp" || !körning || !körning.sim) return;
+    if (steg !== "lopp" || !körning || !körning.sim || startfas) return;
     if (ruta >= körning.sim.bild.length) { avsluta(); return; }
-    timer.current = setTimeout(() => sättRuta((r) => r + 1), fart);
+    /* UPPLOPPET (v166, 30.7): travets magi får sin tid. I 1×-läget
+       saktar uppspelningen ner de sista ~240 metrarna — avgörandet
+       ska gå att SE, inte blinka förbi. 3× respekteras. */
+    const b = körning.sim.bild[ruta];
+    const upplopp = b && b.meter >= (körning.lopp.dist ?? 2140) - 240;
+    const effFart = upplopp && fart === 110 ? 235 : fart;
+    timer.current = setTimeout(() => sättRuta((r) => r + 1), effFart);
     return () => clearTimeout(timer.current);
-  }, [steg, ruta, fart, körning]);
+  }, [steg, ruta, fart, körning, startfas]);
 
   const nollställ = () => {
     sättKörning(null); sättFacit(null); sättRuta(0); sättSteg("anmälan");
@@ -1383,14 +1412,70 @@ export default function LoppVy({ spel, uppdatera }) {
 
   if (steg === "kusk") {
     return html`
-      <${Startlista} fält=${fält} favorit=${favorit} visaStreck=${true} lopp=${lopp} />
+      <details class="kort startlista-fäll">
+        <summary class="meta">Startlista och spelprocent — ${fält.length} hästar${lopp.storlopp ? " · storlopp" : ""}</summary>
+        <${Startlista} fält=${fält} favorit=${favorit} visaStreck=${true} lopp=${lopp} />
+      </details>
       <${Kusksamtal} häst=${häst} lopp=${lopp} kusk=${kusk} fält=${fält} onVal=${kör}
         spel=${spel} kamrater=${körning?.kamrater ?? []}
         minnen=${minnenInförLopp(spel, häst, lopp, fält)} />`;
   }
 
+  /* STARTSEKVENSEN (v166, 30.7 — Teds speltest: "starten och upploppet
+     är fantastiska saker i trav, men vårt spel gör inget med det").
+     Bakom bilen: uppställningen, laddarna, och så släpper vingarna. */
+  if (steg === "lopp" && startfas && körning?.sim) {
+    const laddare = fält.filter((h) => !h.egen && h.taktik === "ledning").map((h) => h.namn);
+    const volt = lopp.start === "volt";
+    return html`
+      <h2>${lopp.namn} · ${lopp.dist} m</h2>
+      <div class="startsekvens">
+        <div class="start-etikett">${volt ? "VOLTSTART" : "BAKOM BILEN"}</div>
+        <div class="start-berättelse">
+          ${volt
+            ? "Volterna går runt. Fälten vänder hemåt — ekipagen söker farten i exakt rätt ögonblick."
+            : "Bilen ökar. Vingarna ute, fältet samlat i jämn front — femhundra meter i stegrande fart."}
+        </div>
+        <div class="startuppställning">
+          ${[...fält].sort((a, b) => a.spår - b.spår).map((h) => html`
+            <div key=${h.spår} class=${"startrad" + (h.egen ? " din" : "")}>
+              <span class="start-spår">${h.spår}</span>
+              <span class="start-namn">${h.namn}${h.egen ? " — din" : ""}</span>
+              <span class="start-ladd">${h.taktik === "ledning" ? "laddar" : ""}</span>
+            </div>`)}
+        </div>
+        ${laddare.length > 0 && html`
+          <div class="start-berättelse">${laddare.slice(0, 2).join(" och ")} ser laddad${laddare.length > 1 ? "e" : ""} ut ${volt ? "i volten" : "bakom bilen"}.</div>`}
+        <button class="btn" onClick=${() => sättStartfas(false)}>${volt ? "Startern släpper fältet ›" : "Bilen släpper ›"}</button>
+      </div>`;
+  }
+
   const bild = körning.sim.bild[Math.min(ruta, körning.sim.bild.length - 1)];
-  const kommentarer = körning.sim.bild.slice(0, ruta + 1).flatMap((b) => b.text);
+  /* Speakern (v166): simulatorns rader + tre UI-härledda vinjetter —
+     startögonblicket, vem som tog spets, och upploppsropet. Allt läses
+     deterministiskt ur bilddatan; ingenting hittas på. */
+  const kommentarer = (() => {
+    const ut = [];
+    const spetsbild = körning.sim.bild[Math.min(4, körning.sim.bild.length - 1)];
+    const upploppIx = körning.sim.bild.findIndex((b) => b.meter >= (lopp.dist ?? 2140) - 240);
+    ut.push({ t: lopp.start === "volt"
+      ? "Fälten vänder — <b>starten går!</b>"
+      : "Bilen släpper — <b>starten går!</b>", k: "hot" });
+    körning.sim.bild.slice(0, ruta + 1).forEach((b, i) => {
+      if (i === 4 && spetsbild?.rader?.[0]) {
+        const ledare = spetsbild.rader[0];
+        const tvåa = spetsbild.rader[1];
+        ut.push({ t: `<b>${ledare.namn}</b> tar spets från spår ${ledare.spår}${tvåa ? ` — ${tvåa.namn} ${tvåa.kol > 0 ? "hänger utvändigt" : "finner ryggen"}` : ""}.`, k: "" });
+      }
+      if (i === upploppIx && upploppIx > 0) {
+        const led = b.rader?.[0];
+        const utmanare = (b.rader ?? []).slice(1, 4).find((r) => r.kol > 0 && r.kraft > 0.3);
+        ut.push({ t: `<b>UPPLOPPET!</b> ${led ? `${led.namn} håller i` : "Täten vacklar"}${utmanare ? ` — men ${utmanare.namn} kommer utvändigt!` : " — vem orkar hela vägen?"}`, k: "hot" });
+      }
+      b.text.forEach((k) => ut.push(k));
+    });
+    return ut;
+  })();
 
   return html`
     <h2>${lopp.namn} · ${lopp.dist} m · ${lopp.start === "volt" ? "voltstart" : "autostart"}</h2>
@@ -1401,7 +1486,9 @@ export default function LoppVy({ spel, uppdatera }) {
         Motståndarnas kuskar utmanar dig mer sällan — men spelarna förväntar sig seger.
       </div>`}
 
-    <${BanVy} lopp=${lopp} fält=${fält} bild=${bild} />
+    <div class=${bild && bild.meter >= (lopp.dist ?? 2140) - 240 && steg === "lopp" ? "upplopps-puls" : ""}>
+      <${BanVy} lopp=${lopp} fält=${fält} bild=${bild} />
+    </div>
 
     <div class="visning-växel">
       <button aria-pressed=${visning === "tv"} onClick=${() => sättVisning("tv")}>TV</button>

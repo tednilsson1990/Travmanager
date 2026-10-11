@@ -3173,3 +3173,209 @@ lagade att Kusksamtalets minnen- och kamrater-props aldrig skickades
 (guldkanten v145 och stallkamratspanelen var döda). Menystrukturen
 (spelets största kvarvarande tröskel) och förstagångsreplikerna är
 antecknade som smakkänsliga — byggs med Ted.
+
+## Speltestfixarna, del 1 (v163)
+
+Teds speltest (kap 30) — mekaniken först. **Kör veckan-knappen är nu
+global**: en fast dock ovanför menyn, synlig på varje sida (flyttad
+från Stallet). **Flikreset**: tryck på Inkorg när du redan är där →
+tillbaka till hemskärmen, som på en riktig telefon. **Chatten**:
+veckoavgränsare mellan dagarna ("VECKA 5") så trådarna går att tolka,
+och autoscroll till senaste meddelandet — aldrig mer scrolla ner
+själv. **Spamstoppet**: "Stallet är fullt" sägs var femte vecka, inte
+varje. **Bottenluften**: mer utrymme ovanför menyn så valknappar inte
+hamnar under skärmkanten. Kvar ur speltestet: telefonens design
+(v164), tävlingsdagens textmassa (v165), starten & upploppet (v166).
+
+## Telefonen som föremål (v164)
+
+Kap 30.1 — "telefonen måste se mer realistiskt ut". Designidén: luren
+är spelets MÖRKA föremål i en ljus värld. En svart glasram med djup
+skugga runt hela inkorgen (en wrapper i appen — ingen logik rörd), en
+riktig statusremsa överst (klockslag som följer veckans stopp: 07:58
+på måndagen, 16:24 på loppdagen · TRAVNET, signalstaplar och ett ritat
+batteri), och hemskärmen fick mörk marin tapet med en tunn vit klocka
+i 54 px, glasdock med backdrop-blur och guldaccent på rytmraden.
+Appskärmarna är ljusa som riktiga appar. Allt är CSS + en ny statusrad
+— ingen mekanik ändrad.
+
+## Tävlingsdagen städad (v165)
+
+Kap 30.3 + 30.10. **Startlistan i kusksteget är nu hopfällbar** — den
+var sidans största textmassa och låg FÖRE samtalet; nu är kuskens
+röst det första du ser, och listan öppnas på begäran ("Startlista och
+spelprocent — 12 hästar"). **Pressen vet om dubbelstarterna**: har du
+två hästar i loppet säger Travronden det ("svaret får gälla båda") —
+och stallkamraternas kuskar har sina egna repliker i kusksteget sedan
+v162-lagningen. **Buggfix på köpet**: minnesrepliken (guldkanten) läste
+.text på strängar och hade visat "undefined" — upptäckt för att
+v162-lagningen väckte den ur sin dvala; nu talar minnet riktig svenska.
+
+## Starten och upploppet (v166)
+
+Kap 30.7 — Teds ord: "starten och upploppet är fantastiska saker i
+trav, men vårt spel gör inget med det." Nu gör det. **STARTEN**:
+loppet börjar inte längre mitt i — det börjar bakom bilen. En
+startsekvens visar uppställningen spår för spår (dina i fetstil),
+vilka som LADDAR (läst ur fältets verkliga körordrar — ingen
+gissning), en berättelserad för bilstart respektive voltstart, och så:
+"Bilen släpper ›". Speakern öppnar med startögonblicket och ropar
+efter femte bilden ut vem som tog spets och vem som hängde utvändigt
+— allt läst ur simulatorns bilddata. **UPPLOPPET**: i 1×-läget saktar
+uppspelningen ner de sista 240 metrarna så avgörandet går att SE,
+banvyn får en pulserande guldram (respekterar prefers-reduced-motion),
+och speakern ropar in det: "UPPLOPPET! X håller i — men Y kommer
+utvändigt!" — utmanaren vald ur bilddatans verkliga krafter och lägen.
+Inga motor- eller slumpändringar: allt är deterministisk läsning av
+data som redan fanns.
+
+## Stallmötet (v167)
+
+Kap 30.9 — mötet som refererades i tre texter men aldrig fanns. Nu är
+måndagens fästa post i Telefonen ett riktigt STALLMÖTE: genomgångens
+alla siffror är kvar (ekonomi, form, sponsorkrav, problemen), men
+mötet har nu ett FÖRSLAG PÅ BORDET — träningsråden för varje häst som
+bör byta pass, med motiv ("orken är nere på 20 — en trött häst lär
+sig ingenting") och veckans kapacitet för hårda jobb — och ett BESLUT:
+»Kör din plan — lägg träningen« sätter alla passen med ett tryck
+(engångs, till skillnad från autoträningen), »jag sätter passen själv«
+kvitterar och pekar mot Stallet. Med autoträningen på konstaterar
+mötet bara att planen ligger. Starterna refereras med vägen dit:
+förslaget ligger överst i loppfliken. Fyra nya kontroller i
+prov-inkorg.mjs (+ ett gammalt uppdaterat: rubriken är nu Stallmötet).
+
+## Utrustningsplanen (v168)
+
+Teds analysdirektiv: utrustningen i trav är inte en kryssruta per
+start — det är en PLAN. "Om 3 veckor är det final: ska vi spara
+hovarna och köra barfota då? Rycktussarna är testade i träningen —
+spara till det loppet?" Nu är det så det fungerar:
+**Hovkapitalet**: en barfotastart sliter hovarna 35 enheter; de växer
+8 per vecka med skor, och under 60 spärras barfota med orsaken i
+klartext. Att köra barfota varje start är därmed omöjligt — att SPARA
+hovarna till loppet som gäller är ett riktigt tränarbeslut.
+**Rycktussarna** (ny utrustning): rycks på upploppet, full effekt
+första gången, mattas 30 % per visning, vilan återställer — växeln
+ingen annan vet om, om du inte visat den. **Huvudlagen**: norskt
+(f.d. "huvudlappar" — samma sparfältsnyckel) och nytt HELSTÄNGT (mer
+fart och start, mindre trygghet), ett åt gången. **Planen läggs på
+stallmötet**: när ett mållopp är inom tre veckor ringer förstamannen
+— "en sak till från mötet" — med hovkalkylen ("hovarna står på 65 i
+dag, på 89 till finalen") och tussläget. »Lägg planen« sparar barfota
+och tussar till målloppet, och på loppdagen står Balansen förifylld:
+"I dag gäller planen från stallmötet. Det är det här vi sparat för."
+Hovarna och tussläget syns alltid i Balansen-kortet. Tio nya
+kontroller i prov-utrustning.mjs. Inga nya slumpkällor — allt går
+genom v138:s balansväg.
+
+## Individen (v169)
+
+Teds direktiv: "all utrustning passar inte alla hästar — hästar är
+unika individer, och detta vill spelarna jobba med." Varje häst SVARAR
+nu på varje utrustning — starkt, neutralt eller tål den inte — härlett
+ur hash + egenskaperna (ingen lagring, som anlagen), med travets egen
+logik: en het häst (lynne <40) tål ALDRIG helstängt huvudlag och
+galopperar av vass utrustning; en orolig häst SAMLAS av norskt
+huvudlag — stabilare, inte snabbare; en stark häst tål alltid barfota;
+och "hon går inte i jänkare" är ren individ som ingen egenskap
+skyddar mot (~22 % av hästarna). Starkt svar ger ×1,35; tål-inte ger
+NOLL nytta och orenare trav. UPPTÄCKTEN är spelet: svaret är dolt
+tills utrustningen PROVATS i lopp — Balansen-kortet visar per rad
+"oprövat på hästen" / "svarar starkt" / "tål den inte — går orent",
+och stallmötesplanen läggs aldrig mot ett känt tål-inte. BRODD är ny:
+vinterns svar på barfota (grepp på snö — tryggare, något trögare),
+spärrad på sommarbana. Analysen i 21.9b. Nio nya kontroller.
+
+## Designpass A (v170)
+
+Kapitel 32.2 ①–③. **Nattläget**: tesens signaturkontrast från v55,
+äntligen fullbordad — när klockan står på loppdagen växlar hela spelet
+till kvällsmörker under strålkastare (natt-tokens, guldaccent i
+header och nav, telefonens appskärmar lyser i mörkret som riktiga
+skärmar). Vardag och tävlingsdag ser nu olika ut, som de ska.
+**Hem avvecklat**: Telefonen är startsidan — hemskärmen bar redan
+dagens uppslag (klockan, vädret, rytmen, apparna). Ekonomin och
+"Längre fram" flyttade till Kontoret; fliken heter nu "Telefonen";
+gamla "hem"-pekare mappas dit. En flik färre, dubbelnavet borta.
+**Tokenstädningen**: 83 döda/felaktiga fallbacks borttagna, 47 hårda
+marin-dialekter (#1d2f4e) ersatta med var(--marin), tokens vyerna
+redan trodde fanns (--vinröd, --benvit, --guld-ljus) är nu riktiga,
+Lora laddas äntligen (användes i tre textstilar men föll till
+Georgia). Service workern visade sig redan runtime-cacha fonterna —
+offline-typografin fungerade bättre än granskningen antog.
+
+## Karriärstegen (v171)
+
+Spelbarhetsgranskningens viktigaste rekommendation: spelet saknade en
+trappa att klättra. Nu finns den, som i svensk trav på riktigt:
+**B-licensen** alla börjar med, **A-licensen** (25 segrar + 1,5 mnkr)
+och **Elitlicensen** (80 segrar + 6 mnkr + en mästartitel).
+Uppgraderingen prövas vid säsongsskiftet — aldrig två steg på samma
+år, en uppgradering ska hinna kännas — med förstasida och plats i
+troférummet. Licensen syns i headern (guldmärke A/ELIT) och på
+Kontoret med progress mot nästa steg. **Säsongsgalan**: varje skifte
+koras Årets tränare (tränarligans etta — vinner du är det en
+karriärhändelse och en trofé; förlorar du ser du vem som tog den) och
+Årets häst. Nytt prov: prov-licens.mjs (12 kontroller).
+
+## Rivaljakten (v172)
+
+Granskningens hårdaste empiriska fynd: noll rivalmöten på 277 starter
+över tolv säsonger — hela v132-maskineriet (mötes-sms, pressen,
+räkningen) var osynligt för en spelare som inte jagade det själv. Nu
+jagar rivalen DIG: ungefär var tredje uttagning söker rivaltränaren
+upp samma lopp (hash-gatet i anmälningsläget, ingen slump; den
+svagaste världsanmälda lämnar plats när fältet är fullt; en skadad
+eller nystartad rival stannar hemma; finaler undantagna — dit kvalar
+man). Omkörd långsim: 36 rivalmöten på 277 starter, ~3 per säsong.
+Mötes-sms:et, pressen och räkningen tar vid automatiskt. Två nya
+kontroller i prov-rival.mjs.
+
+## Designpass B (v173)
+
+Kapitel 32.2 ④–⑥. **Hästtecknen**: individerna syns — bläs, stjärna i
+pannan eller vita strumpor härleds ur namnet (som pälsen, samma häst
+alltid samma tecken) och ritas i SVG-silhuetten; raritetshästen (v147)
+bär ALLTID sin stjärna i figuren, inte bara som ✶-märke.
+**Travbladets framsida**: tidningen har en etta — kvällsbild, vinjett
+("TRAVBLADET · HELG VECKA 9"), rubrik i Big Shoulders 26 px, ingress i
+Lora och journalistens signatur i kursiv. Resten av veckan är notiser.
+Sportmagasinets hierarki, byggd av material som redan fanns.
+**Beslutsmarkeringen**: telefonens hemskärm visar en tegelröd knapp
+när beslut väntar ("2 beslut väntar på svar ›") som öppnar
+meddelandena; trådlistan markerar redan svarskrävande trådar.
+
+## Spelvärdespasset (v174)
+
+Kap 31:3–5, med långsimmen som domare före och efter.
+**Pressvariationen**: granskningens dominantmall ("Stora ord, tunt
+resultat" — 21 % av allt pressflöde) skrivs nu bara när det förtjänas
+(fyra eller sämre, eller galopp — en pallplats efter stora ord är
+ingen skandal) och varierar över fem formuleringar, hash-valda. På
+köpet: mallen hårdkodade "Björkhaga" i stället för stallnamnet — lagad.
+**Verksamhetsklassen**: framgång kostar — driften skalar med renommét
+(+0 kr vid 25, ~6 500 kr/v vid 90, egen loggrad). Långsimmen: kassan
+mättas inte längre monotont utan går ned enskilda säsonger.
+**Sista hästen**: ett tomt stall dör inte tyst — pressen skriver
+("Tomma boxar hos..."), och en ägare erbjuder en häst i träning så
+karriären alltid kan resa sig. **Stallmötet skärpt**: beslutet kommer
+bara när det behövs (minst två hästar bör byta pass, eller någon är
+körd i botten) — långsimmen: beslutsfloran gick från 180-av-183
+stallmöten till åtta olika beslutstyper. **Härdning**: saknat
+spel.intjänat kunde göra renommét till NaN (dolt länge; synligt när
+verksamhetskostnaden läste det) — självläker nu, v129-mönstret.
+
+## Designpass C (v175)
+
+Kapitel 32.2 ⑦–⑨. **Storloppsdagens guldstämpel**: ovanpå nattläget —
+dubbel guldlinje under tidningshuvudet, STORLOPPSDAG-vinjett vid
+loggan och guldglöd på kör-knappen. Programkänslan utan varumärken.
+**Hästprofilens låda**: hovarna, tussvanan och de PRÖVADE
+utrustningssvaren samlade på översikten — oprövat nämns inte, lådan
+byggs av prov, precis som individen (v169) är tänkt att upplevas.
+**Kurvan**: spelets första graf — insprunget per säsong på Kontoret,
+byggd efter dataviz-metoden: en serie, en hue (marin; strålkastargul i
+natt), staplar med selektiva etiketter (första, sista, högsta), text i
+texttoken, tappbara staplar som mobilens tooltip. Komponenten Kurvan
+bor i ui-delar och kan återanvändas. Kvar ur 32.2: ⑩
+komponentbiblioteket — medveten refaktor som görs separat.

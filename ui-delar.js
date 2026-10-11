@@ -37,3 +37,33 @@ export function Form({ häst, antal = 6 }) {
         </span>`)}
     </span>`;
 }
+
+/**
+ * KURVAN (v175, 32.2 ⑨ — efter dataviz-metoden): en serie, staplar i
+ * en hue, inga legender, selektiva etiketter (första, sista, högsta),
+ * text i texttoken. Tapp på en stapel visar värdet — mobilens hover.
+ */
+import { useState } from "preact/hooks";
+export function Kurvan({ rader, enhet = "tkr" }) {
+  const [vald, sättVald] = useState(null);
+  if (!rader || rader.length < 2) return null;
+  const max = Math.max(...rader.map((r) => r.värde), 1);
+  const maxIx = rader.findIndex((r) => r.värde === max);
+  const B = 100 / rader.length;
+  return html`
+    <svg class="kurvan" viewBox="0 0 100 46" preserveAspectRatio="none" role="img">
+      ${rader.map((r, i) => {
+        const h = Math.max(1.5, (r.värde / max) * 34);
+        const etikett = vald === i || (vald === null && (i === 0 || i === rader.length - 1 || i === maxIx));
+        return html`
+          <g key=${i} onClick=${() => sättVald(vald === i ? null : i)} style=${{ cursor: "pointer" }}>
+            <rect x=${i * B + B * 0.18} y=${40 - h} width=${B * 0.64} height=${h}
+              rx="1.2" class=${"kurva-stapel" + (vald === i ? " vald" : "")} />
+            ${etikett && html`<text x=${i * B + B * 0.5} y=${40 - h - 2.4} text-anchor="middle"
+              class="kurva-värde">${r.värde}</text>`}
+            <text x=${i * B + B * 0.5} y="45" text-anchor="middle" class="kurva-etikett">${r.etikett}</text>
+          </g>`;
+      })}
+    </svg>
+    <div class="kurva-enhet">${enhet}</div>`;
+}

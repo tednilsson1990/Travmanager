@@ -21,6 +21,9 @@ import { veckonetto } from "./engine-vagvisare.js";
 import { loppläge, bedömningsnivå } from "./engine-proposition.js";
 import { veckansLopp } from "./data-kalender.js";
 import { kravläge } from "./engine-sponsor.js";
+import { träningsråd } from "./engine-forstaman.js";
+import { TRÄNING } from "./engine-hast.js";
+import { veckoslots } from "./engine-stallmote.js";
 
 const INLEDNING = {
   fostrare: "Kaffet är i, hästarna är ute. Lugnt och metodiskt nu — här är läget.",
@@ -101,9 +104,32 @@ export function veckansGenomgång(spel) {
   if (suraÄgare.length > 0) problem.push(`${suraÄgare.length} ${suraÄgare.length === 1 ? "hästägare" : "hästägare"} som behöver ett samtal`);
   if (problem.length > 0) stycken.push(`ATT HÅLLA I HUVUDET\n${problem.join(" · ")}.`);
 
+  /* STALLMÖTET (v167, 30.9 — Teds speltest: mötet refererades men
+     fanns aldrig). Förslaget på bordet: träningsråden för hästarna
+     som bör byta pass, och veckans kapacitet för hårda jobb. Beslutet
+     fattas i inkorgen — "kör din plan" lägger allt med ett tryck. */
+  const råd = (spel.stall ?? [])
+    .filter((h) => (h.skada ?? 0) === 0)
+    .map((h) => ({ häst: h, råd: träningsråd(fm, h) }))
+    .filter((x) => x.råd.träning !== x.häst.träning);
+  /* v174 (31:5): beslutet i mötet bara när det BEHÖVS — minst två
+     hästar bör byta pass, eller någon är körd i botten. En enda mild
+     justering är läsning, inte ett veckoligt klickbeslut som tränger
+     undan de ovanliga besluten (granskningens 180-av-183-fynd). */
+  const behövs = råd.length >= 2
+    || råd.some((x) => x.råd.träning === "vila" && (x.häst.energi ?? 100) < 40);
+  if (råd.length > 0 && !spel.autoTräning) {
+    stycken.push(`FÖRSLAGET PÅ BORDET\n${råd.slice(0, 5).map((x) =>
+      `${x.häst.namn}: ${TRÄNING[x.råd.träning]?.namn?.toLowerCase() ?? x.råd.träning} — ${x.råd.motiv}`).join("\n")}${råd.length > 5 ? `\n…och ${råd.length - 5} till.` : ""}\nVi orkar ${veckoslots(spel)} hårda pass i veckan. Säg till så lägger jag allt — eller sätt passen själv i Stallet.`);
+  } else if (spel.autoTräning) {
+    stycken.push(`TRÄNINGEN\nDen sköter jag som vanligt — planen ligger. Säg till om du vill ta över.`);
+  }
+  stycken.push(`STARTERNA\nAnmälningarna tar vi i loppfliken — mitt förslag ligger överst där.`);
+
   return {
-    rubrik: `Veckans genomgång — vecka ${vecka}`,
+    rubrik: `Stallmötet — vecka ${vecka}`,
     text: stycken[1] ?? stycken[0],
     lång: stycken.join("\n\n"),
+    rådAttLägga: behövs && !spel.autoTräning,
   };
 }

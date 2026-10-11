@@ -89,7 +89,9 @@ export function nästaSteg(spel) {
       { text: `${startklara} ${startklara === 1 ? "häst är" : "hästar är"} startklara — veckans anmälan väntar`, flik: "lopp" },
     skadade > 0 &&
       { text: `${skadade} ${skadade === 1 ? "häst" : "hästar"} på skadelistan`, flik: "stall" },
-    boxplats(spel) === 0 &&
+    /* v163 (kap 30): rådet spammade varje vecka — nu en påminnelse var
+       femte, inte en gnällig granne. */
+    boxplats(spel) === 0 && (spel.vecka % 5) === 1 &&
       { text: "Stallet är fullt — det kan vara dags att bygga ut", flik: "mer" },
   ].filter(Boolean);
   /* Angelägnast först — så första raden alltid är veckans viktigaste. */

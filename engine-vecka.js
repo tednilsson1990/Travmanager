@@ -19,6 +19,7 @@ import { bokförKarriär } from "./engine-minnen.js";
 import { följUppÄgarlöften } from "./engine-agare.js";
 import { säkraStambok, bokförStamÖde, uppfödarpremie } from "./engine-stambok.js";
 import { veckansVäder } from "./engine-vader.js";
+import { veckovård } from "./engine-utrustning.js";
 import { säkraKörlicens } from "./engine-korlicens.js";
 import { väckRykten } from "./engine-rykten.js";
 import { FÖRSTAMANSNAMN } from "./data-namnpaket.js";
@@ -206,6 +207,8 @@ export function körVecka(spel) {
       if (h.skada === 0) { h.friskVecka = spel.vecka; spel.logg.push(`<b>${h.namn}</b> är friskförklarad.`); }
       return;
     }
+    /* Utrustningsvården (v168): hovarna växer, tussvanan glöms. */
+    veckovård(h);
     const t = TRÄNING[h.träning];
     /* Gården förbättrar utbytet — rakbanan lyfter snabbjobben, backen
        bygger ork, vattenbandet återhämtar och skonar. Aldrig loppmotorn. */
@@ -235,11 +238,36 @@ export function körVecka(spel) {
   const gård = gåraugifter(spel);
   /* Fodersponsorns förmån sänker driften — ekonomi, aldrig loppmotorn. */
   const rabatt = foderrabatt(spel);
-  const kostnad = spel.stall.length * DRIFT_PER_HÄST - rabatt + gård;
+  /* VERKSAMHETSKLASSEN (v174, 31:4): framgång kostar — ett stall med
+     renommé drar löner, försäkringar och resor därefter. Granskningens
+     långsim: kassan mättades vid ~s4 och pengar slutade betyda något.
+     Skalningen: +0 kr vid renommé 25, ~+6 500 kr/v vid 90. */
+  const verksamhet = Math.round(Math.max(0, (Number.isFinite(spel.renommé) ? spel.renommé : 25) - 25) * 100);
+  const kostnad = spel.stall.length * DRIFT_PER_HÄST - rabatt + gård + verksamhet;
   const intäkt = externa * ARVODE_PER_VECKA;
   spel.kassa += intäkt - kostnad;
   if (gård) spel.logg.push(`Anläggning och personal: <b>−${kr(gård)} kr</b>`);
+  if (verksamhet > 0) spel.logg.push(`Verksamhetens klass (löner, försäkringar, resor): <b>−${kr(verksamhet)} kr</b>`);
   if (rabatt) spel.logg.push(`Foderavtalet sänkte driften: <b>+${kr(rabatt)} kr</b>`);
+
+  /* SISTA HÄSTEN (v174, 31:4): granskningens tysta död — ett stall
+     utan hästar bara stannade. Nu är det en BERÄTTELSE: pressen
+     skriver, och en ägare med en billig unghäst hör av sig så att
+     karriären alltid kan resa sig. En gång per läge, inte ett flöde. */
+  if (spel.stall.length === 0 && !spel.erbjudande && spel.uppstartKlar !== false) {
+    if (!spel.tomtStallSkrivet) {
+      spel.tomtStallSkrivet = true;
+      skrivPress(spel, `Tomma boxar hos ${spel.stallnamn}`,
+        `Inte en häst i träning. Men stallbacken viskar redan om ägare som tror på en comeback — tränare med licens står aldrig sysslolösa länge.`, "neutral");
+    }
+    const h = nyHäst({ ålder: int(3, 5), ägare: plock(ÄGARNAMN) });
+    h.hype = 15;
+    h.krav = plock(ÄGARKRAV);
+    spel.erbjudande = h;
+    spel.logg.push(`<b>${h.ägare}</b> erbjuder ${h.namn} i träning — stallet kan resa sig.`);
+  } else if (spel.stall.length > 0) {
+    spel.tomtStallSkrivet = false;
+  }
 
   /* Sponsorveckan: ersättningen betalas ut och nya erbjudanden kan komma. */
   sponsorVecka(spel).forEach((r) => spel.logg.push(r));
@@ -297,9 +325,13 @@ export function körVecka(spel) {
      faktiska verksamhet: den som tävlar och tjänar pengar behåller ett
      grundanseende även under en svag period. */
   const golv = klamp(
-    6 + Math.min(spel.stall.length, 8) * 1.5 + Math.min(spel.intjänat / 60000, 12),
+    6 + Math.min(spel.stall.length, 8) * 1.5 + Math.min((spel.intjänat ?? 0) / 60000, 12),
     5, 34
   );
+  /* v174-härdningen: saknat intjänat gjorde golvet — och därmed
+     renommét — till NaN i äldre lägen. Harmlöst tills verksamhets-
+     kostnaden läste renommét in i kassan. Självläk, v129-mönstret. */
+  if (!Number.isFinite(spel.renommé)) spel.renommé = golv;
   spel.renommé = Math.max(golv, klamp(spel.renommé - 0.6));
   spel.spelförtroende = klamp(spel.spelförtroende + (spel.spelförtroende < 40 ? 0.5 : -0.3));
   KUSKAR.forEach((k) => {
@@ -717,8 +749,24 @@ export function efterLopp(spel, { häst, kusk, lopp, min, varFavorit, streckRang
     if (vann) { renΔ += 1.5; hypeΔ += 6; }
     else {
       renΔ -= 2; troΔ -= 2;
-      skrivPress(spel, `Stora ord, tunt resultat för ${häst.namn}`,
-        "Björkhaga lovade rakt inför loppet. Så blev det inte.", "dålig");
+      /* v174 (31:3): granskningens dominantmall — 21 % av allt
+         pressflöde var exakt denna rad. Nu: pallplats efter stora ord
+         är INGEN skandal (ingen rubrik alls), och när rubriken väl
+         skrivs varierar den. Hash på vecka+häst — ingen slump. */
+      if (min.ur || (min.plats ?? 9) > 3) {
+        const vinkelHash = (() => { let h = 2166136261; const s = `ord:${spel.vecka}:${häst.namn}`;
+          for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+          return h >>> 0; })();
+        const mallar = [
+          [`Stora ord, tunt resultat för ${häst.namn}`, `${spel.stallnamn} lovade rakt inför loppet. Så blev det inte.`],
+          [`${häst.namn} infriade inte tränarens löfte`, `»Räkna med oss«, hette det. Spelarna som lyssnade river kuponger.`],
+          [`Munnen före hästen i ${spel.stallnamn}`, `Förhandssnacket skrev checkar som ${häst.namn} inte kunde lösa in.`],
+          [`Tomt bakom orden för ${häst.namn}`, `Uppsnacket gav streck — loppet gav ingenting. Trovärdigheten får betala.`],
+          [`${kusk.namn} fick inte fason på uppsnackade ${häst.namn}`, `Tränaren talade upp — banan talade emot.`],
+        ];
+        const [rubrik, byline] = mallar[vinkelHash % mallar.length];
+        skrivPress(spel, rubrik, byline, "dålig");
+      }
     }
   } else if (förväntan < 0) {
     if (vann) {

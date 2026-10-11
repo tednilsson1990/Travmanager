@@ -48,6 +48,7 @@ import { invalsläge, säkraSällskap, säsongsmotion, rösta, MOTIONER } from "
 import { SERIENAMN, finalkandidater } from "./engine-serie.js";
 import { marknaden } from "./engine-marknad.js";
 import { nästaStorlopp, kvalläge, ärComeback } from "./engine-storlopp.js";
+import { utrustningssvar, utrustningKänd } from "./engine-utrustning.js";
 import { signaturen, journalistvinkel } from "./engine-varldsutveckling.js";
 import { anlag, anlagsklass } from "./engine-hast.js";
 
@@ -75,7 +76,57 @@ export function byggInkorg(spel) {
      i hans egen röst. Långtexten är byggd för förhand och helskärm. ---- */
   const genomgång = fm ? veckansGenomgång(spel) : null;
   if (genomgång) {
-    lägg({ avsändare: fmNamn, roll: "Förstaman", typ: "rapport", prioritet: "info", fäst: true, ...genomgång, flik: "stall" });
+    /* STALLMÖTET (v167, 30.9): mötet har ett förslag på bordet — och
+       ett beslut i posten. "Kör din plan" lägger hela träningen med
+       ett tryck; den som vill sätta passen själv säger det och går
+       till Stallet. Harry Boy-spåret genom måndagen. */
+    const beslut = genomgång.rådAttLägga
+      ? { typ: "stallmöte", ref: {},
+          alternativ: [
+            { id: "plan", etikett: "»Kör din plan — lägg träningen«" },
+            { id: "själv", etikett: "»Jag sätter passen själv»", sekundär: true },
+          ] }
+      : undefined;
+    lägg({ avsändare: fmNamn, roll: "Förstaman", typ: "rapport",
+      prioritet: beslut ? "beslut" : "info", fäst: true, ...genomgång, beslut, flik: "stall" });
+  }
+
+  /* ---- UTRUSTNINGSPLANEN (v168, Teds direktiv: "om 3 veckor är det
+     final — ska vi spara hovarna och köra barfota då? Jag har testat
+     rycktussar i träningen, spara till det loppet?"). Inte optimering
+     per start utan en PLAN mot målloppet, lagd på stallmötet. En sak
+     till från mötet — i förstamannens egen lur. ---- */
+  if (fm && stoppFör(spel) === "måndag") {
+    const mål = nästaStorlopp(spel, 3);
+    if (mål && mål.veckorKvar >= 1) {
+      spel.utrustningsplan = spel.utrustningsplan ?? {};
+      const kval = kvalläge(spel, mål.lopp);
+      const kandidat = kval.kvalade.find((h) =>
+        (h.skada ?? 0) === 0
+        && !spel.utrustningsplan[h.id]
+        && (h.hovar ?? 100) >= 40
+        /* v169: en plan läggs aldrig mot ett KÄNT tål-inte — det vet
+           tränaren redan, och förstamannen med. */
+        && !(utrustningKänd(h, "barfota") && utrustningssvar(h, "barfota") === "fel"));
+      if (kandidat) {
+        const hovarNu = Math.round(kandidat.hovar ?? 100);
+        const hovarDå = Math.min(100, hovarNu + mål.veckorKvar * 8);
+        const loppnamn = mål.lopp.kortnamn || mål.lopp.namn;
+        lägg({
+          avsändare: fmNamn, roll: "Förstaman", typ: "samtal", prioritet: "beslut",
+          rubrik: `En sak till från mötet — ${loppnamn}`,
+          text: `»${kandidat.namn} och ${loppnamn} om ${mål.veckorKvar === 1 ? "en vecka" : mål.veckorKvar + " veckor"}. Jag har en plan för utrustningen.«`,
+          lång: `— Ulla-planen, del två. ${loppnamn} om ${mål.veckorKvar === 1 ? "en vecka" : mål.veckorKvar + " veckor"}, och ${kandidat.namn} är kvalad.\n— Hovarna står på ${hovarNu} i dag${hovarDå >= 60 ? ` — låter vi skorna sitta på fram till dess är de på ${hovarDå} och tål barfota när det GÄLLER` : " — de hinner inte riktigt ikapp, men skor är aldrig fel"}.\n— Och rycktussarna: jag har provat dem i träningen. ${(kandidat.tussVana ?? 0) < 0.5 ? "Hästen rycker till precis som den ska. Visar vi dem inte innan dess har vi en växel ingen annan vet om." : "Men hästen har sett dem nyss — vilar vi dem till loppet biter de bättre."}\n— Säger du ja lägger jag planen: skor och sparade tussar fram till ${loppnamn} — barfota och tussarna PÅ när det smäller. Balansen står klar i loppvalet den dagen.`,
+          flik: "stall",
+          beslut: { typ: "utrustningsplan",
+            ref: { hästId: kandidat.id, loppId: mål.lopp.id, lopp: loppnamn },
+            alternativ: [
+              { id: "spara", etikett: `»Lägg planen — vi sparar till ${loppnamn}«` },
+              { id: "känsla", etikett: "»Vi kör på känsla, start för start«", sekundär: true },
+            ] },
+        });
+      }
+    }
   }
 
   /* ---- Vägvisaren → förstamannens sms. Akut ton = beslut krävs.
@@ -903,6 +954,30 @@ export function verkställBeslut(spel, händelse, valId) {
         skrivPress(spel, `Jävsfrågan: gynnade ${spel.stallnamn} sig självt?`,
           `Ledamoten röstade ja till en motion som gynnar den egna verksamheten. »Jag redovisade min vinning öppet«, säger tränaren.`, "negativ");
       }
+    }
+  }
+  if (b.typ === "utrustningsplan") {
+    /* v168: planen lagras — Balansen förifylls på loppdagen. "Känsla"
+       noteras så frågan inte ställs om för samma häst och lopp. */
+    spel.utrustningsplan = spel.utrustningsplan ?? {};
+    spel.utrustningsplan[b.ref.hästId] = valId === "spara"
+      ? { loppId: b.ref.loppId, lopp: b.ref.lopp, val: { barfota: true, tussar: true }, lagd: spel.vecka }
+      : { loppId: b.ref.loppId, avböjd: true };
+    if (valId === "spara") {
+      spel.logg?.push?.(`Utrustningsplanen lagd: skor och sparade tussar fram till ${b.ref.lopp} — barfota och tussarna på när det gäller.`);
+    }
+  }
+  if (b.typ === "stallmöte") {
+    /* Stallmötet (v167): "kör din plan" lägger förstamannens träningsråd
+       på alla friska hästar — engångs, till skillnad från autoträningen. */
+    if (valId === "plan" && spel.förstaman) {
+      let lagda = 0;
+      (spel.stall ?? []).forEach((h) => {
+        if ((h.skada ?? 0) > 0) return;
+        const r = träningsråd(spel.förstaman, h);
+        if (h.träning !== r.träning) { h.träning = r.träning; lagda++; }
+      });
+      spel.logg?.push?.(`Stallmötet: träningen lagd enligt förstamannens plan (${lagda} ${lagda === 1 ? "häst" : "hästar"}).`);
     }
   }
   if (b.typ === "förhandsord") {

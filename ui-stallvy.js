@@ -1,6 +1,7 @@
 import { html } from "htm/preact";
 import { useState } from "preact/hooks";
 import { TRÄNING, anlagsvetskap, anlagsbedömning, veterinärtest, VETERINÄRTEST_PRIS } from "./engine-hast.js";
+import { UTRUSTNING, utrustningKänd, svarstext, hovläge } from "./engine-utrustning.js";
 import { nästaStopp, hoppaFram } from "./engine-klocka.js";
 import { nySäsong, säsongstext } from "./engine-sasong.js";
 import { kr, klamp } from "./engine-util.js";
@@ -209,7 +210,7 @@ function HästSida({ häst, spel, uppdatera, tillbaka, startflik }) {
     <button class="tillbaka" onClick=${tillbaka}>‹ Stallet</button>
     <div class="kort">
       <div class="horse-topp">
-        <${HästEllerFoto} namn=${häst.namn} skifte=${pälsskifte(spel, häst)} dräkt=${spel.dräkt} storlek=${92} />
+        <${HästEllerFoto} namn=${häst.namn} skifte=${pälsskifte(spel, häst)} dräkt=${spel.dräkt} storlek=${92} tecken=${häst.raritet ? "stjärna" : null} />
         <div>
           <div class="namn">${häst.namn}</div>
           <div class="meta">${häst.ålder} år · ${häst.kön} · ${status}</div>
@@ -236,6 +237,20 @@ function HästSida({ häst, spel, uppdatera, tillbaka, startflik }) {
           <${Stapel} etikett="Energi" värde=${häst.energi} variant="energi" />
         </div>
         <div class="prisrad"><span>Personlighet</span><span class="pris">${lynneText}</span></div>
+        ${(() => {
+          /* LÅDAN (v175, 32.2 ⑧): hästens individuella utrustning —
+             hovarna, tussvanan och de PRÖVADE svaren — samlad där
+             hästen bor. Oprövat nämns inte: lådan byggs av prov. */
+          const kända = Object.keys(UTRUSTNING).filter((id) => utrustningKänd(häst, id));
+          return html`
+            <div class="prisrad"><span>Hovarna</span>
+              <span class="pris">${hovläge(häst)} av 100${hovläge(häst) < 60 ? " — växer" : ""}</span></div>
+            ${(häst.tussVana ?? 0) >= 1 && html`
+              <div class="prisrad"><span>Rycktussarna</span><span class="pris">nyss visade — vilar</span></div>`}
+            ${kända.length > 0 && html`
+              <div class="prisrad"><span>Lådan</span>
+                <span class="pris">${kända.map((id) => `${UTRUSTNING[id].namn}: ${svarstext(häst, id)}`).join(" · ")}</span></div>`}`;
+        })()}
         ${(() => {
           /* DOLDA ANLAG (v148, 21.4): taket är dolt tills hästen visat
              det — eller tills veterinären fått titta. Upptäcktsglädjen:
@@ -396,7 +411,7 @@ function Hästkort({ häst, spel, uppdatera, dräkt, öppna }) {
     <div class="horse">
       <button class="horse-topp" style=${{ background: "none", border: 0, padding: 0, width: "100%", cursor: "pointer", textAlign: "left", font: "inherit", color: "inherit" }}
         onClick=${öppna}>
-        <${HästEllerFoto} namn=${häst.namn} dräkt=${dräkt} storlek=${76} />
+        <${HästEllerFoto} namn=${häst.namn} dräkt=${dräkt} storlek=${76} tecken=${häst.raritet ? "stjärna" : null} />
         <div style=${{ flex: 1 }}>
           <div class="namn">${häst.namn}<span class="klasstagg">${klassnivå(häst).etikett}</span>${häst.genombrott ? html` <span class="genombrott-marke" title=${"Genombrottet: " + häst.genombrott.lopp + ", säsong " + häst.genombrott.säsong}>✦</span>` : ""}${häst.raritet ? html` <span class="raritet-marke" title="Född med en vit stjärna i pannan — en på femhundra">✶</span>` : ""}</div>
           ${(() => {
@@ -554,15 +569,8 @@ export default function StallVy({ spel, uppdatera, nystart, efterVecka, startHä
     <h2>Veckans jobb</h2>
     ${spel.stall.map((h) => html`<${Hästkort} key=${h.id} häst=${h} spel=${spel} uppdatera=${uppdatera} dräkt=${spel.dräkt}
       öppna=${() => sättValdHäst(h.id)} />`)}
-    <button class="btn" disabled=${slut} onClick=${() => {
-      /* KLOCKAN (v101, 20.1): hoppet går till nästa stopp med innehåll —
-         onsdag (besked), helgen (loppdag) eller ny vecka. Veckoskiftet
-         landar i inkorgen, mellanstoppen i loppfliken. */
-      let mål;
-      uppdatera((s) => { arkiveraTelefonen(s); mål = hoppaFram(s); });
-      if (efterVecka) efterVecka(mål);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }}>${slut ? "Säsongen är slut" : nästaStopp(spel).etikett}</button>
+    ${/* v163: kör veckan-knappen bor nu i den globala docken (ui-app) —
+         synlig på varje sida, som Teds speltest krävde. */ ""}
 
     ${spel.logg.length > 0 && html`
       <h2>Rapport</h2>

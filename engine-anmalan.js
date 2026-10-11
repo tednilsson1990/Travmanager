@@ -65,6 +65,34 @@ const harFöreträde = (häst, lopp) =>
  * alltid använt, men var och en anmäler med ~3/4 sannolikhet —
  * deterministiskt ur häst + lopp + vecka, så listan är ett faktum.
  */
+/**
+ * RIVALJAKTEN (v172, kap 31:2 — granskningens hårdaste fynd: noll
+ * rivalmöten på 277 starter). Rivalen VÄNTAR inte längre på slumpen:
+ * ungefär var tredje uttagning spelaren gör söker rivaltränaren upp
+ * samma lopp — det är så en riktig rivalitet beter sig, och det är
+ * det som gör v132:s hela mötesmaskineri (sms, press, räkningen)
+ * synligt. Hash-gatet, ingen slump; den svagaste världsanmälda får
+ * lämna plats när fältet är fullt.
+ */
+function injiceraRivalen(spel, lopp, anmälda) {
+  const r = spel.rival;
+  if (!r || lopp.final) return anmälda;
+  const häst = (spel.värld?.hästar ?? []).find((h) => h.id === r.hästId);
+  if (!häst || (häst.skada ?? 0) > 0 || häst.senasteStartVecka === spel.vecka) return anmälda;
+  if (anmälda.some((h) => h === häst || h.id === häst.id)) return anmälda;
+  if (hash(`rivaljakt:${spel.säsong ?? 1}:${spel.vecka}:${lopp.id}`) % 100 >= 30) return anmälda;
+  const ut = [...anmälda];
+  if (ut.length >= (lopp.startande ?? 12)) {
+    /* Den svagaste icke-egna lämnar — rivalen anmälde sig tidigare. */
+    const bytbar = [...ut].filter((h) => !h.egen)
+      .sort((a, b) => (a.intjänat ?? 0) - (b.intjänat ?? 0))[0];
+    if (!bytbar) return anmälda;
+    ut.splice(ut.indexOf(bytbar), 1);
+  }
+  ut.push(häst);
+  return ut;
+}
+
 export function anmälningsläge(spel, lopp, egenHäst, medEgna = []) {
   /* Sedan v95 kommer världens anmälda ur AI-tränarnas riktiga loppval
      (engine-aitranare) — samma karta som världsveckan sedan kör. Bara
@@ -72,7 +100,8 @@ export function anmälningsläge(spel, lopp, egenHäst, medEgna = []) {
      klassfönstermetoden. */
   const karta = veckansAnmälningar(spel);
   if (karta.has(lopp.id)) {
-    return { anmälda: [egenHäst, ...medEgna, ...karta.get(lopp.id)], platser: lopp.startande };
+    return { anmälda: injiceraRivalen(spel, lopp, [egenHäst, ...medEgna, ...karta.get(lopp.id)]),
+      platser: lopp.startande };
   }
   sättRng(seedad(hash(`${lopp.id}:${spel.vecka}:anmälan`)));
   const kandidater = tillgängliga(spel.värld, lopp, spel.vecka, new Set())
@@ -89,7 +118,7 @@ export function anmälningsläge(spel, lopp, egenHäst, medEgna = []) {
   const iFönstret = kandidater.slice(start, start + Math.max(0, bredd));
   const världsanmälda = iFönstret.filter((h) =>
     hash(`${h.id}:${lopp.id}:${spel.vecka}`) % 100 < 66);
-  return { anmälda: [egenHäst, ...medEgna, ...världsanmälda], platser };
+  return { anmälda: injiceraRivalen(spel, lopp, [egenHäst, ...medEgna, ...världsanmälda]), platser };
 }
 
 /**

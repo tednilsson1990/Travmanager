@@ -650,7 +650,17 @@ travets verklighet vinner varje konflikt.
 pengar ÄR XP, Brons→Silver→Guld är levelkurvan. Brickan med steg
 (III/II/I), XP-mätaren till nästa steg, och KLASSMÄRKET i loppvalet
 (högt/mitt/lågt i kravspannet — det travtränare faktiskt tittar på).
-## 21.9 Utrustningen (held items) — barfota/skor, jänkarvagn,
+## 21.9 Utrustningen (held items) [ETAPP B v168 — PLANEN, inte
+optimeringen (Teds direktiv): hovkapitalet (barfota kräver hovar ≥60,
+sliter 35, växer 8/vecka — "spara hovarna till finalen" är ett riktigt
+beslut), rycktussarna (full effekt osedda, mattas 30 %/visning, vilan
+återställer — "spara rycket till loppet som gäller"), norskt OCH
+helstängt huvudlag (ett åt gången), tusseffekt/hovläge/veckovård i
+engine-utrustning. UTRUSTNINGSPLANEN på stallmötet: när målloppet är
+≤3 veckor bort ringer förstamannen ("en sak till från mötet") med
+hovkalkylen och tussläget; »Lägg planen« sparar barfota+tussar till
+målloppet och Balansen står förifylld den dagen, med hovarna och
+tussläget synliga i kortet] — barfota/skor, jänkarvagn,
 huvudlappar: verklig travbalansering med verkliga avvägningar
 (barfota = snabbare men känsligare). Störst spelmekanisk kandidat.
 ## 21.10 Naturerna — hästens lynne/personlighet som NAMNGIVEN natur
@@ -1302,3 +1312,183 @@ k) Förstamannens samlade roll efter v162: veckogenomgången, träningsråd
 ## 29.3 BYGGT v162
 Autoträningen (a), Lita på kusken-knappen (d), Balansen med råd (e),
 props-lagningarna (f). Kvar: i (med Ted), j, k-resterna.
+
+# 30. SPELTESTET 10 OKT (Teds spontana reaktion, kväll)
+
+Teds ord: "Känns rörigt, inte premium, inte färdigt. Kan vässa otroligt
+många saker, eller t.o.m. göra om." Tio punkter, prioriterade:
+
+30.1 Telefonen ser inte realistisk ut — "ser bara B ut". Generellt är
+     designen för svag; telefonen värst. [TELEFONEN GJORD v164: svart
+     glasram + statusremsa (klockslag/nät/batteri), mörk marin tapet,
+     tunn vit klocka, glasdock. Generella designpasset: med Ted]
+30.2 Höjden: valknappar hamnar under skärmkanten, kräver scroll.
+     [DELFIX v163: mer bottenluft i .wrap; fortsatt bevakning]
+30.3 Tävlingsdagen för rörig — extremt mycket text. [FÖRSTA PASSET v165: startlistan hopfällbar i kusksteget (sidans största massa), kuskens röst först. Mer trimning med Ted — vad som KÄNNS rörigt avgör han]
+30.4 Hoppa fram-knappen ska synas ÖVERALLT, inte bara i Stallet.
+     [LÖST v163: global kör-dock ovanför menyn, på varje sida.]
+     Och menyklick på Inkorg när man är i inkorgen ska gå hem.
+     [LÖST v163: flikreset — aktiv flik trycks = vyn nollställs.]
+30.5 "Stallet fullt, dags att bygga ut" spammar varje vecka.
+     [LÖST v163: var femte vecka.]
+30.6 Trådarna svårtolkade, allt går ihop — behöver avgränsning per dag
+     och lästmarkering. [DELLÖST v163: veckoavgränsare i chatten +
+     autoscroll till senaste; lästmarkering kvar]
+30.7 Starten och upploppet — travets magi — görs inget av. [BYGGT
+     v166: startsekvensen (uppställning, laddare ur verkliga körordrar,
+     bil-/volttext, "Bilen släpper ›"), speakerns spetsrop efter fem
+     bilder, upploppsslowdown i 1×, guldpuls på banvyn, "UPPLOPPET!"-
+     ropet med utmanaren ur bilddatan. Allt deterministiskt ur sim]
+30.8 Senaste meddelandet nås utan scroll — som en riktig mobil.
+     [LÖST v163: autoscroll till botten vid trådöppning.]
+30.9 Stallmötet refereras men finns inte som upplevelse. [BYGGT v167:
+     måndagens fästa post ÄR mötet — genomgångens siffror + FÖRSLAGET
+     PÅ BORDET (träningsråd per häst med motiv, veckoslots) + beslutet
+     »Kör din plan« som lägger all träning med ett tryck. Autoträning
+     på = mötet konstaterar att planen ligger. Kvar ur 29 k:
+     helgpaketet — anmälningsförslag med godkänn-tryck]
+30.10 Två hästar i samma lopp: bara en diskuteras. [LÖST v162+v165:
+     stallkamraternas kuskar har egna repliker (taktik + formkänsla),
+     och pressen säger själv att svaret gäller båda]
+
+## 21.9b UTRUSTNINGSANALYSEN (Teds direktiv 2026-10-11 natt)
+
+Direktivet: "all utrustning passar inte alla hästar. Hästar är unika
+individer. Vissa galopperar av för vass utrustning. Starka hästar blir
+bättre av vissa saker, vissa blir inte snabbare men STABILARE med rätt
+utrustning. Detta vill spelarna jobba med — det är en stor del av
+travet. Sommar mot vinter, barfota mot brodd, öppet huvudlag mot
+helstängt."
+
+VERKLIGHETENS UTRUSTNINGSLÅDA (vad den används till):
+- SKONING: skor (standard, skonar hovarna) / barfota (snabbare —
+  lättare, friare aktion — men sliter och kräver bra bana) / BRODD
+  (vinterns svar: grepp på snö och is — tryggare, något trögare).
+  Sommar mot vinter i ett nötskal: barfota när banan bär, brodd när
+  den inte gör det.
+- VAGN: vanlig sulky / jänkarvagn (styvare, rullar lättare — många
+  vinner tid, men "hon går inte i jänkare" är en klassisk sanning:
+  vissa hästar trivs aldrig i den).
+- HUVUDLAG: öppet (standard) / norskt-halvstängt (begränsar synfältet
+  bakåt: en orolig häst blir SAMLAD — stabilare, inte snabbare) /
+  helstängt (ser bara framåt: tänder farten, men en het häst blir
+  vild — galopprisk).
+- TUSSAR: rycktussar (dämpar ljudet, rycks på upploppet — "växeln").
+  En spänd häst lugnas; en som sett dem för ofta rycker inte till.
+- (Antecknat till etapp C: tungband för hästar som svalde tungan,
+  balansvikter/boots som ändrar aktionen.)
+
+MEKANIKEN — INDIVIDEN (v169): varje häst SVARAR på varje utrustning:
+starkt / neutralt / tål den inte. Svaret härleds ur hash + hästens
+egenskaper (ingen lagring, som anlagen v148), med travlogik:
+- stark häst (styrka ≥62) tål alltid barfota;
+- het häst (lynne <40) tål ALDRIG helstängt — galopprisken är Teds
+  "galopperar av för vass utrustning";
+- orolig häst (lynne <45) blir STABILARE av norskt huvudlag — mer
+  travsäkerhet i stället för fart ("inte snabbare men stabilare");
+- jänkarvagnen är ren individ — ingen egenskap skyddar.
+Effekt: starkt svar ×1,35; tål-inte = NOLL effekt och −0,05
+travsäkerhet (vass utrustning på fel häst kostar). UPPTÄCKTEN:
+spelaren ser svaret först efter att ha PROVAT utrustningen i lopp
+(häst.utrProvat) — Balansen visar "svarar starkt på" / "tål inte" /
+"oprövat på hästen", och stallmötesplanen läggs aldrig mot ett känt
+tål-inte. Det är så travfolk jobbar: man provar, lär sig individen,
+och bygger hästens egen låda.
+
+# 31. SPELBARHETSGRANSKNINGEN (Teds sex frågor, 2026-10-11)
+
+Empiri: 12-säsongers långsim (passiv spelare) + kodläsning. Nyckelfynd:
+kassan mättas (261→1889 tkr, monotont — pengar slutar betyda något
+efter ~s4); pressen repeterar (9 % mallvariation, EN mall = 21 % av
+flödet); rivalmötet inträffade ALDRIG på 277 starter utan aktiv
+styrning; legendaren föddes inte på 12 säsonger (gaten kan lämna 22 %
+av karriärer utan); stallet kan tyst dö ut (0 hästar vid s12 utan
+köp/avel — ingen mekanik fångar det); stallmötet är ett beslut VARJE
+vecka (180 av 183 tagna beslut) och tränger undan de ovanliga;
+troféer 3 på 12 säsonger. Världen utvecklas däremot på riktigt:
+16 kuskpensioner, 11 lärlingar, 8 tränarskiften, 3 banbyggen.
+
+## 31.1 FEM REKOMMENDATIONER (prioriterade)
+1) KARRIÄRSTEGEN [BYGGD v171: B→A→Elit med verkliga krav, prövas vid
+   skiftet (ett steg/år), guldmärke i headern, progress på Kontoret;
+   säsongsgalan korar Årets tränare (trofé + förstasida) och Årets
+   häst ur tränarligan/världen].
+2) RIVALEN MÅSTE MÖTAS [BYGGD v172: rivaljakten i anmälningsläget,
+   ~var 3:e uttagning, hash-gatet; omkörd långsim: 0 → 36 möten på
+   12 säsonger (~3/säsong)].
+3) PRESSENS VARIATION [BYGGD v174: dominantmallen skrivs bara vid 4+/galopp och varierar över fem formuleringar; Björkhaga-hårdkodningen lagad].
+4) EKONOMISKT MOTSTÅND [BYGGT v174: verksamhetsklassen skalar driften med renommé (~6,5 tkr/v vid 90); sista hästen-skyddet med press + ägarerbjudande. Långsim: mättnaden bruten. Nivån tunas med Ted].
+5) STALLMÖTETS BESLUT BARA NÄR DET BEHÖVS [BYGGT v174: ≥2 rådbyten eller körd häst; långsim: beslutsfloran 1 typ → 8 typer].
+
+Kräver speltest, kan inte bedömas från kod: om det är ROLIGT (flow,
+telefonkänslan, tävlingsdagens textmängd efter v165), om telefon-
+besluten KÄNNS (±2–6 i relation/hype), om onboardingen bär.
+
+# 32. DESIGNGRANSKNINGEN (Teds tio frågor, 2026-10-11)
+
+Fynd ur koden (detaljer i granskningssvaret):
+- v55-SYSTEMET HAR EN RIKTIG TES ("sportpress när spelet berättar,
+  tävlingsprogram när spelaren analyserar; dagsljus och papper — men
+  loppet i kvällsmörker under strålkastare") och en stark typtrio
+  (Big Shoulders Display/Inter/Roboto Mono). Identiteten finns — den
+  EFTERLEVS inte: 46× hårdkodad #1d2f4e bredvid --marin #1E3A5F (två
+  marinblå lever parallellt), tre röda, tre guld-fallbacks, påhittade
+  tokens (--benvit, --vinröd) där fallbacken alltid vinner, åtta
+  radienivåer. Lora används i CSS men laddas aldrig (→ Georgia).
+  Fonterna hämtas från Google → offline-PWA:n tappar typografin.
+- HEM ÄR EN SPÖKSTAD: koden säger själv att allt migrerat (inkorgen
+  v100, Sfären v98, Travbladet) — kvar är ekonomikort, "Längre fram",
+  tre pressnotiser och en tom kort-wrapper (bugg). Dubbelnav mot
+  Telefonen = 22.4 #5 ouppklarad.
+- NATTLÄGET BYGGDES ALDRIG: natt-tokens finns (35 användningar, mest
+  banvyn) men tävlingsdagen körs i samma dagsljusa papper — tesens
+  signaturkontrast ofullbordad. Storlopp ser ut som vardagslopp.
+- HÄSTEN SAKNAR ANSIKTE: profilsidan är stark (partyrad, flikar,
+  tidslinje) men hästarna är visuellt identiska silhuetter; 73
+  stämningsbilder, ingen individ. Utrustningslådan/hovarna syns inte
+  på profilen.
+- TRAVBLADET ÄR EN LISTA: rubrik+byline-rader utan hierarki, trots
+  att materialet (signaturer, vinklar, krönikor, tips) redan finns.
+- BESLUT SYNS INTE: prioritet finns i datan men beslut/info/rek
+  skiljs knappt visuellt i Telefonen.
+- KOMPONENTER: ui-delar har 5; resten är klasskonventioner
+  duplicerade i vyerna.
+
+## 32.1 DESIGNRIKTNINGEN: "TRAVPRESSEN, FULLBORDAD"
+Ingen ny design — v55-tesen är rätt och egen. Fullborda och efterlev:
+papper om dagen, strålkastarnatt på tävlingsdagen, telefonen som
+mörkt föremål (v164 satte tredje benet). Tokendisciplin som järnregel.
+
+## 32.2 TIO FÖRÄNDRINGAR, PRIORITERADE [①②③ v170 · ④⑤⑥ v173 · ⑦⑧⑨ v175 — kvar: ⑩ komponentbiblioteket (refaktor, görs separat)]
+1) TÄVLINGSDAGENS NATTLÄGE — hela skärmen i natt-tokens på loppdagen.
+   Tesens signaturkontrast; största atmosfärvinsten; skiljer vardag
+   från tävling (fråga 7).
+2) HEM AVVECKLAS — Telefonen blir startsida (hemskärmen ÄR dagens
+   uppslag); ekonomin → Kontoret, "Längre fram" → Journalen. En flik
+   färre, dubbelnavet borta.
+3) TOKENSTÄDNINGEN — en hex-källa (:root), Lora laddas eller stryks,
+   fonterna självhostas i bilder/-mappen (offline-typografi), radie-
+   skalan till tre nivåer. Järnregel: aldrig hex i vyer.
+4) TRAVBLADETS FRAMSIDA — huvudnyhet med stor rubrik + bild +
+   signaturvinjett, resten notiser; avdelningsvinjetter (Sport/
+   Krönika/Tips). Materialet finns — det är presentationen som saknas.
+5) HÄSTTECKNINGARNA — deterministisk färg (brun/fux/svart/skimmel) +
+   bläs/strumpor ur hash per häst: individen syns i partyrad,
+   startlista, profil. (Raritetsstjärnan v147 blir en del av detta.)
+6) BESLUTSMARKERINGEN — "KRÄVER SVAR"-kant på beslutsposter + väntande
+   beslut överst på telefonens hemskärm.
+7) STORLOPPSDAGENS GULDSTÄMPEL — programkänsla ovanpå nattläget:
+   guldaccent i header, loppets etikett, "V75-känslan" utan varumärket.
+8) HÄSTPROFILENS LÅDA — utrustningssvaren, hovarna, tussvanan och
+   anlagen samlade på hästsidan: individen läsbar på ETT ställe.
+9) KURVORNA — kassa per säsong och stallform som små linjer (Roboto
+   Mono-siffror, pappersstil); resultathistoriken finns redan i datan.
+10) KOMPONENTBIBLIOTEKET — Kort/Valknapp/Bubbla/Nyckeltal/Bricka in i
+    ui-delar; vyerna slutar duplicera mönstren.
+LÄMNAS ORÖRT: grundpaletten och typtrion, partyraden, ATG-start-
+listan, telefonramen (v164), gårdskartan — de bär redan identiteten.
+
+## 32.3 UTVECKLINGSORDNING (förslag, efter Teds godkännande)
+Designpass A (32.2: 1+2+3) → kap 31 nr 1–2 (karriärstegen, rivalen) →
+designpass B (32.2: 4+5+6) → kap 31 nr 3–5 (press/ekonomi/stallmötet)
+→ designpass C (32.2: 7–10). Växlat: känsla och spelvärde turas om.

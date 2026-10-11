@@ -5,6 +5,7 @@ import { tränarliga } from "./engine-varld.js";
 import { registreraHändelse } from "./engine-handelser.js";
 import { invalIHallOfFame } from "./engine-rekord.js";
 import { bokförStamÖde } from "./engine-stambok.js";
+import { körGalan, prövaLicens } from "./engine-licens.js";
 import { prövaMentornsBortgång } from "./engine-mentor.js";
 import { utvecklaVärlden, prövaLegendaren } from "./engine-varldsutveckling.js";
 import { koraSeriemästare } from "./engine-serie.js";
@@ -119,6 +120,14 @@ export function nySäsong(spel) {
      pensioneras, lärlingar debuterar, sponsorsfären omsätts. Pressen
      skrivs här med säsongens egen penna. */
   /* Gym-trappans korning (v120): mästarna utses på fjolårets poäng. */
+  /* GALAN & LICENSEN (v171, kap 31:1): fjolåret prisas och stegen
+     prövas — före allt annat, medan fjolårets siffror lever. */
+  körGalan(spel, tränarliga(spel)).forEach((p) => {
+    spel.press.unshift({ rubrik: p.rubrik, byline: p.byline, ton: p.ton, vecka: 1, signatur: null });
+  });
+  prövaLicens(spel).forEach((p) => {
+    spel.press.unshift({ rubrik: p.rubrik, byline: p.byline, ton: p.ton, vecka: 1, signatur: null });
+  });
   const korning = koraSeriemästare(spel, (spel.säsong ?? 2) - 1);
   korning.press.forEach((p) => {
     spel.press.unshift({ rubrik: p.rubrik, byline: p.byline, ton: p.ton, vecka: 1, signatur: null });

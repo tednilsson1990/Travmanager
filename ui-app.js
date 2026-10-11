@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import { html } from "htm/preact";
 import { useSpel, senasteSparning } from "./state-spel.js";
 import { kr } from "./engine-util.js";
@@ -12,17 +12,20 @@ import GårdVy from "./ui-gardvy.js";
 import KontorVy from "./ui-kontorvy.js";
 import { ÖvertagandeVy, FörstamansvalVy } from "./ui-prolog.js";
 import { Dräkt } from "./ui-grafik.js";
-import HemVy from "./ui-hemvy.js";
 import InkorgVy from "./ui-inkorgvy.js";
 import StatistikVy from "./ui-statistikvy.js";
 import { nästaMål } from "./engine-nastamal.js";
+import { nästaStopp, hoppaFram, stoppFör } from "./engine-klocka.js";
+import { veckansLopp } from "./data-kalender.js";
+import { arkiveraTelefonen } from "./engine-inkorg.js";
 import { inkorgsläge } from "./engine-inkorg.js";
 import JournalVy from "./ui-journalvy.js";
 import ScenVy from "./ui-scenvy.js";
 
+/* v170 (32.2 ②): Hem avvecklat — Telefonen ÄR startsidan. Hemskärmen
+   bär redan dagens uppslag: klockan, vädret, rytmen och apparna. */
 const FLIKAR = [
-  { id: "hem", namn: "Hem" },
-  { id: "inkorg", namn: "Inkorg" },
+  { id: "inkorg", namn: "Telefonen" },
   { id: "stall", namn: "Stall" },
   { id: "lopp", namn: "Lopp" },
   { id: "sfar", namn: "Sfären" },
@@ -39,7 +42,20 @@ const MER = [
 
 export default function App() {
   const { spel, uppdatera, nystart } = useSpel();
-  const [flik, sättFlik] = useState("hem");
+  const [flik, sättFlikRå] = useState("inkorg");
+  /* Äldre rader pekar ännu på "hem" — de landar på Telefonen. */
+  const sättFlik = (f) => sättFlikRå(f === "hem" ? "inkorg" : f);
+  const [flikReset, sättFlikReset] = useState(0);
+  /* NATTLÄGET (v170, 32.2 ①): loppdagen körs i kvällsmörker under
+     strålkastare — tesens signaturkontrast. Klockan styr. */
+  useEffect(() => {
+    const natt = !!spel && spel.uppstartKlar && stoppFör(spel) === "helg"
+      && spel.vecka <= spel.veckor;
+    document.body.classList.toggle("natt", natt);
+    /* Storloppsdagen (v175, 32.2 ⑦): guldet ovanpå natten. */
+    const storloppsdag = natt && veckansLopp(spel.vecka).some((l) => l.storlopp);
+    document.body.classList.toggle("storloppsdag", storloppsdag);
+  });
   const [merFlik, sättMerFlik] = useState("gård");
 
   /* Nya karriärer går genom uppstarten. Äldre sparfiler (fältet saknas)
@@ -73,7 +89,8 @@ export default function App() {
     <header>
       <div class="brand">
         ${spel.dräkt && html`<${Dräkt} dräkt=${spel.dräkt} storlek=${30} />`}
-        Stallet<span>·</span>${spel.stallnamn}</div>
+        Stallet<span>·</span>${spel.stallnamn}
+        ${spel.licens && spel.licens !== "b" && html`<span class="licensmärke">${spel.licens === "elit" ? "ELIT" : "A"}</span>`}</div>
       <div class="status">
         <div>Säsong<b>${spel.säsong ?? 1}</b></div>
         <div>Vecka<b>${Math.min(spel.vecka, spel.veckor)}/${spel.veckor}</b></div>
@@ -99,8 +116,10 @@ export default function App() {
     })()}
 
     <div class="wrap">
-      ${flik === "hem" && html`<${HemVy} spel=${spel} gåTill=${(f) => sättFlik(f)} />`}
-      ${flik === "inkorg" && html`<${InkorgVy} spel=${spel} uppdatera=${uppdatera} gåTill=${(f) => sättFlik(f)} />`}
+      ${flik === "inkorg" && html`
+        <div class="telefon-ram"><div class="telefon-skärm">
+          <${InkorgVy} spel=${spel} uppdatera=${uppdatera} gåTill=${(f) => sättFlik(f)} reset=${flikReset} />
+        </div></div>`}
       ${flik === "stall" && html`<${StallVy} spel=${spel} uppdatera=${uppdatera} nystart=${nystart} efterVecka=${(mål) => sättFlik(mål === "vecka" ? "inkorg" : "lopp")} />`}
       ${flik === "lopp" && html`<${LoppVy} spel=${spel} uppdatera=${uppdatera} />`}
       ${flik === "sfar" && html`<${SfarVy} spel=${spel} />`}
@@ -117,10 +136,25 @@ export default function App() {
         ${merFlik === "avel" && html`<${AvelVy} spel=${spel} uppdatera=${uppdatera} />`}`}
     </div>
 
+    ${(() => {
+      /* KÖR VECKAN — ALLTID (v163, kap 30: Teds speltest "borde synas
+         hela tiden oavsett sida"). En fast knapp ovanför menyn, samma
+         logik som förut bodde i Stallet. */
+      if (spel.vecka > spel.veckor) return "";
+      const stoppEtikett = nästaStopp(spel).etikett;
+      return html`<div class="kör-dock">
+        <button class="btn" onClick=${() => {
+          let mål;
+          uppdatera((s) => { arkiveraTelefonen(s); mål = hoppaFram(s); });
+          sättFlik(mål === "vecka" ? "inkorg" : "lopp");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}>${stoppEtikett}</button>
+      </div>`;
+    })()}
     <nav role="tablist">
       ${FLIKAR.map((f) => html`
         <button key=${f.id} role="tab" aria-selected=${flik === f.id}
           data-olästa=${f.id === "inkorg" && spel ? inkorgsläge(spel).antal || null : null}
-          onClick=${() => sättFlik(f.id)}>${f.namn}</button>`)}
+          onClick=${() => { if (flik === f.id) sättFlikReset((x) => x + 1); else sättFlik(f.id); }}>${f.namn}</button>`)}
     </nav>`;
 }

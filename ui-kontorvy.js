@@ -26,11 +26,13 @@ import { useState } from "preact/hooks";
 import { kr } from "./engine-util.js";
 import { ARVODE_PER_VECKA, ÄGARTYPER } from "./data-agare.js";
 import { boxplats } from "./engine-gard.js";
-import { veckonetto } from "./engine-vagvisare.js";
+import { veckonetto, långsiktigt } from "./engine-vagvisare.js";
+import { gåraugifter } from "./engine-gard.js";
 import { ägarlista, hållMöte, MÖTESVAL, styrelsemått, förtroendetext } from "./engine-agare.js";
 import { säkraSponsorer, teckna, tackaNej, kravläge } from "./engine-sponsor.js";
-import { Stapel } from "./ui-delar.js";
+import { Stapel, Kurvan } from "./ui-delar.js";
 import { importeraSparfil, listaBackuper, återställBackup } from "./state-spel.js";
+import { licensläge } from "./engine-licens.js";
 import { Bild } from "./ui-grafik.js";
 
 
@@ -205,6 +207,56 @@ export default function KontorVy({ spel, uppdatera }) {
               </div>`)}`}`;
       })()}
     </div>
+
+    ${(() => {
+      /* HEMS ARV (v170, 32.2 ②): ekonomiöversikten och riktmärkena
+         flyttade hit när Hem avvecklades — Kontoret är deras hem. */
+      const drift = spel.stall.length * 3200 + gåraugifter(spel)
+        - spel.stall.filter((h) => h.ägare).length * ARVODE_PER_VECKA;
+      const mål = långsiktigt(spel);
+      return html`
+        <h2>Tränarlicensen</h2>
+        <div class="kort">
+          ${(() => {
+            const läge = licensläge(spel);
+            return html`
+              <div class="prisrad"><span><b>${läge.nuvarande.namn}</b></span>
+                <span class="pris">${läge.nuvarande.text}</span></div>
+              ${läge.nästa ? html`
+                <div class="hint">Nästa steg: <b>${läge.nästa.namn}</b> — ${läge.nästa.kravtext}.</div>
+                ${läge.progress.map((p, i) => html`
+                  <div key=${i} class="relrad">
+                    <div class="relnamn">${p.namn}</div>
+                    <div class="relbar"><i style=${{ width: Math.min(100, Math.round(100 * p.nu / p.mål)) + "%" }} /></div>
+                    <div class="svar">${p.kr ? Math.round(p.nu / 1000) + "/" + Math.round(p.mål / 1000) + " tkr" : `${Math.min(p.nu, p.mål)}/${p.mål}`}</div>
+                  </div>`)}`
+              : html`<div class="hint">Elitlicensen — det finns inget steg ovanför. Nu försvaras den.</div>`}`;
+          })()}
+        </div>
+
+        <h2>Ekonomin</h2>
+        <div class="kort">
+          <div class="prisrad"><span>Kassan</span><span class="pris">${kr(spel.kassa)} kr</span></div>
+          <div class="prisrad"><span>Veckans drift (löner, foder, arvoden)</span>
+            <span class="pris">${drift > 0 ? "−" : "+"}${kr(Math.abs(drift))} kr</span></div>
+          <div class="prisrad"><span>Insprunget i år</span><span class="pris">${kr(spel.intjänat)} kr</span></div>
+          ${(spel.historik ?? []).length >= 2 && html`
+            <div class="meta" style=${{ marginTop: "10px" }}>Insprunget per säsong</div>
+            <${Kurvan} rader=${(spel.historik ?? []).slice(-10).map((r) => ({
+              etikett: "S" + r.säsong, värde: Math.round((r.intjänat ?? 0) / 1000) }))} enhet="tkr per säsong · tryck på en stapel" />`}
+        </div>
+        ${mål.length > 0 && html`
+          <h2>Längre fram</h2>
+          <div class="kort">
+            ${mål.map((k, i) => html`
+              <div key=${i} class="relrad">
+                <div><div class="relnamn">${k.mål}</div>
+                  ${k.not && html`<div class="relmini">${k.not}</div>`}</div>
+                <div class="relbar"><i style=${{ width: Math.round(k.andel * 100) + "%" }} /></div>
+                <div class="svar">${k.kr ? Math.round(k.andel * 100) + " %" : `${Math.min(k.nu, k.av)}/${k.av}`}</div>
+              </div>`)}
+          </div>`}`;
+    })()}
 
     <h2>Felsökning</h2>
     <div class="kort">

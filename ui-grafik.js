@@ -37,9 +37,20 @@ export const pälsnamnFör = (namn) => PÄLSNAMN[Math.floor(hash01(namn ?? "") *
  * Travhäst i flygande trav med sulky och kusk, sidoprofil åt höger.
  * Stiliserad silhuett — läsbar i 40 px, värdig i 120.
  */
-export function Häst({ namn, dräkt, storlek = 64 }) {
+export function Häst({ namn, dräkt, storlek = 64, tecken = null }) {
   const p = pälsFör(namn);
   const d = dräkt ?? { bg: "#3d434b", fg: "#c9ccd1" };
+  /* TECKNEN (v173, 32.2 ⑤): hästens signalement — bläs, stjärna eller
+     vita strumpor — härleds ur namnet som pälsen. Individerna syns.
+     En raritetshäst (v147) får ALLTID sin stjärna via tecken-propen. */
+  const t = tecken ?? (() => {
+    const h = hash01((namn ?? "") + "•tecken");
+    if (h < 0.40) return null;
+    if (h < 0.62) return "strumpor";
+    if (h < 0.82) return "bläs";
+    return "stjärna";
+  })();
+  const vit = "#F0EDE5";
   return html`
     <svg class="hast-figur" width=${storlek} height=${Math.round(storlek * 0.62)}
       viewBox="0 0 160 100" aria-hidden="true">
@@ -68,6 +79,12 @@ export function Häst({ namn, dräkt, storlek = 64 }) {
       <path d="M120 64 l18 10 l-2 5 l-19 -8z" fill=${p.kropp} />
       <path d="M100 70 l-2 20 l-5 0 l0 -19z" fill=${p.man} />
       <path d="M137 26 l6 8 l-3 2 l-6 -7z" fill=${p.kropp} />
+      ${t === "bläs" && html`<path d="M128 23 l9 8 l-2.5 2 l-9 -7.5z" fill=${vit} opacity="0.9" />`}
+      ${t === "stjärna" && html`<path d="M126 25 l2.5 -2 l2.5 2 l-2.5 2.5z" fill=${vit} />`}
+      ${t === "strumpor" && html`
+        <path d="M86 78 l-3.5 6 l-5 -2 l3.5 -6z" fill=${vit} />
+        <path d="M114 83 l1.6 7 l5 -1 l-1.3 -7z" fill=${vit} />
+        <path d="M133 71 l5.5 3.5 l-1.7 4.5 l-6 -3z" fill=${vit} />`}
     </svg>`;
 }
 
@@ -83,7 +100,7 @@ export function Häst({ namn, dräkt, storlek = 64 }) {
  *   hast-{päls}{-2?}.jpg → hast-{päls}.jpg → SVG-hästen
  * Samma häst får ALLTID samma bild — hashen är minnet.
  */
-export function Hästbild({ namn, dräkt, storlek = 64, skifte = 0 }) {
+export function Hästbild({ namn, dräkt, storlek = 64, skifte = 0, tecken = null }) {
   const päls = pälsnamnFör(namn);
   /* Varianten väljs ur registrets faktiska antal per päls, förskjuten
      med SKIFTET: stallvyn räknar hästens plats bland stallkamrater med
@@ -121,12 +138,12 @@ export function Hästbild({ namn, dräkt, storlek = 64, skifte = 0 }) {
  * tecknade travhästen. Ihopslagningen bor här så att vyerna slipper
  * veta vilka filer som råkar ligga i bildmappen.
  */
-export function HästEllerFoto({ namn, dräkt, storlek = 64, skifte = 0 }) {
+export function HästEllerFoto({ namn, dräkt, storlek = 64, skifte = 0, tecken = null }) {
   return html`
     <span class="hast-kombo">
-      <${Hästbild} namn=${namn} skifte=${skifte} storlek=${Math.round(storlek * 0.9)} />
+      <${Hästbild} namn=${namn} skifte=${skifte} storlek=${Math.round(storlek * 0.9)} tecken=${tecken} />
       <span style=${{ display: "none" }}>
-        <${Häst} namn=${namn} dräkt=${dräkt} storlek=${storlek} />
+        <${Häst} namn=${namn} dräkt=${dräkt} storlek=${storlek} tecken=${tecken} />
       </span>
     </span>`;
 }

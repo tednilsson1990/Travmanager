@@ -1,5 +1,7 @@
 import { html } from "htm/preact";
-import { useState } from "preact/hooks";
+import { useState, useEffect, useRef } from "preact/hooks";
+import { Bild } from "./ui-grafik.js";
+import { bildvariant } from "./data-bilder.js";
 import { synligInkorg, verkställBeslut } from "./engine-inkorg.js";
 import { nästaStopp, hoppaFram, stoppFör, STOPPNAMN } from "./engine-klocka.js";
 import { väderläge } from "./engine-vader.js";
@@ -46,7 +48,7 @@ const APP_AV_TYP = (h) =>
 const APPAR = [
   { id: "meddelanden", namn: "Meddelanden", glyf: "❞", färg: "#3E8E5A" },
   { id: "samtal", namn: "Samtal", glyf: "✆", färg: "#2E6FB3" },
-  { id: "mejl", namn: "Mejl", glyf: "✉", färg: "#1d2f4e" },
+  { id: "mejl", namn: "Mejl", glyf: "✉", färg: "var(--marin)" },
   { id: "nyheter", namn: "Travbladet", glyf: "¶", färg: "#1c1c1a" },
 ];
 
@@ -59,12 +61,47 @@ const replikRader = (text) => (text ?? "").split("\n")
     ? { typ: "replik", t: r.replace(/^—\s*/, "") }
     : { typ: "berättare", t: r });
 
-export default function InkorgVy({ spel, uppdatera, gåTill, startApp }) {
+/* CHATTEN (v163, kap 30 — Teds speltest: "trådarna är skitsvåra att
+   tolka, allt går ihop"). Två grepp från riktiga mobiler: en DAG-
+   AVGRÄNSARE när veckan byter (så man ser vilken dag raden hör till)
+   och AUTOSCROLL till det senaste — man ska aldrig behöva scrolla ner
+   till nyaste meddelandet själv. */
+function Chatten({ bubblor, roll, spel, rollklass }) {
+  const botten = useRef(null);
+  useEffect(() => {
+    botten.current?.scrollIntoView?.({ block: "end" });
+  }, [bubblor.length]);
+  let förra = null;
+  return html`
+    <div class="chatt">
+      ${bubblor.length === 0 && html`<div class="hint">Inga meddelanden i tråden ännu.</div>`}
+      ${bubblor.map((b, i) => {
+        const nyckel = `${b.säsong}:${b.vecka}`;
+        const avgränsare = nyckel !== förra;
+        förra = nyckel;
+        return html`
+          ${avgränsare && html`<div class="chatt-dag"><span>Vecka ${b.vecka}${b.säsong !== (spel.säsong ?? 1) ? ` · säsong ${b.säsong}` : ""}</span></div>`}
+          <div key=${i} class=${"bubbelrad" + (b.ut ? " ut" : "")}>
+            <div class=${"bubbla " + (b.ut ? "bubbla-ut" : "bubbla-in " + rollklass(roll))}>
+              <div class="bubbla-text">${b.text}</div>
+            </div>
+          </div>`;
+      })}
+      <div ref=${botten}></div>
+    </div>`;
+}
+
+export default function InkorgVy({ spel, uppdatera, gåTill, startApp, reset = 0 }) {
   const händelser = synligInkorg(spel);
   const lästa = new Set(spel.inkorgLästa ?? []);
   const [läsId, sättLäs] = useState(null);
   const [app, sättApp] = useState(startApp ?? null);   /* null = hemskärmen; startApp (v155) är UI-vaktens */
   const [trådNamn, sättTråd] = useState(null);
+  /* FLIKRESET (v163, kap 30): tryck på Inkorg i menyn när du redan är
+     här = tillbaka till hemskärmen, som på en riktig telefon. */
+  useEffect(() => {
+    if (reset > 0) { sättApp(null); sättTråd(null); sättLäs(null); }
+  }, [reset]);
 
   const perApp = (id) => händelser.filter((h) => APP_AV_TYP(h) === id);
   const olästaI = (lista) => lista.filter((h) => !lästa.has(h.id));
@@ -93,11 +130,15 @@ export default function InkorgVy({ spel, uppdatera, gåTill, startApp }) {
   };
   const besvara = (h, altId) => { uppdatera((s) => verkställBeslut(s, h, altId)); };
 
+  /* Statusremsan (v164, 30.1): läses som en riktig telefon — klockslag
+     till vänster, nät och batteri till höger. Klockslaget följer
+     veckans stopp: tidig måndag, mitt på dagen onsdag, loppdagskväll. */
+  const KLOCKSLAG = { måndag: "07:58", onsdag: "12:41", helg: "16:24" };
   const statusrad = html`
     <div class="telefon-status">
-      <span class="telefon-nät">✆ TRAVNET</span>
-      <span>Telefonen</span>
-      <span>v ${Math.min(spel.vecka, spel.veckor)} · ${STOPPNAMN[stoppFör(spel)]}</span>
+      <span class="telefon-klocka">${KLOCKSLAG[stoppFör(spel)] ?? "09:00"}</span>
+      <span class="telefon-dag">${STOPPNAMN[stoppFör(spel)]} · v ${Math.min(spel.vecka, spel.veckor)}</span>
+      <span class="telefon-nät">TRAVNET <span class="signal">▂▄▆</span> <span class="batteri"><span class="batteri-nivå"></span></span></span>
     </div>`;
 
   /* ==================== TRÅDVYN (Meddelanden) ==================== */
@@ -129,16 +170,7 @@ export default function InkorgVy({ spel, uppdatera, gåTill, startApp }) {
             ${roll && html`<div class="läs-roll">${roll}</div>`}
           </div>
         </div>
-        <div class="chatt">
-          ${bubblor.length === 0 && html`<div class="hint">Inga meddelanden i tråden ännu.</div>`}
-          ${bubblor.map((b, i) => html`
-            <div key=${i} class=${"bubbelrad" + (b.ut ? " ut" : "")}>
-              <div class=${"bubbla " + (b.ut ? "bubbla-ut" : "bubbla-in " + rollklass(roll))}>
-                <div class="bubbla-text">${b.text}</div>
-                <div class="bubbla-tid">v ${b.vecka}${b.säsong !== (spel.säsong ?? 1) ? ` s${b.säsong}` : ""}</div>
-              </div>
-            </div>`)}
-        </div>
+        <${Chatten} bubblor=${bubblor} roll=${roll} spel=${spel} rollklass=${rollklass} />
         <div class="läs-botten">
           ${sistaBeslut && sistaBeslut.beslut.alternativ.map((a) => html`
             <button key=${a.id} class=${"svarschip" + (a.sekundär ? " sekundär" : "")}
@@ -284,11 +316,22 @@ export default function InkorgVy({ spel, uppdatera, gåTill, startApp }) {
       })}`,
     nyheter: html`
       ${nyheterna.length === 0 && html`<div class="kort"><div class="logg">Inga nyheter i veckan.</div></div>`}
-      ${nyheterna.map((h) => {
+      ${/* FRAMSIDAN (v173, 32.2 ④): tidningen har en etta — stor rubrik,
+          bild och signatur. Resten är notiser. Sportmagasinets hierarki,
+          byggd av material som redan fanns. */ ""}
+      ${nyheterna.slice(0, 1).map((h) => html`
+        <div key=${h.id} class=${"framsida" + (lästa.has(h.id) ? " läst" : "")} onClick=${() => öppna(h)}>
+          <${Bild} id=${bildvariant("bana-kvall", (spel.säsong ?? 1) * 100 + spel.vecka)} reserv="bana-kvall" alt="" klass="framsida-bild" fallback=${null} />
+          <div class="framsida-vinjett">TRAVBLADET · ${STOPPNAMN[stoppFör(spel)]?.toUpperCase?.() ?? ""} VECKA ${Math.min(spel.vecka, spel.veckor)}</div>
+          <div class="framsida-rubrik">${h.rubrik}</div>
+          <div class="framsida-ingress">${h.text}</div>
+          ${h.signatur && html`<div class="framsida-signatur">${h.signatur}</div>`}
+        </div>`)}
+      ${nyheterna.slice(1).map((h) => {
         const oläst = !lästa.has(h.id);
         return html`
           <div key=${h.id} class=${"post-rad klipp inkorgs-klipp kompakt" + (oläst ? "" : " läst")} onClick=${() => öppna(h)}>
-            <div class="klipp-etikett">${oläst && html`<span class="ny-punkt">●</span>`}${h.etikett ?? "Travbladet"}</div>
+            <div class="klipp-etikett">${oläst && html`<span class="ny-punkt">●</span>`}${h.etikett ?? "Notis"}</div>
             <div class="klipp-rubrik">${h.rubrik}</div>
             <div class="klipp-rad rad-klipp">${h.text}</div>
           </div>`;
@@ -300,6 +343,12 @@ export default function InkorgVy({ spel, uppdatera, gåTill, startApp }) {
     return html`
       ${statusrad}
       <div class="hemskärm">
+        ${(() => {
+          const svar = händelser.filter((h) => h.beslut).length;
+          return svar > 0 && html`<button class="hemskärm-svar" onClick=${() => { sättApp("meddelanden"); }}>
+            ${svar} ${svar === 1 ? "beslut väntar" : "beslut väntar"} på svar ›
+          </button>`;
+        })()}
         <div class="hemskärm-klocka">
           <div class="hemskärm-vecka">Vecka ${Math.min(spel.vecka, spel.veckor)}</div>
           <div class="hemskärm-dag">${STOPPNAMN[stoppFör(spel)]} · ${spel.stallnamn}</div>

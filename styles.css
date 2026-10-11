@@ -13,6 +13,9 @@
   --lila:#6B4C99; --dis:#68727E; --linje:#DCD7CC; --linje-mörk:#C8C2B4;
   /* kvällen: banan under strålkastare */
   --natt:#0E141B; --natt-2:#151E28; --panel:#1B2733; --nattlinje:#2C3A48;
+  /* v170 tokenstädningen: namnen vyerna redan använder blir riktiga. */
+  --vinröd:#7A2E3C; --benvit:#F4EFE6; --guld-ljus:#F2B134;
+  --r-s:4px; --r-m:10px; --r-l:14px;
   --strålkastare:#F2B134; --rail:#E9E6DF; --nattdis:#8FA0B0; --oxblod:#C24141;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -564,7 +567,7 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
    tryckstil, serifingress med anfang, faktaspalten, utdraget.
    Kvällen är upplevelsen — tidningen är eftermälet.
    ============================================================ */
-.helscen.tidning{background:var(--papper,#F4F0E6);color:#1A1A1A}
+.helscen.tidning{background:var(--papper);color:#1A1A1A}
 .tidning-huvud{border-bottom:3px double #1A1A1A;padding-bottom:6px;margin-bottom:4px}
 .tidning-namn{font-family:'Big Shoulders Display',sans-serif;font-weight:900;
   font-size:40px;letter-spacing:.05em;text-transform:uppercase;text-align:center;
@@ -618,16 +621,16 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .helscen-fler.mörk{color:#777}
 
 /* ---- Prologens ljusa helskärmssteg (v64) ---- */
-.helscen.ljus{background:linear-gradient(180deg,#EFEBE1 0%,var(--papper,#F4F0E6) 40%);
-  color:var(--bläck,#1E2732)}
-.helscen-rubrik.mörk{color:var(--marin,#1E3A5F)}
+.helscen.ljus{background:linear-gradient(180deg,#EFEBE1 0%,var(--papper) 40%);
+  color:var(--bläck)}
+.helscen-rubrik.mörk{color:var(--marin)}
 .helscen-ingress.mörk{color:#3A444F}
 .berättelse p{font-family:'Lora',Georgia,serif;font-size:15px;line-height:1.65;
   color:#2E3742;margin:0 0 12px}
 .berättelse p:first-child::first-letter{font-family:'Big Shoulders Display',sans-serif;
   font-weight:900;font-size:44px;line-height:.85;float:left;padding:3px 7px 0 0;
   color:var(--tegel)}
-.btn.steg-vidare{display:block;width:100%;margin-top:20px;background:var(--marin,#1E3A5F);
+.btn.steg-vidare{display:block;width:100%;margin-top:20px;background:var(--marin);
   color:#F4F0E6;border:0;border-radius:10px;padding:14px;font:inherit;font-weight:800;
   text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
 .btn.steg-vidare:disabled{opacity:.4;cursor:default}
@@ -751,7 +754,7 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .trend{font-family:'Roboto Mono',monospace;font-size:9px;font-weight:700}
 .trend.upp{color:#1F5C33}.trend.ner{color:var(--tegel)}
 .atg-rad.din .atg-namn{color:var(--marin)}
-.atg-rad.din{box-shadow:inset 3px 0 0 var(--guld,#C99A2E)}
+.atg-rad.din{box-shadow:inset 3px 0 0 var(--guld)}
 
 /* ---- Pågående berättelser (v82) ---- */
 .kort.trådar{padding:8px 12px}
@@ -770,20 +773,20 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 /* Travbladets estetik: typografiska etiketter i trycksvärta.        */
 .inkorgsrad { display: block; width: 100%; text-align: left; }
 .inkorgsrad.läst { opacity: 0.62; }
-.inkorgsrad.tegel-kant { border-left: 3px solid var(--tegel, #a63a2b); }
-.inkorgsrad.guld-kant { border-left: 3px solid var(--guld, #c9a227); }
+.inkorgsrad.tegel-kant { border-left: 3px solid var(--tegel); }
+.inkorgsrad.guld-kant { border-left: 3px solid var(--guld); }
 .inkorgs-topp { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }
 .inkorgs-typ {
   font-size: 10px; letter-spacing: 0.12em;
-  color: var(--benvit, #f4efe6); background: var(--marin, #1d2f4e);
+  color: var(--benvit); background: var(--marin);
   padding: 1px 5px; border-radius: 2px;
 }
-.inkorgs-avsändare { font-size: 12px; font-weight: 700; color: var(--marin, #1d2f4e); }
+.inkorgs-avsändare { font-size: 12px; font-weight: 700; color: var(--marin); }
 .inkorgs-märke {
   margin-left: auto; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
   color: #8a6d1a;
 }
-.inkorgs-märke.tegel { color: var(--tegel, #a63a2b); font-weight: 700; }
+.inkorgs-märke.tegel { color: var(--tegel); font-weight: 700; }
 
 /* Olästmärket i flikraden — en liten trycksvärtad siffra. */
 [data-olästa] { position: relative; }
@@ -791,7 +794,7 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   content: attr(data-olästa);
   position: absolute; top: 4px; right: 12%;
   min-width: 15px; height: 15px; line-height: 15px; border-radius: 8px;
-  background: var(--tegel, #a63a2b); color: var(--benvit, #f4efe6);
+  background: var(--tegel); color: var(--benvit);
   font-size: 10px; font-weight: 700; text-align: center; padding: 0 3px;
 }
 
@@ -806,14 +809,14 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .sms-rad { display: flex; gap: 8px; margin: 8px 0; cursor: pointer; align-items: flex-start; }
 .sms-initial {
   flex: 0 0 30px; height: 30px; border-radius: 50%;
-  background: var(--marin, #1d2f4e); color: var(--benvit, #f4efe6);
+  background: var(--marin); color: var(--benvit);
   font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center;
 }
 .sms-bubbla {
   background: rgba(29, 47, 78, 0.08); border-radius: 3px 14px 14px 14px;
   padding: 8px 12px; font-size: 14px; flex: 1;
 }
-.sms-vem { font-size: 11px; font-weight: 700; color: var(--marin, #1d2f4e); margin-bottom: 2px; }
+.sms-vem { font-size: 11px; font-weight: 700; color: var(--marin); margin-bottom: 2px; }
 
 /* SAMTAL — luren */
 .tel-kort {
@@ -821,9 +824,9 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   padding: 10px 12px; margin: 10px 0; cursor: pointer;
   background: linear-gradient(180deg, rgba(29,47,78,0.04), transparent);
 }
-.tel-topp { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tegel, #a63a2b); }
+.tel-topp { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tegel); }
 .tel-ikon { font-size: 13px; }
-.tel-vem { font-size: 19px; font-weight: 800; color: var(--marin, #1d2f4e); margin: 2px 0; }
+.tel-vem { font-size: 19px; font-weight: 800; color: var(--marin); margin: 2px 0; }
 .tel-citat { font-style: italic; font-size: 14px; }
 
 /* MEJL — brevet */
@@ -837,7 +840,7 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 
 /* RAPPORT — trycksaken */
 .rapport-kort {
-  border-top: 3px double var(--marin, #1d2f4e); border-bottom: 1px solid rgba(29,47,78,0.25);
+  border-top: 3px double var(--marin); border-bottom: 1px solid rgba(29,47,78,0.25);
   padding: 8px 4px; margin: 10px 0; cursor: pointer;
 }
 .rapport-etikett { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.65; }
@@ -847,14 +850,14 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 
 /* Gemensamt */
 .sms-rad.läst, .tel-kort.läst, .brev-kort.läst, .rapport-kort.läst, .inkorgs-klipp.läst { opacity: 0.55; }
-.tel-kort.tegel-kant, .brev-kort.tegel-kant, .rapport-kort.tegel-kant, .sms-bubbla.tegel-kant { border-left: 3px solid var(--tegel, #a63a2b); }
-.tel-kort.guld-kant, .brev-kort.guld-kant, .rapport-kort.guld-kant, .sms-bubbla.guld-kant { border-left: 3px solid var(--guld, #c9a227); }
+.tel-kort.tegel-kant, .brev-kort.tegel-kant, .rapport-kort.tegel-kant, .sms-bubbla.tegel-kant { border-left: 3px solid var(--tegel); }
+.tel-kort.guld-kant, .brev-kort.guld-kant, .rapport-kort.guld-kant, .sms-bubbla.guld-kant { border-left: 3px solid var(--guld); }
 
 /* Detaljviket i anmälan (v102) */
 .detaljer { margin: 8px 0; }
 .detaljer summary {
   cursor: pointer; font-size: 12px; letter-spacing: 0.06em;
-  color: var(--marin, #1d2f4e); opacity: 0.75; padding: 6px 0;
+  color: var(--marin); opacity: 0.75; padding: 6px 0;
 }
 .detaljer[open] summary { opacity: 1; font-weight: 700; }
 
@@ -866,45 +869,45 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   box-shadow: 0 2px 10px rgba(29,47,78,0.12);
 }
 .förhand-topp { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.förhand-vem { font-weight: 700; color: var(--marin, #1d2f4e); font-size: 13px; }
+.förhand-vem { font-weight: 700; color: var(--marin); font-size: 13px; }
 .förhand-vem.stor { font-size: 15px; }
 .förhand-knappar { margin-left: auto; display: flex; gap: 4px; }
 .ikonknapp {
   background: none; border: 1px solid rgba(29,47,78,0.3); border-radius: 4px;
-  font: inherit; font-size: 13px; padding: 2px 8px; cursor: pointer; color: var(--marin, #1d2f4e);
+  font: inherit; font-size: 13px; padding: 2px 8px; cursor: pointer; color: var(--marin);
 }
-.förhand-rubrik { font-size: 17px; font-weight: 800; color: var(--marin, #1d2f4e); margin-bottom: 6px; }
+.förhand-rubrik { font-size: 17px; font-weight: 800; color: var(--marin); margin-bottom: 6px; }
 .stor-rubrik { font-size: 20px; }
 .förhand-text { font-size: 15px; line-height: 1.55; }
 .förhand-text p { margin: 0 0 10px; }
 
 .helskärm {
   position: fixed; inset: 0; z-index: 60; overflow-y: auto;
-  background: var(--papper, #efe9dc);
+  background: var(--papper);
 }
 .helskärm-topp {
   position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 14px; background: var(--papper, #efe9dc);
+  padding: 10px 14px; background: var(--papper);
   border-bottom: 1px solid rgba(29,47,78,0.25);
 }
 .helskärm-inre { max-width: 640px; margin: 0 auto; padding: 18px 16px 60px; }
 .helskärm-rubrik {
-  font-size: 27px; line-height: 1.15; color: var(--marin, #1d2f4e);
+  font-size: 27px; line-height: 1.15; color: var(--marin);
   margin: 6px 0 14px; font-weight: 900;
 }
 .helskärm-inre .förhand-text { font-size: 17px; line-height: 1.65; }
 
-.kompakt.vald { outline: 2px solid var(--marin, #1d2f4e); outline-offset: 1px; }
+.kompakt.vald { outline: 2px solid var(--marin); outline-offset: 1px; }
 
 /* v104: karriärminnets rad i efteranalysen */
-.guldram { border-left: 3px solid var(--guld, #c9a227); padding-left: 10px; font-weight: 600; }
+.guldram { border-left: 3px solid var(--guld); padding-left: 10px; font-weight: 600; }
 
 
 /* v106: sektioner och enhetlig radrytm — mot rörigheten */
 .post-sektion { margin-top: 14px; }
 .post-rubrik {
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--marin, #1d2f4e); opacity: 0.6;
+  color: var(--marin); opacity: 0.6;
   border-bottom: 1px solid rgba(29,47,78,0.2); padding-bottom: 3px; margin-bottom: 6px;
 }
 .post-rad { margin: 6px 0 !important; }
@@ -912,10 +915,10 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 
 
 /* ==================== Inkorgens ansiktslyft (v107) ==================== */
-.ny-punkt { color: var(--tegel, #a63a2b); font-size: 9px; margin-right: 5px; vertical-align: 2px; }
+.ny-punkt { color: var(--tegel); font-size: 9px; margin-right: 5px; vertical-align: 2px; }
 .rad-nyckel {
   margin-left: auto; font-weight: 800; font-size: 12px;
-  color: var(--marin, #1d2f4e); white-space: nowrap;
+  color: var(--marin); white-space: nowrap;
 }
 .tel-topp { display: flex; align-items: baseline; gap: 6px; }
 .brev-rad.ämne { display: flex; align-items: baseline; gap: 6px; }
@@ -923,7 +926,7 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 
 /* Veckomötets tidningshuvud */
 .möteskort {
-  background: var(--marin, #1d2f4e); color: var(--benvit, #f4efe6);
+  background: var(--marin); color: var(--benvit);
   border-radius: 4px; padding: 12px 14px; margin: 6px 0 12px; cursor: pointer;
   box-shadow: 0 2px 8px rgba(29,47,78,0.3);
 }
@@ -938,22 +941,22 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 
 /* ==================== FM-anatomin (v108): läsvyn ==================== */
 .inkorg-topp { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-.segment { display: flex; gap: 0; margin-bottom: 10px; border: 1px solid var(--marin, #1d2f4e); border-radius: 5px; overflow: hidden; }
+.segment { display: flex; gap: 0; margin-bottom: 10px; border: 1px solid var(--marin); border-radius: 5px; overflow: hidden; }
 .segment button {
   flex: 1; background: none; border: 0; font: inherit; font-size: 13px;
-  padding: 7px 0; cursor: pointer; color: var(--marin, #1d2f4e);
+  padding: 7px 0; cursor: pointer; color: var(--marin);
 }
-.segment button.aktiv { background: var(--marin, #1d2f4e); color: var(--benvit, #f4efe6); font-weight: 700; }
+.segment button.aktiv { background: var(--marin); color: var(--benvit); font-weight: 700; }
 
 .läsvy { display: flex; flex-direction: column; min-height: 72vh; }
 .läs-topp { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .läs-vecka { margin-left: auto; font-size: 11px; opacity: 0.65; }
 .läs-huvud {
   display: flex; align-items: center; gap: 10px;
-  border-bottom: 2px solid var(--marin, #1d2f4e); padding-bottom: 10px; margin-bottom: 12px;
+  border-bottom: 2px solid var(--marin); padding-bottom: 10px; margin-bottom: 12px;
 }
 .sms-initial.stor { flex: 0 0 40px; height: 40px; font-size: 18px; }
-.läs-avsändare { font-weight: 800; font-size: 16px; color: var(--marin, #1d2f4e); }
+.läs-avsändare { font-weight: 800; font-size: 16px; color: var(--marin); }
 .läs-roll { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
 .läs-huvud .inkorgs-märke { margin-left: auto; }
 .läs-inre { flex: 1; max-width: 640px; }
@@ -965,7 +968,7 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .läs-botten {
   position: sticky; bottom: 0; display: flex; align-items: center; gap: 8px;
   padding: 10px 0; margin-top: 14px;
-  background: linear-gradient(180deg, transparent, var(--papper, #efe9dc) 30%);
+  background: linear-gradient(180deg, transparent, var(--papper) 30%);
   border-top: 1px solid rgba(29,47,78,0.25);
 }
 
@@ -977,8 +980,8 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .stat-tabell { margin: 10px 0 4px; }
 .stat-rubrik {
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--marin, #1d2f4e); opacity: 0.65;
-  border-bottom: 2px solid var(--marin, #1d2f4e); padding-bottom: 3px;
+  color: var(--marin); opacity: 0.65;
+  border-bottom: 2px solid var(--marin); padding-bottom: 3px;
 }
 .stat-rad {
   display: grid; grid-template-columns: 1fr 44px 44px 56px 40px;
@@ -988,25 +991,34 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .stat-huvud { font-size: 10px; opacity: 0.55; text-transform: uppercase; letter-spacing: 0.06em; }
 
 /* v115: genombrottsmärket — guld, diskret, för alltid */
-.genombrott-marke { color: var(--guld, #F2B134); font-size: 0.85em; }
-.raritet-marke { color: var(--marin, #1d2f4e); font-size: 0.85em; opacity: 0.85; }
+.genombrott-marke { color: var(--guld); font-size: 0.85em; }
+.raritet-marke { color: var(--marin); font-size: 0.85em; opacity: 0.85; }
 .hemskärm-vader { font-size: 13px; opacity: 0.75; margin-top: 3px; letter-spacing: 0.04em; }
 .oddsrad { display: block; font-size: 10px; opacity: 0.65; text-align: right; }
 .autorad { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
-.autorad input { margin-top: 4px; transform: scale(1.3); accent-color: var(--marin, #1d2f4e); }
+.autorad input { margin-top: 4px; transform: scale(1.3); accent-color: var(--marin); }
+.kör-dock { position: fixed; bottom: 58px; left: 0; right: 0; z-index: 29;
+  padding: 8px 14px calc(8px + env(safe-area-inset-bottom, 0px) * 0);
+  background: linear-gradient(to top, rgba(252,251,247,.96) 70%, rgba(252,251,247,0));
+  max-width: 520px; margin: 0 auto; }
+.kör-dock .btn { margin: 0; box-shadow: 0 4px 14px rgba(29,47,78,.25); }
+.wrap { padding-bottom: 170px !important; }
+.chatt-dag { display: flex; justify-content: center; margin: 14px 0 8px; }
+.chatt-dag span { font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--dis); background: rgba(0,0,0,.04); border-radius: 10px; padding: 3px 12px; }
 
 
 /* ==================== Klasstrappan (v116) ==================== */
 .klasstagg {
   margin-left: 7px; font-size: 9px; letter-spacing: 0.1em;
-  color: var(--marin, #1d2f4e); border: 1px solid currentColor;
+  color: var(--marin); border: 1px solid currentColor;
   border-radius: 3px; padding: 1px 4px; vertical-align: 2px; opacity: 0.75;
 }
 .klassmätare {
   height: 5px; border-radius: 3px; margin: 6px 0 3px;
   background: rgba(29,47,78,0.14); overflow: hidden;
 }
-.klassmätare-fyllnad { height: 100%; background: var(--guld, #F2B134); border-radius: 3px; }
+.klassmätare-fyllnad { height: 100%; background: var(--guld); border-radius: 3px; }
 .klassmätare-text { font-size: 11px; opacity: 0.7; }
 
 
@@ -1032,7 +1044,7 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 
 
 /* ==================== Rollfärgerna (v121) — storyn syns ==================== */
-.roll-forstaman { --rollfärg: #1d2f4e; }
+.roll-forstaman { --rollfärg: var(--marin); }
 .roll-skotare   { --rollfärg: #3E8E5A; }
 .roll-kusk      { --rollfärg: #2E6FB3; }
 .roll-agare     { --rollfärg: #8E3B46; }
@@ -1043,7 +1055,7 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .roll-tidning   { --rollfärg: #1c1c1a; }
 .roll-arrangor  { --rollfärg: #7A5C3E; }
 .roll-ovrig     { --rollfärg: #6b6b64; }
-.sms-initial { background: var(--rollfärg, #6b6b64); color: #faf7ef; }
+.sms-initial { background: var(--rollfärg); color: #faf7ef; }
 .tel-ikon { color: var(--rollfärg, inherit); }
 .trådchip {
   display: inline-block; margin-left: 5px; padding: 0 5px;
@@ -1064,8 +1076,8 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .telefon-status {
   display: flex; justify-content: space-between; align-items: center;
   font-family: 'Roboto Mono', monospace; font-size: 9px; letter-spacing: 0.12em;
-  color: var(--marin, #1d2f4e); opacity: 0.75; text-transform: uppercase;
-  border-bottom: 2px solid var(--marin, #1d2f4e); padding: 2px 2px 5px; margin-bottom: 10px;
+  color: var(--marin); opacity: 0.75; text-transform: uppercase;
+  border-bottom: 2px solid var(--marin); padding: 2px 2px 5px; margin-bottom: 10px;
 }
 .telefon-status span:nth-child(2) { font-weight: 700; letter-spacing: 0.2em; }
 .app-rad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; }
@@ -1073,30 +1085,30 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 7px 2px 6px; font-size: 9.5px; letter-spacing: 0.04em;
   background: rgba(29,47,78,0.06); border: 1px solid rgba(29,47,78,0.2);
-  border-radius: 8px; color: var(--marin, #1d2f4e); font-family: inherit;
+  border-radius: 8px; color: var(--marin); font-family: inherit;
 }
-.app-knapp.aktiv { background: var(--marin, #1d2f4e); color: #faf7ef; }
+.app-knapp.aktiv { background: var(--marin); color: #faf7ef; }
 .app-glyf { font-size: 15px; line-height: 1; }
 .app-badge {
   position: absolute; top: -5px; right: -3px; min-width: 16px; height: 16px;
-  border-radius: 8px; background: var(--tegel, #B3402E); color: #fff;
+  border-radius: 8px; background: var(--tegel); color: #fff;
   font-size: 9px; font-weight: 700; display: flex; align-items: center;
   justify-content: center; padding: 0 4px; font-family: 'Roboto Mono', monospace;
 }
 .tråd-rad { display: flex; gap: 9px; align-items: center; }
 .tråd-mitt { flex: 1; min-width: 0; }
 .tråd-badge {
-  min-width: 18px; height: 18px; border-radius: 9px; background: var(--tegel, #B3402E);
+  min-width: 18px; height: 18px; border-radius: 9px; background: var(--tegel);
   color: #fff; font-size: 10px; display: flex; align-items: center; justify-content: center;
   padding: 0 5px; font-family: 'Roboto Mono', monospace; font-weight: 700;
 }
 .liten-märke { font-size: 8px; padding: 0 4px; margin-left: 5px; vertical-align: 1px; }
 .samtalsrad { display: flex; gap: 9px; align-items: center; }
 .samtalsrad .tel-ikon { font-size: 17px; }
-.samtalsrad.missat .samtals-etikett, .samtalsrad.missat .tel-ikon { color: var(--tegel, #B3402E); }
+.samtalsrad.missat .samtals-etikett, .samtalsrad.missat .tel-ikon { color: var(--tegel); }
 .samtals-etikett { font-size: 11px; opacity: 0.8; }
 .samtals-puls { font-size: 19px; color: #3E8E5A; margin-left: auto; }
-.samtals-puls.tegel { color: var(--tegel, #B3402E); }
+.samtals-puls.tegel { color: var(--tegel); }
 .samtalsvy .förhand-text p { font-size: 14.5px; }
 .chatt { padding: 4px 0 10px; }
 .bubbelrad { display: flex; margin: 5px 0; }
@@ -1105,10 +1117,10 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   max-width: 82%; padding: 8px 11px; border-radius: 13px;
   background: rgba(29,47,78,0.08); border: 1px solid rgba(29,47,78,0.12);
 }
-.bubbla-in { border-bottom-left-radius: 4px; border-left: 3px solid var(--rollfärg, #6b6b64); }
+.bubbla-in { border-bottom-left-radius: 4px; border-left: 3px solid var(--rollfärg); }
 .bubbla-ut {
-  background: var(--marin, #1d2f4e); color: #faf7ef;
-  border-bottom-right-radius: 4px; border-color: var(--marin, #1d2f4e);
+  background: var(--marin); color: #faf7ef;
+  border-bottom-right-radius: 4px; border-color: var(--marin);
 }
 .bubbla-text { font-size: 13.5px; line-height: 1.45; white-space: pre-line; }
 .bubbla-tid {
@@ -1117,9 +1129,9 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 }
 .svarschip {
   padding: 8px 13px; border-radius: 16px; font-size: 13px; font-family: inherit;
-  background: var(--marin, #1d2f4e); color: #faf7ef; border: 1px solid var(--marin, #1d2f4e);
+  background: var(--marin); color: #faf7ef; border: 1px solid var(--marin);
 }
-.svarschip.sekundär { background: transparent; color: var(--marin, #1d2f4e); }
+.svarschip.sekundär { background: transparent; color: var(--marin); }
 
 /* v133: Nästa mål-raden — en rad, alltid synlig */
 .nästamål {
@@ -1127,11 +1139,11 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   padding: 7px 12px; margin: 0 0 2px; font-family: inherit; font-size: 12.5px;
   background: rgba(242,177,52,0.12); border: none;
   border-bottom: 1px solid rgba(29,47,78,0.18);
-  color: var(--marin, #1d2f4e); text-align: left; cursor: pointer;
+  color: var(--marin); text-align: left; cursor: pointer;
 }
 .nästamål-etikett {
   font-family: 'Roboto Mono', monospace; font-size: 8.5px; letter-spacing: 0.16em;
-  text-transform: uppercase; background: var(--marin, #1d2f4e); color: #faf7ef;
+  text-transform: uppercase; background: var(--marin); color: #faf7ef;
   padding: 2px 6px; border-radius: 3px; flex-shrink: 0;
 }
 .nästamål-pil { margin-left: auto; opacity: 0.55; }
@@ -1150,7 +1162,7 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .hemskärm-klocka { text-align: center; margin: 14px 0 18px; }
 .hemskärm-vecka {
   font-size: 34px; font-weight: 700; letter-spacing: 0.02em;
-  color: var(--marin, #1d2f4e); line-height: 1.05;
+  color: var(--marin); line-height: 1.05;
 }
 .hemskärm-dag { font-size: 12px; opacity: 0.65; margin-top: 3px; }
 .app-grid {
@@ -1167,7 +1179,7 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   color: #faf7ef; font-size: 24px;
   box-shadow: 0 2px 5px rgba(20, 28, 40, 0.28), inset 0 1px 0 rgba(255,255,255,0.14);
 }
-.app-ikon-namn { font-size: 10.5px; color: var(--marin, #1d2f4e); }
+.app-ikon-namn { font-size: 10.5px; color: var(--marin); }
 .app-ikon .app-badge { top: -5px; right: -5px; border: 2px solid #EDEAE2; }
 .hemskärm-oläst { align-self: center; margin-bottom: 14px; }
 .hemskärm-dock {
@@ -1207,12 +1219,12 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   width: 22px; height: 22px; border-radius: 11px; display: flex;
   align-items: center; justify-content: center;
   font-family: 'Roboto Mono', monospace; font-size: 10px;
-  color: var(--marin, #1d2f4e); border: 1.4px solid rgba(29,47,78,0.4);
+  color: var(--marin); border: 1.4px solid rgba(29,47,78,0.4);
   background: transparent;
 }
 .rytmpunkt.aktiv {
-  background: var(--marin, #1d2f4e); color: #faf7ef;
-  border-color: var(--marin, #1d2f4e);
+  background: var(--marin); color: #faf7ef;
+  border-color: var(--marin);
   box-shadow: 0 0 0 3px rgba(242,177,52,0.35);
 }
 .app-ikon-ruta { transition: transform 0.12s ease; }
@@ -1237,7 +1249,7 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 /* Mina kuskar (v144) */
 .kusk-sektion {
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--marin, #1d2f4e); opacity: 0.6; margin: 10px 0 4px;
+  color: var(--marin); opacity: 0.6; margin: 10px 0 4px;
   font-family: 'Roboto Mono', monospace;
 }
 .kuskrad {
@@ -1246,7 +1258,7 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
   background: rgba(29,47,78,0.05); border: 1px solid rgba(29,47,78,0.18);
   border-radius: 9px; font-family: inherit; color: inherit; cursor: pointer;
 }
-.kuskrad.vald { border-color: var(--marin, #1d2f4e); background: rgba(29,47,78,0.1); box-shadow: inset 2.5px 0 0 var(--guld, #F2B134); }
+.kuskrad.vald { border-color: var(--marin); background: rgba(29,47,78,0.1); box-shadow: inset 2.5px 0 0 var(--guld); }
 .kuskrad:disabled { opacity: 0.5; cursor: default; }
 .kuskrad.tränarrad { border-style: dashed; }
 .kuskrad-namn { grid-area: namn; font-weight: 600; font-size: 13.5px; }
@@ -1254,5 +1266,208 @@ table.liga td:nth-child(3),table.liga td:nth-child(4){text-align:right}
 .kuskrad-status { grid-area: status; align-self: center; font-size: 10.5px; opacity: 0.8; text-align: right; max-width: 96px; }
 
 /* v145: kuskens minnesreplik i samtalet */
-.minnes-replik { border-left: 3px solid var(--guld, #F2B134); }
-.minnes-replik .meta { color: var(--guld-mörk, #B3831D); }
+.minnes-replik { border-left: 3px solid var(--guld); }
+.minnes-replik .meta { color: var(--guld-mörk); }
+
+/* ==================== TELEFONEN SOM FÖREMÅL (v164, kap 30.1) ==================== */
+/* Teds speltest: "telefonen måste se mer realistiskt ut". Designidén:
+   luren är spelets MÖRKA föremål i en ljus värld — svart glasram,
+   statusremsa, marin tapet på hemskärmen, ljusa appskärmar. */
+.telefon-ram {
+  background: linear-gradient(160deg, #1A1D24, #0F1116);
+  border-radius: 34px; padding: 9px; margin: 2px 0 6px;
+  box-shadow: 0 14px 34px rgba(16, 20, 28, 0.35), inset 0 1px 0 rgba(255,255,255,0.09);
+}
+.telefon-skärm {
+  border-radius: 25px; overflow: hidden; background: #FBFAF6;
+  min-height: 72vh; display: flex; flex-direction: column;
+}
+.telefon-skärm > * { flex-shrink: 0; }
+.telefon-status {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #0F1116; color: #E9E7E0;
+  padding: 8px 16px 7px; font-size: 11.5px; letter-spacing: 0.03em;
+  border-bottom: 0; margin: 0;
+}
+.telefon-klocka { font-variant-numeric: tabular-nums; font-weight: 600; }
+.telefon-dag { opacity: 0.55; font-size: 10.5px; }
+.telefon-nät { display: flex; align-items: center; gap: 5px; font-size: 9.5px; letter-spacing: 0.08em; opacity: 0.85; }
+.telefon-nät .signal { font-size: 8px; letter-spacing: 1px; }
+.batteri {
+  width: 19px; height: 9px; border: 1px solid rgba(233,231,224,0.7);
+  border-radius: 2.5px; display: inline-block; position: relative; padding: 1px;
+}
+.batteri::after {
+  content: ""; position: absolute; right: -3px; top: 2.5px;
+  width: 1.5px; height: 4px; background: rgba(233,231,224,0.7); border-radius: 0 1px 1px 0;
+}
+.batteri-nivå { display: block; height: 100%; width: 76%; background: #7BC47F; border-radius: 1px; }
+
+/* Hemskärmen: mörk marin tapet, tunn vit klocka, glasdock. */
+.telefon-skärm .hemskärm {
+  background: linear-gradient(178deg, #15202F 0%, var(--marin) 56%, #27405f 100%);
+  border-radius: 0; padding: 10px 12px 14px; min-height: 64vh; flex: 1;
+}
+.telefon-skärm .hemskärm-klocka { margin: 26px 0 30px; }
+.telefon-skärm .hemskärm-vecka {
+  color: #F5F3EC; font-weight: 200; font-size: 54px; letter-spacing: 0.01em;
+  font-family: inherit;
+}
+.telefon-skärm .hemskärm-dag { color: rgba(245,243,236,0.66); font-size: 13px; margin-top: 6px; }
+.telefon-skärm .hemskärm-vader { color: rgba(245,243,236,0.55); }
+.telefon-skärm .app-ikon-namn { color: rgba(245,243,236,0.9); }
+.telefon-skärm .app-ikon-ruta {
+  width: 60px; height: 60px; border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.18);
+}
+.telefon-skärm .app-ikon .app-badge { border-color: var(--marin); }
+.telefon-skärm .hemskärm-dock {
+  background: rgba(245,243,236,0.1); border: 1px solid rgba(245,243,236,0.14);
+  backdrop-filter: blur(6px); border-radius: 18px;
+}
+.telefon-skärm .hemskärm-oläst { color: rgba(245,243,236,0.8); }
+.telefon-skärm .rytmrad { color: rgba(245,243,236,0.6); }
+.telefon-skärm .rytmrad [aria-current="true"], .telefon-skärm .rytmrad b { color: #F2B134; }
+
+/* Appskärmarna: ljusa, med luft — innehållet får andas i ramen. */
+.telefon-skärm .läsvy, .telefon-skärm .app-vy { padding: 10px 12px 14px; }
+.telefon-skärm > div:not(.telefon-status):not(.hemskärm) { padding: 8px 10px 12px; }
+
+.startlista-fäll > summary { cursor: pointer; padding: 4px 0; }
+.startlista-fäll[open] > summary { margin-bottom: 8px; }
+
+/* ==================== Starten & upploppet (v166, 30.7) ==================== */
+.startsekvens { padding: 6px 0; }
+.start-etikett {
+  text-align: center; font-size: 12px; letter-spacing: 0.28em; font-weight: 700;
+  color: var(--vinröd); margin: 8px 0 10px;
+}
+.start-berättelse {
+  text-align: center; font-size: 14px; line-height: 1.5; font-style: italic;
+  opacity: 0.85; margin: 0 8px 12px;
+}
+.startuppställning {
+  background: var(--panel); border-radius: 12px; padding: 8px 12px; margin-bottom: 12px;
+  border: 1px solid rgba(29,47,78,0.12);
+}
+.startrad {
+  display: flex; gap: 10px; align-items: baseline; padding: 4px 0;
+  border-bottom: 1px solid rgba(29,47,78,0.07); font-size: 13.5px;
+}
+.startrad:last-child { border-bottom: 0; }
+.startrad.din { font-weight: 700; color: var(--marin); }
+.start-spår {
+  width: 22px; height: 22px; border-radius: 6px; background: var(--marin);
+  color: #FCFBF7; font-size: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.start-namn { flex: 1; }
+.start-ladd { font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--vinröd); }
+@media (prefers-reduced-motion: no-preference) {
+  .upplopps-puls { animation: upploppspuls 0.9s ease-in-out infinite; border-radius: 14px; }
+  @keyframes upploppspuls {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(242,177,52,0); }
+    50% { box-shadow: 0 0 0 4px rgba(242,177,52,0.35); }
+  }
+}
+
+/* ==================== NATTLÄGET (v170, 32.2 ①) ==================== */
+/* Tesens signaturkontrast, fullbordad: dagsljus och papper i vardagen
+   — men LOPPDAGEN körs i kvällsmörker under strålkastare. Slås på av
+   appen när klockan står på helgen. */
+body.natt { background: var(--natt); color: var(--rail); }
+body.natt header {
+  background: rgba(14,20,27,.92); border-bottom-color: var(--strålkastare);
+}
+body.natt .brand { color: var(--rail); }
+body.natt .brand span { color: var(--strålkastare); }
+body.natt .status { color: var(--nattdis); }
+body.natt .status b { color: var(--rail); }
+body.natt .kort, body.natt .horse, body.natt .startuppställning {
+  background: var(--natt-2); border-color: var(--nattlinje); color: var(--rail);
+}
+body.natt h2 { color: var(--rail); }
+body.natt .meta, body.natt .hint, body.natt .logg, body.natt .relmini,
+body.natt .tom { color: var(--nattdis); }
+body.natt .prisrad { border-color: var(--nattlinje); }
+body.natt .prisrad .pris { color: var(--rail); }
+body.natt nav {
+  background: rgba(14,20,27,.94); border-top-color: var(--nattlinje);
+}
+body.natt nav button { color: var(--nattdis); }
+body.natt nav button[aria-selected="true"] {
+  color: var(--strålkastare); background: rgba(242,177,52,.12);
+}
+body.natt .kör-dock { background: linear-gradient(to top, rgba(14,20,27,.96) 70%, rgba(14,20,27,0)); }
+body.natt .btn { background: var(--strålkastare); color: var(--natt); }
+body.natt .btn.sekundär { background: transparent; color: var(--rail); border-color: var(--nattlinje); }
+body.natt .val { background: var(--natt-2); border-color: var(--nattlinje); color: var(--rail); }
+body.natt .val.rek { border-color: var(--strålkastare); }
+body.natt .samtal { background: var(--panel); color: var(--rail); }
+body.natt .samtal-vem { color: var(--nattdis); }
+body.natt .atg-rad, body.natt .atg-detalj { border-color: var(--nattlinje); }
+body.natt .atg-namn, body.natt .atg-data { color: var(--rail); }
+body.natt .atg-kön, body.natt .oddsrad { color: var(--nattdis); }
+body.natt .nästamål { background: var(--natt-2); color: var(--rail); border-color: var(--nattlinje); }
+body.natt .chip, body.natt .flik { color: var(--rail); border-color: var(--nattlinje); }
+body.natt .klasstagg, body.natt .start-spår { color: var(--rail); border-color: currentColor; }
+body.natt .start-spår { background: var(--strålkastare); color: var(--natt); }
+body.natt .start-etikett { color: var(--strålkastare); }
+body.natt .mer-meny button { color: var(--rail); border-color: var(--nattlinje); }
+body.natt .kommentar .k-rad { color: var(--rail); }
+body.natt .telefon-skärm { background: var(--natt-2); }
+body.natt .telefon-skärm .läsvy, body.natt .chatt { color: var(--bläck); }
+/* Telefonen lyser i mörkret — appskärmarna behåller sitt eget ljus. */
+body.natt .telefon-skärm .kort, body.natt .telefon-skärm .horse {
+  background: var(--ark); color: var(--bläck); border-color: var(--linje);
+}
+body.natt .telefon-skärm .meta, body.natt .telefon-skärm .hint,
+body.natt .telefon-skärm .logg { color: var(--dis); }
+body.natt .telefon-skärm h2 { color: var(--bläck); }
+body.natt .telefon-skärm .samtal { background: var(--benvit); color: var(--bläck); }
+
+.licensmärke { font-size: 10px; letter-spacing: .14em; font-weight: 700;
+  color: var(--guld); border: 1.5px solid var(--guld); border-radius: var(--r-s);
+  padding: 1px 6px; margin-left: 4px; vertical-align: middle; }
+body.natt .licensmärke { color: var(--strålkastare); border-color: var(--strålkastare); }
+
+/* ==================== Travbladets framsida (v173, 32.2 ④) ==================== */
+.framsida { cursor: pointer; background: var(--ark); border: 1px solid var(--linje-mörk);
+  border-radius: var(--r-m); overflow: hidden; margin-bottom: 12px; }
+.framsida.läst { opacity: 0.82; }
+.framsida-bild { width: 100%; height: 120px; object-fit: cover; display: block; }
+.framsida-vinjett { font-family: 'Roboto Mono', monospace; font-size: 9px;
+  letter-spacing: 0.14em; color: var(--tegel); padding: 10px 14px 0; }
+.framsida-rubrik { font-family: 'Big Shoulders Display', sans-serif; font-weight: 900;
+  font-size: 26px; line-height: 1.04; text-transform: uppercase; padding: 4px 14px 2px;
+  color: var(--bläck); }
+.framsida-ingress { font-family: 'Lora', Georgia, serif; font-size: 13.5px; line-height: 1.5;
+  padding: 2px 14px 10px; color: var(--bläck); opacity: 0.85; }
+.framsida-signatur { font-size: 11px; color: var(--dis); padding: 0 14px 12px;
+  font-style: italic; }
+.hemskärm-svar { align-self: center; margin: 10px 0 0; background: var(--tegel);
+  color: #FCFBF7; border: 0; border-radius: 99px; padding: 7px 16px; font-size: 12.5px;
+  font-weight: 600; cursor: pointer; font-family: inherit;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3); }
+
+/* Kurvan (v175) */
+.kurvan { width: 100%; height: auto; display: block; margin-top: 6px; }
+.kurva-stapel { fill: var(--marin); opacity: 0.85; }
+.kurva-stapel.vald { fill: var(--tegel); opacity: 1; }
+body.natt .kurva-stapel { fill: var(--strålkastare); }
+.kurva-värde { font-family: 'Roboto Mono', monospace; font-size: 3.4px; fill: var(--bläck); }
+.kurva-etikett { font-family: 'Roboto Mono', monospace; font-size: 3.2px; fill: var(--dis); }
+body.natt .kurva-värde { fill: var(--rail); }
+body.natt .kurva-etikett { fill: var(--nattdis); }
+.kurva-enhet { font-size: 10px; color: var(--dis); text-align: right;
+  font-family: 'Roboto Mono', monospace; letter-spacing: 0.06em; }
+
+/* Storloppsdagen (v175): guldet ovanpå natten — programkänslan. */
+body.storloppsdag header { border-bottom: 3px double var(--strålkastare); }
+body.storloppsdag .brand::after {
+  content: "STORLOPPSDAG"; font-family: 'Roboto Mono', monospace;
+  font-size: 8px; letter-spacing: 0.22em; color: var(--strålkastare);
+  border: 1px solid var(--strålkastare); border-radius: 3px;
+  padding: 2px 6px; margin-left: 8px; align-self: center;
+}
+body.storloppsdag .kör-dock .btn { box-shadow: 0 4px 18px rgba(242,177,52,.4); }
