@@ -101,8 +101,8 @@ console.log("PROV: inkorgen\n");
 {
   const spel = byggSpel();
   const möte = byggInkorg(spel).find((h) => h.fäst);
-  ok(!!möte && möte.typ === "rapport" && möte.rubrik.includes("genomgång"),
-    "veckans genomgång är måndagens fästa rapport");
+  ok(!!möte && möte.typ === "rapport" && möte.rubrik.includes("Stallmötet"),
+    "stallmötet är måndagens fästa rapport (v167 — förr genomgången)");
   ok(möte.lång.split("\n\n").length >= 4,
     `genomgången har sektioner för helskärmen (${möte.lång.split("\n\n").length} stycken)`);
   ok(möte.lång.includes("EKONOMI") && möte.lång.includes("FORMEN")
@@ -286,5 +286,60 @@ console.log("PROV: inkorgen\n");
 }
 
 sättRng();
+
+/* ---------------- Stallmötet (v167, 30.9) ---------------- */
+{
+  const { byggInkorg: bygg, verkställBeslut: verkställ } = await import("./engine-inkorg.js");
+  const spel = {
+    säsong: 2, vecka: 3, veckor: 18, kassa: 90000, renommé: 30, stallnamn: "P",
+    press: [], logg: [], föl: [], sponsorer: [], sponsorerbjudanden: [],
+    telefonlogg: [], inkorgLästa: [], inkorgBeslutade: [], anmälningar: [],
+    startadeLopp: [], kuskrelation: {}, ägarrelationer: {}, anläggning: {},
+    förstaman: { namn: "Ulla Möte", profil: "taktiker", säsonger: 2 },
+    stall: [
+      { id: 1, namn: "Trötta Trean", ålder: 5, skada: 0, energi: 20, form: 50, start: 50, träning: "kvalitet" },
+      { id: 2, namn: "Pigga Tvåan", ålder: 5, skada: 0, energi: 80, form: 40, start: 55, träning: "vila" },
+    ],
+    värld: { stall: [], hästar: [] },
+  };
+  const möte = bygg(spel).find((h) => h.rubrik?.startsWith("Stallmötet"));
+  ok(!!möte && möte.fäst === true, "måndagens fästa post är nu ett stallmöte");
+  ok(möte.lång.includes("FÖRSLAGET PÅ BORDET") && möte.beslut?.typ === "stallmöte",
+    "mötet har ett förslag på bordet — och ett beslut i posten");
+  verkställ(spel, möte, "plan");
+  ok(spel.stall[0].träning === "vila" && spel.stall[1].träning !== "vila",
+    "»kör din plan« lägger hela träningen med ett tryck");
+  /* Med autoträning på: inget beslut — planen ligger redan. */
+  const spel2 = { ...spel, autoTräning: true, inkorgBeslutade: [], telefonlogg: [], logg: [] };
+  const möte2 = bygg(spel2).find((h) => h.rubrik?.startsWith("Stallmötet"));
+  ok(!!möte2 && !möte2.beslut && möte2.lång.includes("sköter jag som vanligt"),
+    "med autoträningen på konstaterar mötet att planen ligger");
+}
+
+
+/* ---------------- Mötesskärpningen (v174, 31:5) ---------------- */
+{
+  const { byggInkorg: bygg } = await import("./engine-inkorg.js");
+  const grund = {
+    säsong: 2, vecka: 3, veckor: 18, kassa: 90000, renommé: 30, stallnamn: "P",
+    press: [], logg: [], föl: [], sponsorer: [], sponsorerbjudanden: [],
+    telefonlogg: [], inkorgLästa: [], inkorgBeslutade: [], anmälningar: [],
+    startadeLopp: [], kuskrelation: {}, ägarrelationer: {}, anläggning: {},
+    förstaman: { namn: "Ulla Skarp", profil: "taktiker", säsonger: 2 },
+    värld: { stall: [], hästar: [] },
+  };
+  /* EN mild avvikelse: läsning, inget beslut. */
+  const spelMild = { ...grund, stall: [
+    { id: 1, namn: "Milda", ålder: 5, skada: 0, energi: 70, form: 55, start: 60, träning: "vila" }] };
+  const mildMöte = bygg(spelMild).find((h) => h.rubrik?.startsWith("Stallmötet"));
+  ok(!!mildMöte && !mildMöte.beslut,
+    "en mild justering är läsning — inget veckoklickbeslut");
+  /* En körd häst: beslutet kommer även ensamt. */
+  const spelAkut = { ...grund, stall: [
+    { id: 1, namn: "Körda", ålder: 5, skada: 0, energi: 20, form: 55, start: 60, träning: "kvalitet" }] };
+  ok(!!bygg(spelAkut).find((h) => h.rubrik?.startsWith("Stallmötet"))?.beslut,
+    "en häst körd i botten kräver svar — beslutet kommer");
+}
+
 console.log(fel === 0 ? "\nALLA PROV OK\n" : `\n${fel} PROV FÖLL\n`);
 process.exit(fel === 0 ? 0 : 1);

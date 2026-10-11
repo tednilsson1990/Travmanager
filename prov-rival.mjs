@@ -103,5 +103,45 @@ const nyttSpel = () => {
     "rivalen vann: segerglädjen är torr men äkta");
 }
 
+
+/* ---------------- Rivaljakten (v172, 31:2) ---------------- */
+{
+  const { anmälningsläge } = await import("./engine-anmalan.js");
+  const { veckansLopp } = await import("./data-kalender.js");
+  const { sättRng, seedad } = await import("./engine-util.js");
+  const { nyHäst } = await import("./engine-hast.js");
+  sättRng(seedad(7));
+  const hästar = Array.from({ length: 40 }, (_, i) => {
+    const h = nyHäst({ ålder: 5 }); h.egen = false; h.stallId = 1 + (i % 6); return h;
+  });
+  sättRng();
+  const rivalhäst = hästar[0];
+  const egen = { id: 999, namn: "Egen", egen: true, ålder: 5, start: 55, fart: 55, styrka: 55,
+    intjänat: 100000, starter: 10, segrar: 2, skada: 0, senasteStartVecka: 0,
+    distans: { optimal: 2140, tolerans: 520 } };
+  const grund = { säsong: 2, veckor: 18, stall: [egen],
+    värld: { stall: [{ id: 1, namn: "Rivalstallet", filosofi: { vilaTröskel: 0, startvilja: 1 } }], hästar },
+    rival: { hästId: rivalhäst.id, hästNamn: rivalhäst.namn, tränare: "Motståndaren", stallnamn: "Rivalstallet" } };
+  let träffar = 0, körda = 0;
+  for (let v = 1; v <= 18; v++) {
+    for (const lopp of veckansLopp(v).slice(0, 2)) {
+      const läge = anmälningsläge({ ...grund, vecka: v }, lopp, egen, []);
+      körda++;
+      if (läge.anmälda.some((h) => h.id === rivalhäst.id)) träffar++;
+    }
+  }
+  ok(träffar >= 4 && träffar < körda * 0.6,
+    `rivalen söker upp spelarens lopp i lagom takt (${träffar} av ${körda} uttagningar)`);
+  /* Skadad rival jagar inte. */
+  rivalhäst.skada = 3;
+  let skadadeTräffar = 0;
+  for (let v = 1; v <= 18; v++) {
+    const lopp = veckansLopp(v)[0];
+    if (anmälningsläge({ ...grund, vecka: v }, lopp, egen, []).anmälda.some((h) => h.id === rivalhäst.id)) skadadeTräffar++;
+  }
+  rivalhäst.skada = 0;
+  ok(skadadeTräffar === 0, "en skadad rival stannar hemma");
+}
+
 console.log(fel === 0 ? "\nALLA PROV OK\n" : `\n${fel} PROV FÖLL\n`);
 process.exit(fel === 0 ? 0 : 1);
